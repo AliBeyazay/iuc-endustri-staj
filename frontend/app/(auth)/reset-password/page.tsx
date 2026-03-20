@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
@@ -40,7 +40,7 @@ function StrengthBar({ password }: { password: string }) {
 
 const browserApiBaseUrl = '/backend-api'
 
-export default function ResetPasswordPage() {
+function ResetPasswordPageContent() {
   const router       = useRouter()
   const searchParams = useSearchParams()
   const token        = searchParams.get('token')
@@ -140,5 +140,13 @@ export default function ResetPasswordPage() {
         </button>
       </form>
     </div>
+  )
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="w-full max-w-sm" />}>
+      <ResetPasswordPageContent />
+    </Suspense>
   )
 }
