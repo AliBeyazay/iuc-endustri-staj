@@ -1,0 +1,74 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: iuc_staj_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ../..:/workspaces:cached
+    working_dir: /workspaces/${localWorkspaceFolderBasename}/backend
+    ports:
+      - "8000:8000"
+    env_file: ./backend/.env
+    depends_on:
+      - db
+      - redis
+
+  celery:
+    build: ./backend
+    restart: unless-stopped
+    command: celery -A config worker --loglevel=info --concurrency=2
+    volumes:
+      - ../..:/workspaces:cached
+    working_dir: /workspaces/${localWorkspaceFolderBasename}/backend
+    env_file: ./backend/.env
+    depends_on:
+      - db
+      - redis
+
+  celery-beat:
+    build: ./backend
+    restart: unless-stopped
+    command: celery -A config beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - ../..:/workspaces:cached
+    working_dir: /workspaces/${localWorkspaceFolderBasename}/backend
+    env_file: ./backend/.env
+    depends_on:
+      - db
+      - redis
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    command: npm run dev
+    volumes:
+      - ../..:/workspaces:cached
+    working_dir: /workspaces/${localWorkspaceFolderBasename}/frontend
+    ports:
+      - "3000:3000"
+    env_file: ./frontend/.env.local
+    depends_on:
+      - backend
+
+volumes:
+  pg_data:

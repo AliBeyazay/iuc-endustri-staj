@@ -1,0 +1,39 @@
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+*.err.log
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Django / local data
+backend/db.sqlite3
+backend/media/
+backend/.pgdata/
+backend/.tmp/
+
+# Node / Next.js
+frontend/node_modules/
+frontend/.next/
+frontend/tsconfig.tsbuildinfo
+frontend/node-v22.14.0-win-x64/
+frontend/node-v22.14.0-win-x64.zip
+
+# IDE
+.idea/
+.vscode/

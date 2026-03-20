@@ -1,0 +1,161 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --campus-navy: #132843;
+  --campus-navy-deep: #0c1c31;
+  --campus-gold: #d8ad43;
+  --campus-gold-soft: #edd089;
+  --campus-paper: #f5f1e6;
+  --campus-ink: #edf1f6;
+  --campus-border: rgba(216, 173, 67, 0.18);
+  --campus-surface: rgba(255, 251, 242, 0.88);
+  --campus-surface-strong: rgba(255, 250, 240, 0.96);
+  --campus-shadow: 0 24px 60px rgba(10, 21, 35, 0.12);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body), sans-serif;
+  color: #e7edf4;
+  background:
+    radial-gradient(circle at 12% 12%, rgba(216, 173, 67, 0.16), transparent 22%),
+    radial-gradient(circle at 88% 8%, rgba(216, 173, 67, 0.1), transparent 18%),
+    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.08), transparent 22%),
+    linear-gradient(180deg, #0b1a2c 0%, #132843 22%, #efe9dd 22%, #efe9dd 100%);
+}
+
+h1,
+h2,
+h3,
+.campus-heading {
+  font-family: var(--font-heading), sans-serif;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+::selection {
+  background: rgba(216, 173, 67, 0.28);
+  color: white;
+}
+
+.campus-shell {
+  background:
+    linear-gradient(180deg, rgba(12, 28, 49, 0.96) 0px, rgba(19, 40, 67, 0.96) 84px, #efe9dd 84px, #efe9dd 100%);
+  color: #132843;
+}
+
+.campus-nav {
+  background:
+    linear-gradient(90deg, rgba(9, 23, 40, 0.94) 0%, rgba(20, 42, 69, 0.92) 50%, rgba(19, 40, 67, 0.96) 100%);
+  border-bottom: 1px solid rgba(216, 173, 67, 0.18);
+  box-shadow: 0 18px 40px rgba(7, 17, 29, 0.2);
+  backdrop-filter: blur(14px);
+}
+
+.campus-brand {
+  font-family: var(--font-heading), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--campus-gold);
+}
+
+.campus-card {
+  background:
+    linear-gradient(180deg, var(--campus-surface-strong), var(--campus-surface)),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.46), transparent 55%);
+  color: #132843;
+  border: 1px solid var(--campus-border);
+  box-shadow: var(--campus-shadow);
+  backdrop-filter: blur(14px);
+}
+
+.campus-card-muted {
+  background: rgba(19, 40, 67, 0.045);
+  border: 1px solid rgba(19, 40, 67, 0.07);
+}
+
+.campus-input {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(19, 40, 67, 0.1);
+  color: #132843;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.campus-input:focus {
+  outline: none;
+  border-color: rgba(216, 173, 67, 0.65);
+  box-shadow: 0 0 0 4px rgba(216, 173, 67, 0.1);
+}
+
+.campus-button-primary {
+  background: linear-gradient(135deg, #d8ad43 0%, #c79828 100%);
+  color: #10223b;
+  border: 1px solid rgba(140, 101, 13, 0.2);
+  box-shadow: 0 10px 24px rgba(199, 152, 40, 0.22);
+}
+
+.campus-button-primary:hover {
+  filter: brightness(1.03);
+  transform: translateY(-1px);
+}
+
+.campus-button-secondary {
+  background: rgba(255, 255, 255, 0.56);
+  color: #173156;
+  border: 1px solid rgba(19, 40, 67, 0.1);
+}
+
+.campus-pill {
+  background: rgba(19, 40, 67, 0.06);
+  color: #173156;
+  border: 1px solid rgba(19, 40, 67, 0.07);
+}
+
+.campus-pill-gold {
+  background: rgba(216, 173, 67, 0.16);
+  color: #8f670b;
+  border: 1px solid rgba(216, 173, 67, 0.18);
+}
+
+.campus-glass {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar       { width: 10px; height: 10px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: #A3A3A3; border-radius: 999px; border: 2px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background: #8A8A8A; border: 2px solid transparent; background-clip: padding-box; }
+
+.filter-scrollbar {
+  scrollbar-width: auto;
+  scrollbar-color: #9a9a9a transparent;
+}
+
+.filter-scrollbar::-webkit-scrollbar {
+  width: 12px;
+}
+
+.filter-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.filter-scrollbar::-webkit-scrollbar-thumb {
+  background: #9a9a9a;
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+
+.filter-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #7f7f7f;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}

@@ -1,0 +1,39 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+
+export default function ScrollToTopButton() {
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    const onScroll = () => setVisible(window.scrollY > 260)
+
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  if (!visible) return null
+
+  return (
+    <button
+      type="button"
+      aria-label="Yukarı çık"
+      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+      className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-xl bg-[#2a313d]/92 text-white shadow-[0_12px_30px_rgba(0,0,0,0.28)] transition hover:bg-[#353d4b]"
+    >
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        className="h-7 w-7"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="3.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M5 15l7-7 7 7" />
+      </svg>
+    </button>
+  )
+}
