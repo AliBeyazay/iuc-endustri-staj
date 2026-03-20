@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getSession, signIn } from 'next-auth/react'
 import { z } from 'zod'
@@ -20,7 +20,7 @@ const ERROR_MAP: Record<string, string> = {
   OAuthAccountNotLinked: 'Bu e-posta baska bir yontemle kayitli',
 }
 
-export default function LoginPage() {
+function LoginPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [serverError, setServerError] = useState('')
@@ -139,5 +139,13 @@ export default function LoginPage() {
         </button>
       </p>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="w-full max-w-sm" />}>
+      <LoginPageContent />
+    </Suspense>
   )
 }
