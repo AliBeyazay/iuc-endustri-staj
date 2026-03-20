@@ -3,7 +3,11 @@ import GoogleProvider from 'next-auth/providers/google'
 import CredentialsProvider from 'next-auth/providers/credentials'
 
 const ALLOWED_DOMAINS = ['@ogr.iuc.edu.tr', '@iuc.edu.tr']
-const API_URL = 'http://backend:8000/api'
+const API_URL = (
+  process.env.API_INTERNAL_URL ??
+  process.env.NEXT_PUBLIC_API_URL ??
+  'http://backend:8000/api'
+).replace(/\/$/, '')
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
