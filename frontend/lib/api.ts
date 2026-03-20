@@ -5,10 +5,10 @@ import {
   BookmarkedListing, FilterState, PaginatedResponse,
 } from '@/types'
 import { buildQueryString } from './helpers'
+import { getBackendApiBaseUrl } from './backend-url'
 
 const browserApiBaseUrl = '/backend-api'
-const serverApiBaseUrl =
-  process.env.API_INTERNAL_URL ?? 'http://backend:8000/api'
+const serverApiBaseUrl = getBackendApiBaseUrl()
 
 const api = axios.create({
   baseURL: typeof window === 'undefined' ? serverApiBaseUrl : browserApiBaseUrl,

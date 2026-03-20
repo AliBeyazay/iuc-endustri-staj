@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getBackendApiBaseUrl } from '@/lib/backend-url'
 
-const backendApiBaseUrl =
-  process.env.API_INTERNAL_URL ?? 'http://backend:8000/api'
+export const runtime = 'nodejs'
+
+const backendApiBaseUrl = getBackendApiBaseUrl()
 
 async function proxy(request: NextRequest, context: { params: Promise<{ path: string[] }> }) {
   const { path } = await context.params

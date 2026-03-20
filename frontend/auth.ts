@@ -1,13 +1,10 @@
 import NextAuth from 'next-auth'
 import GoogleProvider from 'next-auth/providers/google'
 import CredentialsProvider from 'next-auth/providers/credentials'
+import { getBackendApiBaseUrl } from '@/lib/backend-url'
 
 const ALLOWED_DOMAINS = ['@ogr.iuc.edu.tr', '@iuc.edu.tr']
-const API_URL = (
-  process.env.API_INTERNAL_URL ??
-  process.env.NEXT_PUBLIC_API_URL ??
-  'http://backend:8000/api'
-).replace(/\/$/, '')
+const API_URL = getBackendApiBaseUrl()
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
