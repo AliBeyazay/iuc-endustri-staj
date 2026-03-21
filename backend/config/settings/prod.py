@@ -8,7 +8,7 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
 # Security
 SECURE_PROXY_SSL_HEADER    = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST       = True
-SECURE_SSL_REDIRECT         = True
+SECURE_SSL_REDIRECT         = os.environ.get('SECURE_SSL_REDIRECT', 'False').lower() == 'true'
 SESSION_COOKIE_SECURE       = True
 CSRF_COOKIE_SECURE          = True
 SECURE_BROWSER_XSS_FILTER   = True
