@@ -18,3 +18,10 @@ X_FRAME_OPTIONS             = 'DENY'
 
 # Static files (use whitenoise or S3 in production)
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+
+REST_FRAMEWORK = {
+    **REST_FRAMEWORK,
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+}
