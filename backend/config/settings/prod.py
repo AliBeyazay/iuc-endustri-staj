@@ -3,7 +3,8 @@ import os
 
 DEBUG = False
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
+ALLOWED_HOSTS = ['*']
+MIDDLEWARE = ['config.healthcheck.HealthcheckMiddleware', *MIDDLEWARE]
 
 # Security
 SECURE_PROXY_SSL_HEADER    = ('HTTP_X_FORWARDED_PROTO', 'https')
