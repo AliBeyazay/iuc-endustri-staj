@@ -16,4 +16,5 @@ COPY . .
 EXPOSE 8000
 
 # Prepare the database schema on startup before serving requests.
-CMD ["sh", "-c", "DJANGO_SETTINGS_MODULE=config.settings.prod python manage.py migrate && gunicorn config.wsgi:application --bind 0.0.0.0:${PORT:-8000}"]
+# Optionally seed demo listings for fresh environments when explicitly enabled.
+CMD ["sh", "-c", "DJANGO_SETTINGS_MODULE=config.settings.prod python manage.py migrate && if [ \"${RUN_DEMO_SEED:-false}\" = \"true\" ]; then DJANGO_SETTINGS_MODULE=config.settings.prod python manage.py seed_demo_listings; fi && gunicorn config.wsgi:application --bind 0.0.0.0:${PORT:-8000}"]
