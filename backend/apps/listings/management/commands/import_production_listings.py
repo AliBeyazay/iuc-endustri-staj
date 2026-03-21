@@ -38,15 +38,15 @@ class Command(BaseCommand):
             defaults = {
                 "title": payload.get("title", ""),
                 "company_name": payload.get("company_name", ""),
-                "company_logo_url": payload.get("company_logo_url") or None,
-                "application_url": payload.get("application_url") or None,
+                "company_logo_url": self.fit("company_logo_url", payload.get("company_logo_url")),
+                "application_url": self.fit("application_url", payload.get("application_url")),
                 "source_platform": payload.get("source_platform", "linkedin"),
                 "em_focus_area": payload.get("em_focus_area") or "diger",
                 "secondary_em_focus_area": payload.get("secondary_em_focus_area") or None,
                 "em_focus_confidence": self.parse_decimal(payload.get("em_focus_confidence")),
                 "internship_type": payload.get("internship_type") or "belirsiz",
                 "company_origin": payload.get("company_origin") or "belirsiz",
-                "location": payload.get("location", ""),
+                "location": self.fit("location", payload.get("location", "")),
                 "description": payload.get("description", ""),
                 "requirements": payload.get("requirements", ""),
                 "application_deadline": payload.get("application_deadline") or None,
@@ -58,7 +58,7 @@ class Command(BaseCommand):
             }
 
             _, was_created = Listing.objects.update_or_create(
-                source_url=source_url,
+                source_url=self.fit("source_url", source_url),
                 defaults=defaults,
             )
             if was_created:
@@ -76,3 +76,13 @@ class Command(BaseCommand):
         if value in (None, ""):
             return Decimal("0")
         return Decimal(str(value))
+
+    def fit(self, field_name, value):
+        if value in (None, ""):
+            return None if field_name in {"company_logo_url", "application_url"} else ""
+
+        value = str(value)
+        max_length = Listing._meta.get_field(field_name).max_length
+        if max_length and len(value) > max_length:
+            return value[:max_length]
+        return value
