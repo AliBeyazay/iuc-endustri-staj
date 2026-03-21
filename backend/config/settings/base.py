@@ -69,11 +69,11 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME':     os.environ.get('DB_NAME', 'iuc_staj_db'),
-            'USER':     os.environ.get('DB_USER', 'postgres'),
-            'PASSWORD': os.environ.get('DB_PASSWORD', 'password'),
-            'HOST':     os.environ.get('DB_HOST', 'localhost'),
-            'PORT':     os.environ.get('DB_PORT', '5432'),
+            'NAME':     os.environ.get('DB_NAME') or os.environ.get('PGDATABASE', 'iuc_staj_db'),
+            'USER':     os.environ.get('DB_USER') or os.environ.get('PGUSER', 'postgres'),
+            'PASSWORD': os.environ.get('DB_PASSWORD') or os.environ.get('PGPASSWORD', 'password'),
+            'HOST':     os.environ.get('DB_HOST') or os.environ.get('PGHOST', 'localhost'),
+            'PORT':     os.environ.get('DB_PORT') or os.environ.get('PGPORT', '5432'),
         }
     }
 
