@@ -1,6 +1,7 @@
 import hashlib
 import os
 import random
+import traceback
 from datetime import date, timedelta
 
 from django.conf import settings
@@ -44,6 +45,19 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
         if exclude_id:
             qs = qs.exclude(id=exclude_id)
         return qs
+
+    def list(self, request, *args, **kwargs):
+        try:
+            return super().list(request, *args, **kwargs)
+        except Exception as exc:
+            return Response(
+                {
+                    'error': str(exc),
+                    'type': exc.__class__.__name__,
+                    'traceback': traceback.format_exc().splitlines()[-8:],
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
     def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)
