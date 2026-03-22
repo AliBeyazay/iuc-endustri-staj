@@ -112,8 +112,15 @@ class RegisterSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 'Sadece @ogr.iuc.edu.tr veya @iuc.edu.tr adresleri kabul edilir.'
             )
-        if Student.objects.filter(iuc_email__iexact=value).exists():
+        existing_student = Student.objects.filter(iuc_email__iexact=value).first()
+        if existing_student and existing_student.is_verified:
             raise serializers.ValidationError('Bu e-posta zaten kayitli.')
+        return value
+
+    def validate_student_no(self, value):
+        existing_student = Student.objects.filter(student_no=value).first()
+        if existing_student and existing_student.is_verified:
+            raise serializers.ValidationError('Bu ogrenci numarasi zaten kayitli.')
         return value
 
 

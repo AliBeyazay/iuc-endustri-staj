@@ -215,17 +215,41 @@ class RegisterView(APIView):
         data = serializer.validated_data
 
         names = data['full_name'].split(' ', 1)
-        student = Student.objects.create_user(
-            username=data['email'],
-            iuc_email=data['email'],
-            email=data['email'],
-            password=data['password'],
-            first_name=names[0],
-            last_name=names[1] if len(names) > 1 else '',
-            student_no=data.get('student_no'),
-            department_year=data.get('department_year'),
-            linkedin_url=data.get('linkedin_url') or None,
-        )
+        student = Student.objects.filter(iuc_email__iexact=data['email']).first()
+        conflicting_student_no = Student.objects.filter(student_no=data.get('student_no')).exclude(
+            iuc_email__iexact=data['email']
+        ).first()
+
+        if conflicting_student_no and conflicting_student_no.is_verified:
+            return Response({'student_no': ['Bu ogrenci numarasi zaten kayitli.']}, status=400)
+
+        if student and student.is_verified:
+            return Response({'email': ['Bu e-posta zaten kayitli.']}, status=400)
+
+        if student is None:
+            student = Student.objects.create_user(
+                username=data['email'],
+                iuc_email=data['email'],
+                email=data['email'],
+                password=data['password'],
+                first_name=names[0],
+                last_name=names[1] if len(names) > 1 else '',
+                student_no=data.get('student_no'),
+                department_year=data.get('department_year'),
+                linkedin_url=data.get('linkedin_url') or None,
+            )
+        else:
+            student.username = data['email']
+            student.iuc_email = data['email']
+            student.email = data['email']
+            student.first_name = names[0]
+            student.last_name = names[1] if len(names) > 1 else ''
+            student.student_no = data.get('student_no')
+            student.department_year = data.get('department_year')
+            student.linkedin_url = data.get('linkedin_url') or None
+            student.is_verified = False
+            student.set_password(data['password'])
+            student.save()
 
         otp = _send_otp(student)
         response_data = {
