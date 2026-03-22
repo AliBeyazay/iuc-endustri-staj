@@ -84,8 +84,11 @@ function LoginPageContent() {
 
     try {
       const result = await resendOTP(email)
-      setOnscreenOtp(result.debug_otp ?? '')
-      setVerificationMessage('Dogrulama kodu olusturuldu. Kodu girip devam edebilirsin.')
+      if (!result.debug_otp) {
+        throw new Error('OTP code missing')
+      }
+      setOnscreenOtp(result.debug_otp)
+      setVerificationMessage('Ekranda gorunen 6 haneli kodu ayni sekilde gir.')
     } catch {
       setVerificationMessage('Dogrulama kodu olusturulamadi. Lutfen tekrar dene.')
     } finally {
@@ -167,12 +170,17 @@ function LoginPageContent() {
         <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-3 text-xs text-amber-900">
           <p className="font-medium">Dogrulama gerekli</p>
           <p className="mt-1 leading-5">
-            <span className="font-medium">{pendingVerification.email}</span> icin olusturulan 6 haneli kodu gir.
+            <span className="font-medium">{pendingVerification.email}</span> icin olusturulan 6 haneli kodu ayni sekilde gir.
           </p>
           {onscreenOtp ? (
-            <p className="mt-2 text-sm font-semibold tracking-[0.24em] text-amber-950">
-              {onscreenOtp}
-            </p>
+            <div className="mt-3 rounded-lg border border-amber-300 bg-white px-3 py-3 text-center">
+              <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-amber-700">
+                Ekranda gorunen kod
+              </p>
+              <p className="mt-2 text-xl font-semibold tracking-[0.34em] text-amber-950">
+                {onscreenOtp}
+              </p>
+            </div>
           ) : null}
           {verificationMessage ? <p className="mt-2 text-[11px]">{verificationMessage}</p> : null}
           <div className="mt-3 flex gap-2">

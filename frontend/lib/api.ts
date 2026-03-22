@@ -19,6 +19,29 @@ export function normalizeIucEmail(email: string) {
   return email.trim().toLowerCase()
 }
 
+async function postPublicAuth<T>(path: string, payload: unknown): Promise<T> {
+  const baseUrl = typeof window === 'undefined' ? serverApiBaseUrl : browserApiBaseUrl
+  const response = await fetch(`${baseUrl}${path}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify(payload),
+    cache: 'no-store',
+    credentials: 'include',
+  })
+
+  const text = await response.text()
+  const data = text ? JSON.parse(text) : null
+
+  if (!response.ok) {
+    throw new Error(data?.error || data?.detail || `Request failed with status ${response.status}`)
+  }
+
+  return data as T
+}
+
 function getAccessTokenFromCookie() {
   if (typeof document === 'undefined') {
     return null
@@ -150,8 +173,8 @@ export async function uploadCV(file: File): Promise<{ cv_url: string }> {
 // ─── Auth helpers ────────────────────────────────────────────────────────────
 
 export async function checkEmailAvailable(email: string): Promise<boolean> {
-  const { data } = await api.post<{ available: boolean }>(
-    '/auth/check-email', { email: normalizeIucEmail(email) }
+  const data = await postPublicAuth<{ available: boolean }>(
+    '/auth/check-email/', { email: normalizeIucEmail(email) }
   )
   return data.available
 }
@@ -160,10 +183,9 @@ export async function fetchAccountStatus(email: string): Promise<{
   exists: boolean
   is_verified: boolean
 }> {
-  const { data } = await api.post<{ exists: boolean; is_verified: boolean }>(
-    '/auth/account-status', { email: normalizeIucEmail(email) }
+  return postPublicAuth<{ exists: boolean; is_verified: boolean }>(
+    '/auth/account-status/', { email: normalizeIucEmail(email) }
   )
-  return data
 }
 
 export async function registerUser(payload: {
@@ -174,33 +196,34 @@ export async function registerUser(payload: {
   department_year: number
   linkedin_url?: string
 }): Promise<{ delivery_method?: string; debug_otp?: string }> {
-  const { data } = await api.post('/auth/register', {
+  return postPublicAuth<{ delivery_method?: string; debug_otp?: string }>('/auth/register/', {
     ...payload,
     email: normalizeIucEmail(payload.email),
   })
-  return data
 }
 
 export async function verifyOTP(email: string, otp: string): Promise<void> {
-  await api.post('/auth/verify-otp', { email: normalizeIucEmail(email), otp })
+  await postPublicAuth('/auth/verify-otp/', { email: normalizeIucEmail(email), otp })
 }
 
 export async function resendOTP(
   email: string
 ): Promise<{ delivery_method?: string; debug_otp?: string }> {
-  const { data } = await api.post('/auth/resend-otp', { email: normalizeIucEmail(email) })
-  return data
+  return postPublicAuth<{ delivery_method?: string; debug_otp?: string }>(
+    '/auth/resend-otp/',
+    { email: normalizeIucEmail(email) }
+  )
 }
 
 export async function forgotPassword(email: string): Promise<void> {
-  await api.post('/auth/forgot-password', { email: normalizeIucEmail(email) })
+  await postPublicAuth('/auth/forgot-password/', { email: normalizeIucEmail(email) })
 }
 
 export async function resetPassword(
   token: string,
   password: string
 ): Promise<void> {
-  await api.post('/auth/reset-password', { token, password })
+  await postPublicAuth('/auth/reset-password/', { token, password })
 }
 
 export default api

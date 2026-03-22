@@ -171,6 +171,9 @@ export default function RegisterPage() {
         department_year: data.department_year,
         linkedin_url: data.linkedin_url || undefined,
       })
+      if (!result.debug_otp) {
+        throw new Error('OTP code missing')
+      }
 
       applyRegisterResponse(result)
       startResendTimer()
@@ -208,9 +211,17 @@ export default function RegisterPage() {
 
   async function handleResend() {
     if (!step1Data) return
-    const result = await resendOTP(step1Data.email)
-    applyRegisterResponse(result)
-    startResendTimer()
+    try {
+      const result = await resendOTP(step1Data.email)
+      if (!result.debug_otp) {
+        throw new Error('OTP code missing')
+      }
+      applyRegisterResponse(result)
+      setOtpError(false)
+      startResendTimer()
+    } catch {
+      setOtpError(true)
+    }
   }
 
   function Dots() {
@@ -407,9 +418,9 @@ export default function RegisterPage() {
 
           {onscreenOtp ? (
             <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-center">
-              <p className="text-sm font-medium text-amber-900">Dogrulama kodu</p>
+              <p className="text-sm font-medium text-amber-900">Ekranda gorunen kod</p>
               <p className="mt-1 text-xs leading-relaxed text-amber-800">
-                Kodu kopyalayip alttaki kutulara yazabilirsin.
+                Ekranda gorunen 6 haneli kodu alttaki kutulara ayni sekilde yaz.
               </p>
               <p className="mt-3 text-2xl font-semibold tracking-[0.35em] text-amber-950">
                 {onscreenOtp}
