@@ -83,6 +83,21 @@ function LoginPageContent() {
     setVerificationMessage('Dogrulama kodu olusturuluyor...')
   }
 
+  async function loadVisibleOtp(email: string) {
+    try {
+      const result = await resendOTP(email)
+      if (!result.debug_otp) {
+        throw new Error('OTP code missing')
+      }
+      setOnscreenOtp(result.debug_otp)
+      setVerificationMessage('Ekranda gorunen 6 haneli kodu ayni sekilde gir.')
+      return true
+    } catch {
+      setVerificationMessage('Dogrulama kodu olusturulamadi. Lutfen tekrar dene.')
+      return false
+    }
+  }
+
   async function onSubmit(data: Form) {
     setServerError('')
     setVerificationMessage('')
@@ -103,7 +118,7 @@ function LoginPageContent() {
           setOnscreenOtp(accountStatus.debug_otp)
           setVerificationMessage('Ekranda gorunen 6 haneli kodu ayni sekilde gir.')
         } else {
-          setVerificationMessage('Dogrulama kodu olusturulamadi. Lutfen tekrar dene.')
+          await loadVisibleOtp(normalizedEmail)
         }
         return
       }
@@ -141,18 +156,8 @@ function LoginPageContent() {
     if (!pendingVerification) return
     setIsResendingCode(true)
     await startVerificationFlow(pendingVerification.email, pendingVerification.password)
-    try {
-      const result = await resendOTP(pendingVerification.email)
-      if (!result.debug_otp) {
-        throw new Error('OTP code missing')
-      }
-      setOnscreenOtp(result.debug_otp)
-      setVerificationMessage('Ekranda gorunen 6 haneli kodu ayni sekilde gir.')
-    } catch {
-      setVerificationMessage('Dogrulama kodu olusturulamadi. Lutfen tekrar dene.')
-    } finally {
-      setIsResendingCode(false)
-    }
+    await loadVisibleOtp(pendingVerification.email)
+    setIsResendingCode(false)
   }
 
   return (
