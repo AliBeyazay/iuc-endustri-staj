@@ -199,6 +199,24 @@ export default function RegisterPage() {
       startResendTimer()
       setStep(3)
     } catch (error) {
+      try {
+        const accountStatus = await fetchAccountStatus(step1Data.email)
+        if (accountStatus.exists && !accountStatus.is_verified) {
+          if (accountStatus.debug_otp) {
+            applyRegisterResponse(accountStatus)
+          } else {
+            const result = await resendOTP(step1Data.email)
+            applyRegisterResponse(result)
+          }
+          startResendTimer()
+          setStep2Error('')
+          setStep(3)
+          return
+        }
+      } catch {
+        // Continue to surface the original error below.
+      }
+
       setStep2Error(
         error instanceof Error && error.message
           ? error.message
