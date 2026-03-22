@@ -37,10 +37,25 @@ async function postPublicAuth<T>(path: string, payload: unknown): Promise<T> {
   const isJson = response.headers.get('content-type')?.includes('application/json')
   const data = text && isJson ? JSON.parse(text) : null
 
+  const normalizedErrorMessage = (() => {
+    if (!data || typeof data !== 'object') return ''
+    if ('error' in data && typeof data.error === 'string') return data.error
+    if ('detail' in data && typeof data.detail === 'string') return data.detail
+
+    const fieldMessages = Object.values(data as Record<string, unknown>)
+      .flatMap((value) => {
+        if (Array.isArray(value)) return value.map(String)
+        if (typeof value === 'string') return [value]
+        return []
+      })
+      .filter(Boolean)
+
+    return fieldMessages[0] ?? ''
+  })()
+
   if (!response.ok) {
     throw new Error(
-      data?.error ||
-        data?.detail ||
+      normalizedErrorMessage ||
         (text && !isJson ? 'Sunucu beklenmeyen bir yanit dondurdu.' : '') ||
         `Request failed with status ${response.status}`,
     )

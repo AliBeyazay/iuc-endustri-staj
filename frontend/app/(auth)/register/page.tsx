@@ -166,11 +166,14 @@ export default function RegisterPage() {
       setStep(2)
     } catch (error) {
       setStep1Status('')
-      setStep1Error(
+      setStep1Error('')
+      setStep2Error(
         error instanceof Error && error.message
-          ? error.message
-          : 'Kayit kontrolu su an tamamlanamadi. Lutfen tekrar dene.',
+          ? `On kontrol atlandi: ${error.message}`
+          : 'On kontrol atlandi. Bilgileri girip devam edebilirsin.',
       )
+      setStep1Data(data)
+      setStep(2)
     }
   }
 
