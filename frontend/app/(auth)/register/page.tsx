@@ -115,6 +115,8 @@ export default function RegisterPage() {
   const [selectedYear, setSelectedYear] = useState(3)
   const [onscreenOtp, setOnscreenOtp] = useState('')
   const [step2Error, setStep2Error] = useState('')
+  const [step1Error, setStep1Error] = useState('')
+  const [step1Status, setStep1Status] = useState('')
   const [step1Info, setStep1Info] = useState('')
   const [existingUnverifiedEmail, setExistingUnverifiedEmail] = useState('')
 
@@ -129,32 +131,43 @@ export default function RegisterPage() {
   }
 
   async function onStep1(data: Step1) {
+    setStep1Error('')
+    setStep1Status('E-posta durumu kontrol ediliyor...')
     setStep2Error('')
     setStep1Info('')
     setExistingUnverifiedEmail('')
 
-    const accountStatus = await fetchAccountStatus(data.email)
-    if (accountStatus.exists) {
-      if (accountStatus.is_verified) {
-        form1.setError('email', { message: 'Bu e-posta zaten kayitli.' })
-      } else {
-        setExistingUnverifiedEmail(data.email)
-        form1.setError('email', {
-          message: 'Bu hesap kayitli ama e-posta dogrulamasi tamamlanmamis.',
-        })
-        setStep1Info('Giris ekranina gecip dogrulama kodunu yeniden olusturabilirsin.')
+    try {
+      const accountStatus = await fetchAccountStatus(data.email)
+      if (accountStatus.exists) {
+        setStep1Status('')
+        if (accountStatus.is_verified) {
+          form1.setError('email', { message: 'Bu e-posta zaten kayitli.' })
+        } else {
+          setExistingUnverifiedEmail(data.email)
+          form1.setError('email', {
+            message: 'Bu hesap kayitli ama e-posta dogrulamasi tamamlanmamis.',
+          })
+          setStep1Info('Giris ekranina gecip dogrulama kodunu yeniden olusturabilirsin.')
+        }
+        return
       }
-      return
-    }
 
-    const available = await checkEmailAvailable(data.email)
-    if (!available) {
-      form1.setError('email', { message: 'Bu e-posta zaten kayitli.' })
-      return
-    }
+      setStep1Status('Kayit icin e-posta uygunlugu kontrol ediliyor...')
+      const available = await checkEmailAvailable(data.email)
+      if (!available) {
+        setStep1Status('')
+        form1.setError('email', { message: 'Bu e-posta zaten kayitli.' })
+        return
+      }
 
-    setStep1Data(data)
-    setStep(2)
+      setStep1Status('')
+      setStep1Data(data)
+      setStep(2)
+    } catch {
+      setStep1Status('')
+      setStep1Error('Kayit kontrolu su an tamamlanamadi. Lutfen tekrar dene.')
+    }
   }
 
   async function onStep2(data: Step2) {
@@ -247,6 +260,18 @@ export default function RegisterPage() {
         <>
           <h1 className="mb-1 text-xl font-medium text-gray-900">Hesap Olustur</h1>
           <p className="mb-5 text-sm text-gray-500">Adim 1/3 - Temel bilgiler</p>
+
+          {step1Status ? (
+            <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5 text-xs text-blue-800">
+              {step1Status}
+            </div>
+          ) : null}
+
+          {step1Error ? (
+            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-xs text-red-700">
+              {step1Error}
+            </div>
+          ) : null}
 
           <form onSubmit={form1.handleSubmit(onStep1)} className="space-y-3">
             {[
