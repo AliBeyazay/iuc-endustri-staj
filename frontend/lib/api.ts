@@ -9,18 +9,7 @@ import { getBackendApiBaseUrl } from './backend-url'
 
 const browserApiBaseUrl = '/backend-api'
 const serverApiBaseUrl = getBackendApiBaseUrl()
-
-function normalizePublicApiBaseUrl(value: string) {
-  if (value.startsWith('/')) return value.replace(/\/$/, '')
-  const trimmed = value.replace(/\/$/, '')
-  return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`
-}
-
-const browserPublicApiBaseUrl = normalizePublicApiBaseUrl(
-  process.env.NEXT_PUBLIC_API_BASE_URL ??
-    process.env.NEXT_PUBLIC_BACKEND_URL ??
-    browserApiBaseUrl,
-)
+const browserPublicApiBaseUrl = browserApiBaseUrl
 
 const api = axios.create({
   baseURL: typeof window === 'undefined' ? serverApiBaseUrl : browserApiBaseUrl,
