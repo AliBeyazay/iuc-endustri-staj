@@ -5,8 +5,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { BriefcaseBusiness, Clock3, MapPin } from 'lucide-react'
-import MobileBottomNav from '@/components/MobileBottomNav'
+import { BriefcaseBusiness, Clock3, MapPin, Menu, SlidersHorizontal, X } from 'lucide-react'
 import UniversityLogo from '@/components/UniversityLogo'
 
 type RawListing = {
@@ -780,6 +779,7 @@ export default function ListingsPage() {
   const [recentSearches, setRecentSearches] = useState<string[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
 
   const searchBoxRef = useRef<HTMLDivElement>(null)
@@ -979,6 +979,11 @@ export default function ListingsPage() {
     setSortBy('newest')
   }
 
+  function openMobileFilters() {
+    setMobileMenuOpen(false)
+    setMobileFiltersOpen(true)
+  }
+
   function persistRecentSearch(term: string) {
     const cleanTerm = term.trim()
     if (!cleanTerm) return
@@ -1032,7 +1037,7 @@ export default function ListingsPage() {
             </div>
           </Link>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="hidden items-center gap-2 sm:flex sm:gap-3">
             {status === 'authenticated' ? (
               <>
                 <button
@@ -1070,7 +1075,93 @@ export default function ListingsPage() {
               </>
             )}
           </div>
+
+          <div className="flex items-center sm:hidden">
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
+              aria-expanded={mobileMenuOpen}
+              aria-label={mobileMenuOpen ? 'Menuyu kapat' : 'Menuyu ac'}
+              className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/14 bg-white/8 text-[#f7ecd0] transition-colors hover:bg-white/14"
+            >
+              {mobileMenuOpen ? <X size={22} strokeWidth={2.2} /> : <Menu size={22} strokeWidth={2.2} />}
+            </button>
+          </div>
         </div>
+
+        {mobileMenuOpen ? (
+          <div className="mt-3 rounded-[28px] border border-[#d8ad43]/18 bg-[#10223b]/98 p-3 shadow-[0_18px_50px_rgba(7,16,28,0.30)] backdrop-blur sm:hidden">
+            <div className="grid gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false)
+                  router.push('/listings')
+                }}
+                className="rounded-2xl border border-[#f1d27e]/40 bg-[#f1d27e] px-4 py-3 text-sm font-semibold text-[#10223b]"
+              >
+                Ilanlar
+              </button>
+
+              <button
+                type="button"
+                onClick={openMobileFilters}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/6 px-4 py-3 text-sm font-semibold text-[#f7ecd0]"
+              >
+                <SlidersHorizontal size={17} strokeWidth={2.2} />
+                Filtreler
+              </button>
+
+              {status === 'authenticated' ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileMenuOpen(false)
+                      router.push('/dashboard#saved')
+                    }}
+                    className="rounded-2xl border border-white/10 bg-white/6 px-4 py-3 text-sm font-semibold text-[#f7ecd0]"
+                  >
+                    Kaydedilenler
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileMenuOpen(false)
+                      router.push('/dashboard#profile')
+                    }}
+                    className="rounded-2xl border border-white/10 bg-white/6 px-4 py-3 text-sm font-semibold text-[#f7ecd0]"
+                  >
+                    Profil
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileMenuOpen(false)
+                      router.push('/login')
+                    }}
+                    className="rounded-2xl border border-white/14 bg-white/8 px-4 py-3 text-sm font-semibold text-[#f7ecd0]"
+                  >
+                    Giriş Yap
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileMenuOpen(false)
+                      router.push('/register')
+                    }}
+                    className="rounded-2xl border border-[#d8ad43]/40 bg-[#f1d27e] px-4 py-3 text-sm font-bold text-[#10223b]"
+                  >
+                    Kayıt Ol
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        ) : null}
       </nav>
 
       <div className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
@@ -1496,12 +1587,6 @@ export default function ListingsPage() {
           </div>
         </div>
       )}
-
-      <MobileBottomNav
-        current="listings"
-        filterActive={mobileFiltersOpen}
-        onFilterToggle={() => setMobileFiltersOpen((prev) => !prev)}
-      />
     </div>
   )
 }
