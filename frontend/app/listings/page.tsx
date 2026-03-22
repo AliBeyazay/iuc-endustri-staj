@@ -127,6 +127,54 @@ const DISPLAY_PLATFORM_LABELS: Record<string, string> = {
   itu_kariyer: 'İTÜ Kariyer',
 }
 
+const PLATFORM_QUERY_ALIASES: Record<string, string[]> = {
+  linkedin: ['linkedin'],
+  kariyer: ['kariyer', 'kariyer.net', 'kariyernet'],
+  youthall: ['youthall'],
+  anbea: ['anbean', 'anbea', 'anbean kampus', 'anbean kampüs'],
+  boomerang: ['boomerang'],
+  toptalent: ['toptalent', 'top talent'],
+  savunma: ['savunma', 'savunma kariyer'],
+  odtu_kpm: ['odtu', 'odtu kpm', 'odtü', 'odtü kpm'],
+  bogazici_km: ['bogazici', 'bogazici kariyer', 'boğaziçi', 'boğaziçi kariyer'],
+  ytu_orkam: ['ytu', 'ytu orkam', 'ytü', 'ytü orkam'],
+  itu_kariyer: ['itu', 'itu kariyer', 'itü', 'itü kariyer'],
+}
+
+const COMPANY_QUERY_ALIASES: Record<string, string[]> = {
+  aselsan: ['aselsan'],
+  roketsan: ['roketsan'],
+  havelsan: ['havelsan'],
+  turk_hava_yollari: ['thy', 'turk hava yollari', 'tÃ¼rk hava yollarÄ±', 'turkish airlines'],
+  turkcell: ['turkcell'],
+  turkiye_is_bankasi: ['is bankasi', 'iÅŸ bankasÄ±', 'isbank', 'iÅŸbank'],
+  garanti_bbva: ['garanti', 'garanti bbva'],
+  akbank: ['akbank'],
+  yapi_kredi: ['yapi kredi', 'yapÄ± kredi'],
+  tupras: ['tupras', 'tÃ¼praÅŸ'],
+  sisecam: ['sisecam', 'ÅŸiÅŸecam'],
+  arcelik: ['arcelik', 'arÃ§elik'],
+  vestel: ['vestel'],
+  ford_otosan: ['ford otosan'],
+  tofas: ['tofas', 'tofaÅŸ'],
+  toyota: ['toyota'],
+  mercedes_benz_turk: ['mercedes', 'mercedes benz', 'mercedes-benz', 'mercedes benz turk'],
+  bosch: ['bosch'],
+  unilever: ['unilever'],
+  p_and_g: ['p&g', 'pg', 'procter and gamble', 'procter & gamble'],
+  coca_cola_icecek: ['coca cola', 'coca-cola', 'coca cola icecek', 'coca cola iÃ§ecek', 'cci'],
+  pepsico: ['pepsico', 'pepsi'],
+  trendyol: ['trendyol'],
+  hepsiburada: ['hepsiburada', 'hepsi burada'],
+  getir: ['getir'],
+  amazon: ['amazon'],
+  migros: ['migros'],
+}
+
+const COMPANY_QUERY_LABELS: Record<string, string> = Object.fromEntries(
+  Object.keys(COMPANY_QUERY_ALIASES).map((key) => [key, key.replace(/_/g, ' ')]),
+) as Record<string, string>
+
 function formatDate(value?: string | null) {
   if (!value) return 'Belirtilmedi'
   const date = new Date(value)
@@ -180,6 +228,105 @@ function getMatchedPlatformKeys(query: string) {
   return Object.entries(DISPLAY_PLATFORM_LABELS)
     .filter(([, label]) => normalizeSearchValue(label).includes(normalizedQuery))
     .map(([key]) => key)
+}
+
+function tokenizeNormalizedSearchValue(value: string) {
+  return normalizeSearchValue(value)
+    .replace(/[^a-z0-9]+/g, ' ')
+    .split(' ')
+    .map((token) => token.trim())
+    .filter((token) => token.length >= 2)
+}
+
+function getQueryMatches(
+  query: string,
+  labels: Record<string, string>,
+  aliasMap: Record<string, string[]> = {},
+) {
+  const normalizedQuery = normalizeSearchValue(query)
+  const queryTokens = tokenizeNormalizedSearchValue(query)
+  if (!normalizedQuery && queryTokens.length === 0) return []
+
+  return Object.entries(labels)
+    .filter(([key, label]) => {
+      const candidates = [
+        normalizeSearchValue(label),
+        ...(aliasMap[key] ?? []).map((alias) => normalizeSearchValue(alias)),
+      ]
+
+      return candidates.some((candidate) => {
+        if (normalizedQuery && candidate.includes(normalizedQuery)) {
+          return true
+        }
+
+        return queryTokens.some((token) => candidate.includes(token) || token.includes(candidate))
+      })
+    })
+    .map(([key]) => key)
+}
+
+function getSmartMatchedSectorKeys(query: string) {
+  return getQueryMatches(query, DISPLAY_SECTOR_LABELS)
+}
+
+function getSmartMatchedPlatformKeys(query: string) {
+  return getQueryMatches(query, DISPLAY_PLATFORM_LABELS, PLATFORM_QUERY_ALIASES)
+}
+
+function getIgnoredQueryTokens(
+  keys: string[],
+  labels: Record<string, string>,
+  aliasMap: Record<string, string[]> = {},
+) {
+  const tokens = new Set<string>()
+
+  keys.forEach((key) => {
+    const values = [labels[key], ...(aliasMap[key] ?? [])].filter(Boolean)
+    values.forEach((value) => {
+      tokenizeNormalizedSearchValue(value).forEach((token) => {
+        if (token.length >= 3) {
+          tokens.add(token)
+        }
+      })
+    })
+  })
+
+  return tokens
+}
+
+function extractSmartSearchIntent(query: string) {
+  const sectorKeys = getSmartMatchedSectorKeys(query)
+  const platformKeys = getSmartMatchedPlatformKeys(query)
+  const companyKeys = getQueryMatches(query, COMPANY_QUERY_LABELS, COMPANY_QUERY_ALIASES)
+  const ignoredTokens = new Set<string>([
+    ...getIgnoredQueryTokens(sectorKeys, DISPLAY_SECTOR_LABELS),
+    ...getIgnoredQueryTokens(platformKeys, DISPLAY_PLATFORM_LABELS, PLATFORM_QUERY_ALIASES),
+    ...getIgnoredQueryTokens(companyKeys, COMPANY_QUERY_LABELS, COMPANY_QUERY_ALIASES),
+  ])
+
+  const searchTokens = query
+    .split(/\s+/)
+    .map((token) => token.trim())
+    .filter(Boolean)
+    .filter((token) => {
+      const normalizedToken = normalizeSearchValue(token)
+      return normalizedToken.length < 3 || !ignoredTokens.has(normalizedToken)
+    })
+  companyKeys.forEach((key) => {
+    tokenizeNormalizedSearchValue(COMPANY_QUERY_LABELS[key]).forEach((token) => {
+      if (!searchTokens.some((searchToken) => normalizeSearchValue(searchToken) === token)) {
+        searchTokens.push(token)
+      }
+    })
+  })
+
+  return {
+    sectorKeys,
+    platformKeys,
+    companyKeys,
+    rawTokens: tokenizeNormalizedSearchValue(query),
+    searchText: searchTokens.join(' ').trim(),
+  }
 }
 
 function cleanSummaryText(raw?: string | null) {
@@ -351,23 +498,29 @@ function buildListingsApiQuery(params: {
   searchParams.set('page', String(params.page))
   searchParams.set('ordering', getOrderingValue(params.sortBy))
 
-  if (params.query.trim()) {
-    searchParams.set('search', params.query.trim())
+  const queryIntent = extractSmartSearchIntent(params.query)
+
+  if (queryIntent.searchText) {
+    searchParams.set('search', queryIntent.searchText)
   }
 
-  const queryMatchedSectorKeys = getMatchedSectorKeys(params.query)
-  const queryMatchedPlatformKeys = getMatchedPlatformKeys(params.query)
+  const sectorKeys = new Set<string>()
+  const platformKeys = new Set<string>()
 
   params.selectedSectors.forEach((sectorLabel) => {
     const sectorKey = Object.entries(DISPLAY_SECTOR_LABELS).find(
       ([, value]) => value === sectorLabel,
     )?.[0]
     if (sectorKey) {
-      searchParams.append('em_focus_area', sectorKey)
+      sectorKeys.add(sectorKey)
     }
   })
 
-  queryMatchedSectorKeys.forEach((sectorKey) => {
+  queryIntent.sectorKeys.forEach((sectorKey) => {
+    sectorKeys.add(sectorKey)
+  })
+
+  sectorKeys.forEach((sectorKey) => {
     searchParams.append('em_focus_area', sectorKey)
   })
 
@@ -376,11 +529,15 @@ function buildListingsApiQuery(params: {
       ([, value]) => value === platformLabel,
     )?.[0]
     if (platformKey) {
-      searchParams.append('source_platform', platformKey)
+      platformKeys.add(platformKey)
     }
   })
 
-  queryMatchedPlatformKeys.forEach((platformKey) => {
+  queryIntent.platformKeys.forEach((platformKey) => {
+    platformKeys.add(platformKey)
+  })
+
+  platformKeys.forEach((platformKey) => {
     searchParams.append('source_platform', platformKey)
   })
 
@@ -391,20 +548,139 @@ function buildListingsApiQuery(params: {
   return searchParams.toString()
 }
 
+function rankListingsBySearch(listings: Listing[], query: string) {
+  const queryIntent = extractSmartSearchIntent(query)
+  const hasSearchIntent =
+    queryIntent.rawTokens.length > 0 ||
+    queryIntent.companyKeys.length > 0 ||
+    queryIntent.platformKeys.length > 0 ||
+    queryIntent.sectorKeys.length > 0
+
+  if (!hasSearchIntent) {
+    return listings
+  }
+
+  const normalizedSearchText = normalizeSearchValue(queryIntent.searchText)
+
+  return [...listings].sort((left, right) => {
+    const scoreLeft = getListingSearchScore(left, queryIntent, normalizedSearchText)
+    const scoreRight = getListingSearchScore(right, queryIntent, normalizedSearchText)
+
+    if (scoreRight !== scoreLeft) {
+      return scoreRight - scoreLeft
+    }
+
+    return (right.created_at ?? '').localeCompare(left.created_at ?? '')
+  })
+}
+
+function getListingSearchScore(
+  listing: Listing,
+  queryIntent: ReturnType<typeof extractSmartSearchIntent>,
+  normalizedSearchText: string,
+) {
+  const title = normalizeSearchValue(listing.title)
+  const company = normalizeSearchValue(listing.company_name)
+  const location = normalizeSearchValue(`${listing.location ?? ''} ${listing.city ?? ''}`)
+  const platform = normalizeSearchValue(
+    listing.source_platform_label ?? listing.source_platform ?? '',
+  )
+  const sector = normalizeSearchValue(`${listing.sector ?? ''} ${listing.secondary_sector ?? ''}`)
+  const description = normalizeSearchValue(listing.description ?? '')
+  const companyAndTitle = `${company} ${title}`
+
+  let score = 0
+  let matchedTokenCount = 0
+
+  queryIntent.companyKeys.forEach((companyKey) => {
+    const canonicalCompany = normalizeSearchValue(COMPANY_QUERY_LABELS[companyKey] ?? '')
+    if (canonicalCompany && company.includes(canonicalCompany)) {
+      score += 140
+    } else if (canonicalCompany && companyAndTitle.includes(canonicalCompany)) {
+      score += 90
+    }
+  })
+
+  queryIntent.platformKeys.forEach((platformKey) => {
+    const platformLabel = normalizeSearchValue(DISPLAY_PLATFORM_LABELS[platformKey] ?? platformKey)
+    if (platform.includes(platformLabel)) {
+      score += 70
+    }
+  })
+
+  queryIntent.sectorKeys.forEach((sectorKey) => {
+    const sectorLabel = normalizeSearchValue(DISPLAY_SECTOR_LABELS[sectorKey] ?? sectorKey)
+    if (sector.includes(sectorLabel)) {
+      score += 60
+    }
+  })
+
+  queryIntent.rawTokens.forEach((token) => {
+    if (title.includes(token)) {
+      score += 28
+      matchedTokenCount += 1
+      return
+    }
+    if (company.includes(token)) {
+      score += 24
+      matchedTokenCount += 1
+      return
+    }
+    if (platform.includes(token) || sector.includes(token)) {
+      score += 14
+      matchedTokenCount += 1
+      return
+    }
+    if (location.includes(token)) {
+      score += 10
+      matchedTokenCount += 1
+      return
+    }
+    if (description.includes(token)) {
+      score += 4
+      matchedTokenCount += 1
+    }
+  })
+
+  if (queryIntent.rawTokens.length > 1 && matchedTokenCount === queryIntent.rawTokens.length) {
+    score += 40
+  }
+
+  if (normalizedSearchText) {
+    if (title.includes(normalizedSearchText)) {
+      score += 95
+    }
+    if (company.includes(normalizedSearchText)) {
+      score += 80
+    }
+    if (companyAndTitle.includes(normalizedSearchText)) {
+      score += 55
+    }
+  }
+
+  return score
+}
+
 type FilterPanelProps = {
   sectors: string[]
+  platforms: string[]
   selectedSectors: string[]
+  selectedPlatforms: string[]
   talentOnly: boolean
   onToggleSector: (value: string) => void
+  onTogglePlatform: (value: string) => void
   onToggleTalent: () => void
   onClearAll: () => void
 }
 
 function FilterPanel({
   sectors,
+  platforms,
   selectedSectors,
+  selectedPlatforms,
   talentOnly,
   onToggleSector,
+  onTogglePlatform,
   onToggleTalent,
   onClearAll,
 }: FilterPanelProps) {
@@ -433,6 +709,30 @@ function FilterPanel({
             )
           })}
           </div>
+        </div>
+      </section>
+
+      <section>
+        <h3 className="mb-3 text-sm font-semibold text-[#132843]">Platform</h3>
+        <div className="flex flex-col gap-2">
+          {platforms.map((platform) => {
+            const active = selectedPlatforms.includes(platform)
+            return (
+              <button
+                key={platform}
+                type="button"
+                onClick={() => onTogglePlatform(platform)}
+                className={classNames(
+                  'w-full rounded-full border px-3 py-2 text-left text-xs font-medium transition',
+                  active
+                    ? 'border-violet-200 bg-violet-50 text-violet-700'
+                    : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50',
+                )}
+              >
+                {platform}
+              </button>
+            )
+          })}
         </div>
       </section>
 
@@ -521,7 +821,8 @@ export default function ListingsPage() {
           : Array.isArray(data?.results)
             ? data.results
             : []
-        setListings(items.map(normalizeListing))
+        const normalizedItems = items.map(normalizeListing)
+        setListings(rankListingsBySearch(normalizedItems, debouncedQuery))
         setTotalCount(Array.isArray(data) ? items.length : Number(data?.count ?? items.length))
       } catch (loadError) {
         setError(loadError instanceof Error ? loadError.message : 'Beklenmeyen hata oluştu.')
@@ -564,28 +865,36 @@ export default function ListingsPage() {
   )
 
   const autocompleteSuggestions = useMemo(() => {
-    const currentQuery = query.trim().toLowerCase()
-    if (!currentQuery) return []
+    const normalizedQuery = normalizeSearchValue(query)
+    if (!normalizedQuery) return []
 
     const matches = new Set<string>()
 
     sectors.forEach((sector) => {
-      if (normalizeSearchValue(sector).includes(normalizeSearchValue(currentQuery))) {
+      if (normalizeSearchValue(sector).includes(normalizedQuery)) {
         matches.add(sector)
       }
     })
 
     platforms.forEach((platform) => {
-      if (normalizeSearchValue(platform).includes(normalizeSearchValue(currentQuery))) {
+      if (normalizeSearchValue(platform).includes(normalizedQuery)) {
         matches.add(platform)
       }
     })
 
     listings.forEach((item) => {
-      if (item.company_name.toLowerCase().includes(currentQuery)) matches.add(item.company_name)
-      if (item.title.toLowerCase().includes(currentQuery)) matches.add(item.title)
-      if (item.location?.toLowerCase().includes(currentQuery)) matches.add(item.location)
-      if (item.city?.toLowerCase().includes(currentQuery)) matches.add(item.city)
+      if (normalizeSearchValue(item.company_name).includes(normalizedQuery)) {
+        matches.add(item.company_name)
+      }
+      if (normalizeSearchValue(item.title).includes(normalizedQuery)) {
+        matches.add(item.title)
+      }
+      if (item.location && normalizeSearchValue(item.location).includes(normalizedQuery)) {
+        matches.add(item.location)
+      }
+      if (item.city && normalizeSearchValue(item.city).includes(normalizedQuery)) {
+        matches.add(item.city)
+      }
     })
 
     return Array.from(matches).slice(0, 8)
@@ -709,7 +1018,7 @@ export default function ListingsPage() {
 
   return (
     <div className="campus-shell flex min-h-screen flex-col pb-24 lg:pb-0">
-      <nav className="campus-nav shrink-0 px-4 py-3 sm:px-5">
+      <nav className="campus-nav sticky top-0 z-50 shrink-0 px-4 py-3 sm:px-5">
         <div className="flex items-center justify-between gap-3">
           <Link href="/listings" className="flex min-w-0 items-center gap-3">
             <UniversityLogo className="h-11 w-11 shrink-0 sm:h-12 sm:w-12" />
@@ -974,9 +1283,14 @@ export default function ListingsPage() {
             <div className="sticky top-6 rounded-[32px] border border-[#d8ad43]/16 bg-white/72 p-5 shadow-[0_24px_60px_rgba(18,40,67,0.08)] backdrop-blur">
               <FilterPanel
                 sectors={sectors}
+                platforms={platforms}
                 selectedSectors={selectedSectors}
+                selectedPlatforms={selectedPlatforms}
                 talentOnly={talentOnly}
                 onToggleSector={(value) => toggleItem(value, selectedSectors, setSelectedSectors)}
+                onTogglePlatform={(value) =>
+                  toggleItem(value, selectedPlatforms, setSelectedPlatforms)
+                }
                 onToggleTalent={() => setTalentOnly((prev) => !prev)}
                 onClearAll={clearAllFilters}
               />
@@ -1047,19 +1361,19 @@ export default function ListingsPage() {
                       className="group cursor-pointer rounded-[28px] border border-[#e9edf5] bg-white px-4 py-4 shadow-[0_14px_34px_rgba(15,23,42,0.06)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_22px_46px_rgba(15,23,42,0.1)]"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="flex h-[60px] w-[60px] shrink-0 items-center justify-center rounded-[18px] border border-[#dde4f0] bg-white shadow-[0_6px_18px_rgba(15,23,42,0.03)]">
+                        <div className="flex h-[78px] w-[78px] shrink-0 items-center justify-center rounded-[22px] border border-[#dde4f0] bg-white shadow-[0_8px_22px_rgba(15,23,42,0.05)]">
                           {item.company_logo_url ? (
                             <img
                               src={item.company_logo_url}
                               alt={item.company_name}
-                              className="h-8 w-8 object-contain"
+                              className="h-12 w-12 object-contain"
                               loading="lazy"
                               referrerPolicy="no-referrer"
                             />
                           ) : (
                             <div
                               className={classNames(
-                                'flex h-[42px] w-[42px] items-center justify-center rounded-[14px] border bg-gradient-to-br text-[13px] font-semibold tracking-[0.08em] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]',
+                                'flex h-[56px] w-[56px] items-center justify-center rounded-[18px] border bg-gradient-to-br text-[15px] font-semibold tracking-[0.08em] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]',
                                 getCompanyMonogramStyle(item.company_name),
                               )}
                             >
@@ -1160,9 +1474,14 @@ export default function ListingsPage() {
 
             <FilterPanel
               sectors={sectors}
+              platforms={platforms}
               selectedSectors={selectedSectors}
+              selectedPlatforms={selectedPlatforms}
               talentOnly={talentOnly}
               onToggleSector={(value) => toggleItem(value, selectedSectors, setSelectedSectors)}
+              onTogglePlatform={(value) =>
+                toggleItem(value, selectedPlatforms, setSelectedPlatforms)
+              }
               onToggleTalent={() => setTalentOnly((prev) => !prev)}
               onClearAll={clearAllFilters}
             />
