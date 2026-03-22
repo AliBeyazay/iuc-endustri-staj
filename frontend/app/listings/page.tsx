@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { BriefcaseBusiness, Clock3, MapPin, Menu, SlidersHorizontal, X } from 'lucide-react'
+import { BriefcaseBusiness, Clock3, MapPin, Menu, X } from 'lucide-react'
 import UniversityLogo from '@/components/UniversityLogo'
 
 type RawListing = {
@@ -979,11 +979,6 @@ export default function ListingsPage() {
     setSortBy('newest')
   }
 
-  function openMobileFilters() {
-    setMobileMenuOpen(false)
-    setMobileFiltersOpen(true)
-  }
-
   function persistRecentSearch(term: string) {
     const cleanTerm = term.trim()
     if (!cleanTerm) return
@@ -1101,15 +1096,6 @@ export default function ListingsPage() {
                 className="rounded-2xl border border-[#f1d27e]/40 bg-[#f1d27e] px-4 py-3 text-sm font-semibold text-[#10223b]"
               >
                 Ilanlar
-              </button>
-
-              <button
-                type="button"
-                onClick={openMobileFilters}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/6 px-4 py-3 text-sm font-semibold text-[#f7ecd0]"
-              >
-                <SlidersHorizontal size={17} strokeWidth={2.2} />
-                Filtreler
               </button>
 
               {status === 'authenticated' ? (
