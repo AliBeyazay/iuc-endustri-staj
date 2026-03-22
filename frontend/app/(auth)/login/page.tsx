@@ -25,6 +25,7 @@ function LoginPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [serverError, setServerError] = useState('')
+  const [statusMessage, setStatusMessage] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [pendingVerification, setPendingVerification] = useState<{
     email: string
@@ -53,30 +54,37 @@ function LoginPageContent() {
   })
 
   async function completeLogin(email: string, password: string) {
-    const response = await signIn('credentials', {
-      email,
-      password,
-      redirect: false,
-      callbackUrl,
-    })
+    try {
+      const response = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+        callbackUrl,
+      })
 
-    if (response?.error) {
-      setServerError(ERROR_MAP[response.error] ?? 'Bir hata olustu, tekrar deneyin')
+      if (response?.error) {
+        setServerError(ERROR_MAP[response.error] ?? 'Bir hata olustu, tekrar deneyin')
+        return false
+      }
+
+      if (!response?.ok) {
+        setServerError('Giris tamamlanamadi. Bilgilerini kontrol edip tekrar dene.')
+        return false
+      }
+
+      setStatusMessage('Giris basarili. Yonlendiriliyorsun...')
+
+      const session = await getSession()
+      if (session?.access_token) {
+        document.cookie = `access_token=${encodeURIComponent(session.access_token)}; Path=/; SameSite=Lax`
+      }
+
+      window.location.assign(response?.url ?? callbackUrl)
+      return true
+    } catch {
+      setServerError('Giris istegi basarisiz oldu. Lutfen biraz sonra tekrar dene.')
       return false
     }
-
-    if (!response?.ok) {
-      setServerError('Giris tamamlanamadi. Bilgilerini kontrol edip tekrar dene.')
-      return false
-    }
-
-    const session = await getSession()
-    if (session?.access_token) {
-      document.cookie = `access_token=${encodeURIComponent(session.access_token)}; Path=/; SameSite=Lax`
-    }
-
-    window.location.assign(response?.url ?? callbackUrl)
-    return true
   }
 
   async function startVerificationFlow(email: string, password: string) {
@@ -104,6 +112,7 @@ function LoginPageContent() {
 
   async function onSubmit(data: Form) {
     setServerError('')
+    setStatusMessage('Bilgiler kontrol ediliyor...')
     setVerificationMessage('')
     const normalizedEmail = normalizeIucEmail(data.email)
 
@@ -111,11 +120,13 @@ function LoginPageContent() {
       const accountStatus = await fetchAccountStatus(normalizedEmail)
       if (!accountStatus.exists) {
         setPendingVerification(null)
+        setStatusMessage('')
         setServerError('Bu e-posta ile kayitli bir hesap bulunamadi')
         return
       }
 
       if (!accountStatus.is_verified) {
+        setStatusMessage('')
         setServerError('Hesabin kayitli ama e-posta dogrulaman tamamlanmamis. Asagidaki kodla girisi tamamlayabilirsin.')
         await startVerificationFlow(normalizedEmail, data.password)
         if (accountStatus.debug_otp) {
@@ -127,7 +138,7 @@ function LoginPageContent() {
         return
       }
     } catch {
-      // Hesap durumu kontrolu gecici olarak basarisiz olsa da girisi dene.
+      setStatusMessage('Hesap durumu kontrol edilemedi, dogrudan giris deneniyor...')
     }
 
     setPendingVerification(null)
@@ -172,6 +183,12 @@ function LoginPageContent() {
       {registered ? (
         <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-xs text-emerald-800">
           Kaydiniz basariyla olusturuldu.
+        </div>
+      ) : null}
+
+      {statusMessage ? (
+        <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5 text-xs text-blue-800">
+          {statusMessage}
         </div>
       ) : null}
 
