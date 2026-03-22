@@ -182,8 +182,15 @@ export async function checkEmailAvailable(email: string): Promise<boolean> {
 export async function fetchAccountStatus(email: string): Promise<{
   exists: boolean
   is_verified: boolean
+  debug_otp?: string
+  delivery_method?: string
 }> {
-  return postPublicAuth<{ exists: boolean; is_verified: boolean }>(
+  return postPublicAuth<{
+    exists: boolean
+    is_verified: boolean
+    debug_otp?: string
+    delivery_method?: string
+  }>(
     '/auth/account-status/', { email: normalizeIucEmail(email) }
   )
 }

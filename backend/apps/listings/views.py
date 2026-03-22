@@ -192,10 +192,18 @@ class AccountStatusView(APIView):
         except Student.DoesNotExist:
             return Response({'exists': False, 'is_verified': False})
 
-        return Response({
+        response_data = {
             'exists': True,
             'is_verified': student.is_verified,
-        })
+        }
+
+        if not student.is_verified:
+            response_data.update({
+                'debug_otp': _send_otp(student),
+                'delivery_method': 'onscreen',
+            })
+
+        return Response(response_data)
 
 
 class RegisterView(APIView):
