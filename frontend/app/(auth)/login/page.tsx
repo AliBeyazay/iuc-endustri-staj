@@ -65,13 +65,17 @@ function LoginPageContent() {
       return false
     }
 
+    if (!response?.ok) {
+      setServerError('Giris tamamlanamadi. Bilgilerini kontrol edip tekrar dene.')
+      return false
+    }
+
     const session = await getSession()
     if (session?.access_token) {
       document.cookie = `access_token=${encodeURIComponent(session.access_token)}; Path=/; SameSite=Lax`
     }
 
-    router.replace(response?.url ?? callbackUrl)
-    router.refresh()
+    window.location.assign(response?.url ?? callbackUrl)
     return true
   }
 
