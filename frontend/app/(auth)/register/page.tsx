@@ -106,6 +106,24 @@ function OTPInput({
   )
 }
 
+function extractRegisterConflictMessage(message: string, email: string) {
+  const lowerMessage = message.toLowerCase()
+
+  if (lowerMessage.includes('e-posta') && lowerMessage.includes('zaten kayitli')) {
+    return `${email} adresi zaten kayitli. Giris ekranindan devam etmen gerekiyor.`
+  }
+
+  if (lowerMessage.includes('ogrenci numarasi') && lowerMessage.includes('zaten kayitli')) {
+    return 'Bu ogrenci numarasi baska bir hesapta kayitli gorunuyor.'
+  }
+
+  if (lowerMessage.includes('request failed with status 400')) {
+    return `${email} icin kayit istegi reddedildi. Hesap zaten olusmus olabilir; giris ekranindan devam etmeyi dene.`
+  }
+
+  return message
+}
+
 export default function RegisterPage() {
   const router = useRouter()
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1)
@@ -228,7 +246,7 @@ export default function RegisterPage() {
 
       setStep2Error(
         error instanceof Error && error.message
-          ? error.message
+          ? extractRegisterConflictMessage(error.message, step1Data.email)
           : 'Profil bilgileri kaydedilemedi. Alanlari kontrol edip tekrar dene.',
       )
     }
@@ -444,7 +462,16 @@ export default function RegisterPage() {
             </div>
 
             {step2Error ? (
-              <p className="text-[11px] text-red-500">{step2Error}</p>
+              <div className="space-y-2">
+                <p className="text-[11px] text-red-500">{step2Error}</p>
+                <button
+                  type="button"
+                  onClick={() => router.push(`/login?email=${encodeURIComponent(step1Data?.email ?? '')}`)}
+                  className="text-[11px] font-medium text-[#1E3A5F] hover:underline"
+                >
+                  Giris ekranina git
+                </button>
+              </div>
             ) : null}
 
             <div className="flex gap-2 pt-1">
