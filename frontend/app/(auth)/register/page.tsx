@@ -164,9 +164,13 @@ export default function RegisterPage() {
       setStep1Status('')
       setStep1Data(data)
       setStep(2)
-    } catch {
+    } catch (error) {
       setStep1Status('')
-      setStep1Error('Kayit kontrolu su an tamamlanamadi. Lutfen tekrar dene.')
+      setStep1Error(
+        error instanceof Error && error.message
+          ? error.message
+          : 'Kayit kontrolu su an tamamlanamadi. Lutfen tekrar dene.',
+      )
     }
   }
 
@@ -191,8 +195,12 @@ export default function RegisterPage() {
       applyRegisterResponse(result)
       startResendTimer()
       setStep(3)
-    } catch {
-      setStep2Error('Profil bilgileri kaydedilemedi. Alanlari kontrol edip tekrar dene.')
+    } catch (error) {
+      setStep2Error(
+        error instanceof Error && error.message
+          ? error.message
+          : 'Profil bilgileri kaydedilemedi. Alanlari kontrol edip tekrar dene.',
+      )
     }
   }
 
