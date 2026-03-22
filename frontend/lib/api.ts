@@ -33,10 +33,20 @@ async function postPublicAuth<T>(path: string, payload: unknown): Promise<T> {
   })
 
   const text = await response.text()
-  const data = text ? JSON.parse(text) : null
+  const isJson = response.headers.get('content-type')?.includes('application/json')
+  const data = text && isJson ? JSON.parse(text) : null
 
   if (!response.ok) {
-    throw new Error(data?.error || data?.detail || `Request failed with status ${response.status}`)
+    throw new Error(
+      data?.error ||
+        data?.detail ||
+        (text && !isJson ? 'Sunucu beklenmeyen bir yanit dondurdu.' : '') ||
+        `Request failed with status ${response.status}`,
+    )
+  }
+
+  if (!isJson) {
+    throw new Error('Sunucu beklenmeyen bir yanit dondurdu.')
   }
 
   return data as T
