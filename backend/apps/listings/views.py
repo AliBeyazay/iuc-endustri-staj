@@ -6,6 +6,7 @@ from datetime import date, timedelta
 
 from django.conf import settings
 from django.core.cache import cache
+from django.core.mail import send_mail
 from django.db.models import Avg
 from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
@@ -176,9 +177,25 @@ class CheckEmailView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        email = request.data.get('email', '')
-        available = not Student.objects.filter(iuc_email=email).exists()
+        email = (request.data.get('email', '') or '').strip().lower()
+        available = not Student.objects.filter(iuc_email__iexact=email).exists()
         return Response({'available': available})
+
+
+class AccountStatusView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        email = (request.data.get('email', '') or '').strip().lower()
+        try:
+            student = Student.objects.get(iuc_email__iexact=email)
+        except Student.DoesNotExist:
+            return Response({'exists': False, 'is_verified': False})
+
+        return Response({
+            'exists': True,
+            'is_verified': student.is_verified,
+        })
 
 
 class RegisterView(APIView):
@@ -215,10 +232,10 @@ class VerifyOTPView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        email = request.data.get('email')
+        email = (request.data.get('email') or '').strip().lower()
         otp = request.data.get('otp')
         try:
-            student = Student.objects.get(iuc_email=email)
+            student = Student.objects.get(iuc_email__iexact=email)
         except Student.DoesNotExist:
             return Response({'error': 'Kullanici bulunamadi.'}, status=404)
 
@@ -234,9 +251,9 @@ class ResendOTPView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        email = request.data.get('email')
+        email = (request.data.get('email') or '').strip().lower()
         try:
-            student = Student.objects.get(iuc_email=email)
+            student = Student.objects.get(iuc_email__iexact=email)
         except Student.DoesNotExist:
             return Response({'error': 'Kullanici bulunamadi.'}, status=404)
 
@@ -253,9 +270,9 @@ class ForgotPasswordView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        email = request.data.get('email')
+        email = (request.data.get('email') or '').strip().lower()
         try:
-            student = Student.objects.get(iuc_email=email)
+            student = Student.objects.get(iuc_email__iexact=email)
             _send_password_reset(student)
         except Student.DoesNotExist:
             pass

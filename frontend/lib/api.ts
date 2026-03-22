@@ -15,6 +15,10 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 })
 
+export function normalizeIucEmail(email: string) {
+  return email.trim().toLowerCase()
+}
+
 function getAccessTokenFromCookie() {
   if (typeof document === 'undefined') {
     return null
@@ -147,9 +151,19 @@ export async function uploadCV(file: File): Promise<{ cv_url: string }> {
 
 export async function checkEmailAvailable(email: string): Promise<boolean> {
   const { data } = await api.post<{ available: boolean }>(
-    '/auth/check-email', { email }
+    '/auth/check-email', { email: normalizeIucEmail(email) }
   )
   return data.available
+}
+
+export async function fetchAccountStatus(email: string): Promise<{
+  exists: boolean
+  is_verified: boolean
+}> {
+  const { data } = await api.post<{ exists: boolean; is_verified: boolean }>(
+    '/auth/account-status', { email: normalizeIucEmail(email) }
+  )
+  return data
 }
 
 export async function registerUser(payload: {
@@ -160,23 +174,26 @@ export async function registerUser(payload: {
   department_year: number
   linkedin_url?: string
 }): Promise<{ delivery_method?: string; debug_otp?: string }> {
-  const { data } = await api.post('/auth/register', payload)
+  const { data } = await api.post('/auth/register', {
+    ...payload,
+    email: normalizeIucEmail(payload.email),
+  })
   return data
 }
 
 export async function verifyOTP(email: string, otp: string): Promise<void> {
-  await api.post('/auth/verify-otp', { email, otp })
+  await api.post('/auth/verify-otp', { email: normalizeIucEmail(email), otp })
 }
 
 export async function resendOTP(
   email: string
 ): Promise<{ delivery_method?: string; debug_otp?: string }> {
-  const { data } = await api.post('/auth/resend-otp', { email })
+  const { data } = await api.post('/auth/resend-otp', { email: normalizeIucEmail(email) })
   return data
 }
 
 export async function forgotPassword(email: string): Promise<void> {
-  await api.post('/auth/forgot-password', { email })
+  await api.post('/auth/forgot-password', { email: normalizeIucEmail(email) })
 }
 
 export async function resetPassword(

@@ -23,14 +23,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
+        const normalizedEmail = String(credentials.email).trim().toLowerCase()
 
         try {
           const res = await fetch(`${API_URL}/auth/login/`, {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
             body:    JSON.stringify({
-              email:     credentials.email,
-              iuc_email: credentials.email,
+              email:     normalizedEmail,
+              iuc_email: normalizedEmail,
               password: credentials.password,
             }),
           })

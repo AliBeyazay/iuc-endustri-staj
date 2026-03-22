@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     ListingViewSet, ReviewViewSet, BookmarkViewSet,
     ProfileView, CVUploadView, DashboardStatsView,
-    CheckEmailView, RegisterView, VerifyOTPView,
+    CheckEmailView, AccountStatusView, RegisterView, VerifyOTPView,
     ResendOTPView, ForgotPasswordView, ResetPasswordView,
 )
 
@@ -24,6 +24,7 @@ urlpatterns = [
 
     # Auth
     path('auth/check-email/',       CheckEmailView.as_view()),
+    path('auth/account-status/',    AccountStatusView.as_view()),
     path('auth/register/',          RegisterView.as_view()),
     path('auth/verify-otp/',        VerifyOTPView.as_view()),
     path('auth/resend-otp/',        ResendOTPView.as_view()),

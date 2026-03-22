@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework.exceptions import AuthenticationFailed
 
 from .models import Bookmark, Listing, Review, Student
 
@@ -106,11 +107,12 @@ class RegisterSerializer(serializers.Serializer):
     linkedin_url = serializers.URLField(required=False, allow_blank=True)
 
     def validate_email(self, value):
+        value = value.strip().lower()
         if not (value.endswith('@ogr.iuc.edu.tr') or value.endswith('@iuc.edu.tr')):
             raise serializers.ValidationError(
                 'Sadece @ogr.iuc.edu.tr veya @iuc.edu.tr adresleri kabul edilir.'
             )
-        if Student.objects.filter(iuc_email=value).exists():
+        if Student.objects.filter(iuc_email__iexact=value).exists():
             raise serializers.ValidationError('Bu e-posta zaten kayitli.')
         return value
 
@@ -124,11 +126,14 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         self.fields['password'] = serializers.CharField(write_only=True)
 
     def validate(self, attrs):
+        email = (attrs.get('email') or '').strip().lower()
         credentials = {
-            Student.USERNAME_FIELD: attrs.get('email'),
+            Student.USERNAME_FIELD: email,
             'password': attrs.get('password'),
         }
         data = super().validate(credentials)
+        if not self.user.is_verified:
+            raise AuthenticationFailed('E-posta adresi henuz dogrulanmadi.')
         data['user'] = {
             'id': str(self.user.id),
             'full_name': f'{self.user.first_name} {self.user.last_name}'.strip(),

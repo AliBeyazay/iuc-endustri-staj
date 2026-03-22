@@ -7,13 +7,19 @@ import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 
-import { checkEmailAvailable, registerUser, resendOTP, verifyOTP } from '@/lib/api'
+import {
+  checkEmailAvailable,
+  fetchAccountStatus,
+  registerUser,
+  resendOTP,
+  verifyOTP,
+} from '@/lib/api'
 
 const step1Schema = z.object({
   full_name: z.string().min(3, 'Ad soyad en az 3 karakter olmali.'),
   email: z.string().email().refine(
-    (value) => value.endsWith('@ogr.iuc.edu.tr'),
-    'Sadece @ogr.iuc.edu.tr uzantili e-posta kabul edilir.'
+    (value) => value.endsWith('@ogr.iuc.edu.tr') || value.endsWith('@iuc.edu.tr'),
+    'Sadece @ogr.iuc.edu.tr veya @iuc.edu.tr uzantili e-posta kabul edilir.'
   ),
   password: z.string().min(8, 'Sifre en az 8 karakter olmali.'),
   password_confirm: z.string(),
@@ -108,6 +114,9 @@ export default function RegisterPage() {
   const [resendCountdown, setResendCountdown] = useState(0)
   const [selectedYear, setSelectedYear] = useState(3)
   const [onscreenOtp, setOnscreenOtp] = useState('')
+  const [step2Error, setStep2Error] = useState('')
+  const [step1Info, setStep1Info] = useState('')
+  const [existingUnverifiedEmail, setExistingUnverifiedEmail] = useState('')
 
   const form1 = useForm<Step1>({ resolver: zodResolver(step1Schema) })
   const form2 = useForm<Step2>({
@@ -120,6 +129,24 @@ export default function RegisterPage() {
   }
 
   async function onStep1(data: Step1) {
+    setStep2Error('')
+    setStep1Info('')
+    setExistingUnverifiedEmail('')
+
+    const accountStatus = await fetchAccountStatus(data.email)
+    if (accountStatus.exists) {
+      if (accountStatus.is_verified) {
+        form1.setError('email', { message: 'Bu e-posta zaten kayitli.' })
+      } else {
+        setExistingUnverifiedEmail(data.email)
+        form1.setError('email', {
+          message: 'Bu hesap kayitli ama e-posta dogrulamasi tamamlanmamis.',
+        })
+        setStep1Info('Giris ekranina gecip dogrulama kodunu yeniden olusturabilirsin.')
+      }
+      return
+    }
+
     const available = await checkEmailAvailable(data.email)
     if (!available) {
       form1.setError('email', { message: 'Bu e-posta zaten kayitli.' })
@@ -133,18 +160,24 @@ export default function RegisterPage() {
   async function onStep2(data: Step2) {
     if (!step1Data) return
 
-    const result = await registerUser({
-      full_name: step1Data.full_name,
-      email: step1Data.email,
-      password: step1Data.password,
-      student_no: data.student_no,
-      department_year: selectedYear,
-      linkedin_url: data.linkedin_url,
-    })
+    setStep2Error('')
 
-    applyRegisterResponse(result)
-    startResendTimer()
-    setStep(3)
+    try {
+      const result = await registerUser({
+        full_name: step1Data.full_name,
+        email: step1Data.email,
+        password: step1Data.password,
+        student_no: data.student_no,
+        department_year: data.department_year,
+        linkedin_url: data.linkedin_url || undefined,
+      })
+
+      applyRegisterResponse(result)
+      startResendTimer()
+      setStep(3)
+    } catch {
+      setStep2Error('Profil bilgileri kaydedilemedi. Alanlari kontrol edip tekrar dene.')
+    }
   }
 
   async function onOTPComplete(otp: string) {
@@ -212,7 +245,7 @@ export default function RegisterPage() {
                 label: 'IUC Ogrenci E-postasi',
                 type: 'email',
                 placeholder: 'ahmet@ogr.iuc.edu.tr',
-                hint: '@ogr.iuc.edu.tr uzantili adres giriniz',
+                hint: '@ogr.iuc.edu.tr veya @iuc.edu.tr uzantili adres giriniz',
               },
               { name: 'password' as const, label: 'Sifre', type: 'password', placeholder: '' },
               { name: 'password_confirm' as const, label: 'Sifre Tekrar', type: 'password', placeholder: '' },
@@ -242,6 +275,21 @@ export default function RegisterPage() {
               {form1.formState.isSubmitting ? 'Kontrol ediliyor...' : 'Devam Et ->'}
             </button>
           </form>
+
+          {step1Info ? (
+            <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-3 text-xs text-amber-900">
+              <p>{step1Info}</p>
+              {existingUnverifiedEmail ? (
+                <button
+                  type="button"
+                  onClick={() => router.push(`/login?email=${encodeURIComponent(existingUnverifiedEmail)}`)}
+                  className="mt-2 font-medium text-[#1E3A5F] hover:underline"
+                >
+                  Giris ekranina git
+                </button>
+              ) : null}
+            </div>
+          ) : null}
 
           <p className="mt-4 text-center text-xs text-gray-400">
             Zaten hesabin var mi?{' '}
@@ -284,7 +332,13 @@ export default function RegisterPage() {
                   <button
                     key={year}
                     type="button"
-                    onClick={() => setSelectedYear(year)}
+                    onClick={() => {
+                      setSelectedYear(year)
+                      form2.setValue('department_year', year, {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      })
+                    }}
                     className={`rounded-lg border py-1.5 text-xs transition-colors ${
                       selectedYear === year
                         ? 'border-[#1E3A5F] bg-blue-50 font-medium text-[#1E3A5F]'
@@ -295,6 +349,7 @@ export default function RegisterPage() {
                   </button>
                 ))}
               </div>
+              <input type="hidden" {...form2.register('department_year', { valueAsNumber: true })} />
             </div>
 
             <div>
@@ -307,7 +362,16 @@ export default function RegisterPage() {
                 placeholder="https://linkedin.com/in/..."
                 className="h-9 w-full rounded-lg border border-gray-200 px-3 text-sm focus:border-[#1E3A5F] focus:outline-none"
               />
+              {form2.formState.errors.linkedin_url ? (
+                <p className="mt-1 text-[10px] text-red-500">
+                  {form2.formState.errors.linkedin_url.message}
+                </p>
+              ) : null}
             </div>
+
+            {step2Error ? (
+              <p className="text-[11px] text-red-500">{step2Error}</p>
+            ) : null}
 
             <div className="flex gap-2 pt-1">
               <button
