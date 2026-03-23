@@ -92,22 +92,20 @@ function LoginPageContent() {
     setVerificationCode('')
     setVerificationMessage('')
     setOnscreenOtp('')
-    setVerificationMessage('Dogrulama kodu gonderiliyor...')
+    setVerificationMessage('Dogrulama kodu olusturuluyor...')
   }
 
   async function loadVisibleOtp(email: string) {
     try {
       const result = await resendOTP(email)
-      if (result.debug_otp) {
-        setOnscreenOtp(result.debug_otp)
-        setVerificationMessage('Ekranda gorunen 6 haneli kodu ayni sekilde gir.')
-      } else {
-        setOnscreenOtp('')
-        setVerificationMessage('Dogrulama kodu e-posta adresine gonderildi. Gelen 6 haneli kodu gir.')
+      if (!result.debug_otp) {
+        throw new Error('OTP code missing')
       }
+      setOnscreenOtp(result.debug_otp)
+      setVerificationMessage('Ekranda gorunen 6 haneli kodu ayni sekilde gir.')
       return true
     } catch {
-      setVerificationMessage('Dogrulama kodu gonderilemedi. Lutfen tekrar dene.')
+      setVerificationMessage('Dogrulama kodu olusturulamadi. Lutfen tekrar dene.')
       return false
     }
   }

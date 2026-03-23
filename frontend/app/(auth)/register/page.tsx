@@ -209,6 +209,10 @@ export default function RegisterPage() {
         department_year: data.department_year,
         linkedin_url: data.linkedin_url || undefined,
       })
+      if (!result.debug_otp) {
+        throw new Error('OTP code missing')
+      }
+
       applyRegisterResponse(result)
       startResendTimer()
       setStep(3)
@@ -278,6 +282,9 @@ export default function RegisterPage() {
     if (!step1Data) return
     try {
       const result = await resendOTP(step1Data.email)
+      if (!result.debug_otp) {
+        throw new Error('OTP code missing')
+      }
       applyRegisterResponse(result)
       setOtpError(false)
       startResendTimer()
@@ -494,15 +501,9 @@ export default function RegisterPage() {
 
           <div className="mb-4 rounded-xl border border-blue-200 bg-blue-50 p-4 text-center">
             <p className="mb-1 text-sm font-medium text-blue-800">Kod Hazir</p>
-            {onscreenOtp ? (
-              <p className="text-xs leading-relaxed text-blue-600">
-                Asagidaki 6 haneli dogrulama kodunu kutulara dogru sekilde gir.
-              </p>
-            ) : (
-              <p className="text-xs leading-relaxed text-blue-600">
-                E-posta adresine gonderilen 6 haneli kodu kutulara gir.
-              </p>
-            )}
+            <p className="text-xs leading-relaxed text-blue-600">
+              Asagidaki 6 haneli dogrulama kodunu kutulara dogru sekilde gir.
+            </p>
           </div>
 
           {onscreenOtp ? (

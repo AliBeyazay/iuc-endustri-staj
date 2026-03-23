@@ -30,13 +30,5 @@ export default auth((req) => {
 })
 
 export const config = {
-  matcher: [
-    '/dashboard/:path*',
-    '/profile/:path*',
-    '/bookmarks/:path*',
-    '/login',
-    '/register',
-    '/forgot-password',
-    '/reset-password',
-  ],
+  matcher: ['/dashboard/:path*', '/profile/:path*', '/bookmarks/:path*'],
 }
