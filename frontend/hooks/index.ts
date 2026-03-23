@@ -71,7 +71,7 @@ export function useProfile() {
   return { profile: data, isLoading, error, mutate }
 }
 
-// ─── useBookmarks (localStorage optimistic) ──────────────────────────────────
+// ─── useBookmarks (backend-synced with optimistic updates) ───────────────────
 
 export function useBookmarks() {
   const [bookmarks, setBookmarks] = useState<Set<string>>(() => {
@@ -83,6 +83,29 @@ export function useBookmarks() {
       return new Set()
     }
   })
+  const [synced, setSynced] = useState(false)
+
+  // Sync from backend on mount
+  useEffect(() => {
+    if (synced) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const { fetchBookmarks } = await import('@/lib/api')
+        const data = await fetchBookmarks()
+        if (!cancelled) {
+          const ids = new Set(data.map((b: { id: string }) => b.id))
+          setBookmarks(ids)
+          localStorage.setItem('iuc_bookmarks', JSON.stringify([...ids]))
+          setSynced(true)
+        }
+      } catch {
+        // If not authenticated or network error, keep localStorage state
+        setSynced(true)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [synced])
 
   const persist = (next: Set<string>) => {
     setBookmarks(next)

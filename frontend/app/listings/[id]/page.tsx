@@ -9,8 +9,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
 
   return {
-    title: `Ilan Detayi #${id} | IUC Staj`,
-    description: 'Ilan detaylari, basvuru bilgileri ve ogrenci degerlendirmeleri.',
+    title: `İlan Detayı #${id} | İÜC Staj`,
+    description: 'İlan detayları, başvuru bilgileri ve öğrenci değerlendirmeleri.',
   }
 }
 

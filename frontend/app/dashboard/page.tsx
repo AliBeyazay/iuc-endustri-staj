@@ -14,7 +14,7 @@ import {
   uploadCV,
 } from '@/lib/api'
 import { BookmarkedListing, DashboardStats, UserProfile } from '@/types'
-import { getAvatarColor, getDeadlineDisplay, getInitials } from '@/lib/helpers'
+import { getAvatarColor, getDeadlineDisplay, getInitials, FOCUS_AREA_LABELS, FOCUS_AREA_COLORS, PLATFORM_LABELS, timeAgoTurkish } from '@/lib/helpers'
 import MobileBottomNav from '@/components/MobileBottomNav'
 import UniversityLogo from '@/components/UniversityLogo'
 
@@ -30,71 +30,77 @@ function BookmarkCard({
   const deadline = getDeadlineDisplay(listing)
   const initials = getInitials(listing.company_name)
   const avatarColor = getAvatarColor(listing.company_name)
+  const focusLabel = FOCUS_AREA_LABELS[listing.em_focus_area]
+  const focusColor = FOCUS_AREA_COLORS[listing.em_focus_area] ?? 'bg-gray-100 text-gray-600'
+  const platformLabel = PLATFORM_LABELS[listing.source_platform] ?? listing.source_platform
 
   return (
     <div
       onClick={() => router.push(`/listings/${listing.id}`)}
-      className={`cursor-pointer rounded-lg bg-gray-50 p-2.5 transition-colors hover:bg-gray-100 sm:flex sm:items-center sm:gap-2 ${
-        deadline.color === 'red' ? 'border-l-2 border-red-400' : ''
+      className={`group cursor-pointer rounded-xl border bg-white p-3 transition-all hover:shadow-md ${
+        deadline.color === 'red' ? 'border-red-200' : 'border-gray-100'
       }`}
     >
-      <div
-        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-gray-100 text-[9px] font-medium ${avatarColor}`}
-      >
-        {initials}
-      </div>
-      <div className="mt-2 min-w-0 flex-1 sm:mt-0">
-        <p className="truncate text-xs font-medium text-gray-800">{listing.title}</p>
-        <p className="mt-0.5 text-[10px] text-gray-400">
-          {listing.company_name}
+      <div className="flex items-start gap-3">
+        <div
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-gray-100 text-[10px] font-semibold ${avatarColor}`}
+        >
+          {initials}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium text-gray-800 group-hover:text-[#1E3A5F]">
+            {listing.title}
+          </p>
+          <p className="mt-0.5 truncate text-xs text-gray-500">{listing.company_name}</p>
+        </div>
+        <div className="flex shrink-0 flex-col items-end gap-1" onClick={(e) => e.stopPropagation()}>
           {deadline.label ? (
             <span
-              className={`ml-1.5 font-medium ${
-                deadline.color === 'red' ? 'text-red-600' : 'text-gray-400'
+              className={`rounded-full px-2 py-0.5 text-[9px] font-medium ${
+                deadline.color === 'red'
+                  ? 'bg-red-50 text-red-600'
+                  : 'bg-gray-50 text-gray-500'
               }`}
             >
-              - {deadline.label}
+              {deadline.label}
             </span>
           ) : null}
+          {confirm ? (
+            <div className="flex gap-1">
+              <button
+                onClick={() => {
+                  onRemove()
+                  setConfirm(false)
+                }}
+                className="rounded border border-red-200 px-2 py-0.5 text-[10px] text-red-500 hover:bg-red-50"
+              >
+                Kaldır
+              </button>
+              <button
+                onClick={() => setConfirm(false)}
+                className="rounded border border-gray-200 px-2 py-0.5 text-[10px] text-gray-400 hover:bg-gray-50"
+              >
+                İptal
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setConfirm(true)}
+              className="rounded p-0.5 text-gray-300 hover:text-red-400"
+              title="Kayıttan kaldır"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+        </div>
+      </div>
+      {listing.bookmarked_at && (
+        <p className="mt-2 text-right text-[9px] text-gray-300">
+          Kaydedildi: {timeAgoTurkish(listing.bookmarked_at)}
         </p>
-      </div>
-      <div
-        className="mt-2 flex items-center gap-1 sm:mt-0 sm:shrink-0"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <button
-          onClick={() => router.push(`/listings/${listing.id}`)}
-          className="rounded border border-gray-200 px-1.5 py-1 text-[10px] text-gray-400 hover:text-[#1E3A5F]"
-        >
-          Gör
-        </button>
-        {confirm ? (
-          <div className="flex gap-1">
-            <button
-              onClick={() => {
-                onRemove()
-                setConfirm(false)
-              }}
-              className="rounded border border-red-200 px-1.5 py-1 text-[10px] text-red-500"
-            >
-              Evet
-            </button>
-            <button
-              onClick={() => setConfirm(false)}
-              className="rounded border border-gray-200 px-1.5 py-1 text-[10px] text-gray-400"
-            >
-              Hayır
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={() => setConfirm(true)}
-            className="px-1 text-sm text-gray-300 hover:text-gray-400"
-          >
-            x
-          </button>
-        )}
-      </div>
+      )}
     </div>
   )
 }
@@ -202,7 +208,16 @@ export default function DashboardPage() {
   const stats = statsData ?? null
   const profile = profileData ?? null
   const bookmarks = bookmarksData ?? []
-  const visibleBookmarks = showAll ? bookmarks ?? [] : (bookmarks ?? []).slice(0, 5)
+
+  // Sort bookmarks: urgent deadlines first, then by bookmarked_at desc
+  const sortedBookmarks = [...bookmarks].sort((a, b) => {
+    const urgencyOrder: Record<string, number> = { urgent: 0, upcoming: 1, normal: 2, unknown: 3, expired: 4 }
+    const aU = urgencyOrder[a.deadline_status] ?? 3
+    const bU = urgencyOrder[b.deadline_status] ?? 3
+    if (aU !== bU) return aU - bU
+    return new Date(b.bookmarked_at).getTime() - new Date(a.bookmarked_at).getTime()
+  })
+  const visibleBookmarks = showAll ? sortedBookmarks : sortedBookmarks.slice(0, 5)
   const firstName = profile?.full_name.split(' ')[0] ?? 'Ogrenci'
 
   async function handleRemove(id: string) {
@@ -230,14 +245,14 @@ export default function DashboardPage() {
 
   return (
     <div className="campus-shell min-h-screen pb-24 lg:pb-0">
-      <nav className="campus-nav sticky top-0 z-10 flex items-center justify-between gap-3 overflow-hidden px-4 py-3 sm:px-5">
+      <nav className="campus-nav sticky top-0 z-10 flex items-center justify-between gap-3 px-4 py-3 sm:px-5">
         <Link href="/listings" className="relative z-10 flex min-w-0 items-center gap-3">
           <UniversityLogo className="h-11 w-11 shrink-0 sm:h-12 sm:w-12" />
           <div className="min-w-0">
-            <span className="campus-brand block text-lg leading-none sm:text-2xl">
+            <span className="campus-brand block truncate text-sm leading-tight sm:text-2xl sm:leading-none">
               {'\u0130stanbul \u00dcniversitesi Cerrahpa\u015fa'}
             </span>
-            <p className="hidden text-[10px] uppercase tracking-[0.28em] text-[#f4e3b3]/80 sm:block">
+            <p className="truncate text-[8px] uppercase tracking-[0.18em] text-[#f4e3b3]/80 sm:text-[10px] sm:tracking-[0.28em]">
               {'End\u00fcstri M\u00fchendisli\u011fi Staj Platformu'}
             </p>
           </div>
@@ -321,32 +336,52 @@ export default function DashboardPage() {
 
           <div id="profile" className="campus-card scroll-mt-24 rounded-2xl p-4">
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-sm font-medium text-gray-800">
-                Kaydedilen İlanlar
-                {bookmarks ? (
-                  <span className="ml-1.5 text-xs text-gray-400">({bookmarks.length})</span>
-                ) : null}
-              </h2>
+              <div>
+                <h2 className="text-sm font-medium text-gray-800">
+                  Kaydedilen İlanlar
+                  {bookmarks.length > 0 ? (
+                    <span className="ml-1.5 text-xs text-gray-400">({bookmarks.length})</span>
+                  ) : null}
+                </h2>
+                {bookmarks.length > 0 && (() => {
+                  const urgentCount = bookmarks.filter(
+                    (b) => b.deadline_status === 'urgent'
+                  ).length
+                  return urgentCount > 0 ? (
+                    <p className="mt-0.5 text-[10px] text-red-500">
+                      {urgentCount} ilanın son başvuru tarihi yaklaşıyor
+                    </p>
+                  ) : null
+                })()}
+              </div>
               <button
                 onClick={() => router.push('/listings')}
-                className="text-xs text-[#1E3A5F] hover:underline"
+                className="rounded-full border border-[#1E3A5F]/20 px-3 py-1 text-[10px] font-medium text-[#1E3A5F] hover:bg-blue-50"
               >
-                Tümünü gör
+                + İlan Keşfet
               </button>
             </div>
 
             {!bookmarks || bookmarks.length === 0 ? (
-              <div className="py-8 text-center">
-                <p className="mb-2 text-sm text-gray-400">Henüz kaydettiğin ilan yok</p>
+              <div className="py-10 text-center">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-50">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                  </svg>
+                </div>
+                <p className="mb-1 text-sm font-medium text-gray-500">Henüz kaydettiğin ilan yok</p>
+                <p className="mb-3 text-xs text-gray-400">
+                  İlanlara göz at ve beğendiklerini kaydet
+                </p>
                 <button
                   onClick={() => router.push('/listings')}
-                  className="rounded-lg border border-[#1E3A5F] px-3 py-1.5 text-xs text-[#1E3A5F] hover:bg-blue-50"
+                  className="rounded-lg bg-[#1E3A5F] px-4 py-2 text-xs text-white hover:bg-[#15304f]"
                 >
                   İlanlara Göz At
                 </button>
               </div>
             ) : (
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 {visibleBookmarks.map((bookmark) => (
                   <BookmarkCard
                     key={bookmark.id}
@@ -369,47 +404,91 @@ export default function DashboardPage() {
 
         <div className="space-y-4">
           <div className="campus-card rounded-2xl p-4">
-            <div className="mb-3 flex items-center gap-3">
+            <div className="mb-4 flex items-center gap-3">
               <div
-                className={`flex h-11 w-11 items-center justify-center rounded-full text-sm font-medium ${
+                className={`flex h-12 w-12 items-center justify-center rounded-full text-sm font-semibold ${
                   profile ? getAvatarColor(profile.full_name) : 'bg-gray-100 text-gray-400'
                 }`}
               >
                 {profile ? getInitials(profile.full_name) : '??'}
               </div>
-              <div>
-                <p className="text-sm font-medium text-gray-800">{profile?.full_name ?? '-'}</p>
-                <p className="text-xs text-gray-400">{profile?.iuc_email ?? '-'}</p>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-gray-800">{profile?.full_name ?? '-'}</p>
+                <p className="truncate text-[11px] text-gray-400">{profile?.iuc_email ?? '-'}</p>
               </div>
             </div>
 
             {profile ? (
               <>
+                <div className="mb-3 space-y-2.5">
+                  <div className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
+                    <span className="text-[11px] text-gray-500">Öğrenci No</span>
+                    <span className="text-[11px] font-medium text-gray-800">
+                      {profile.student_no ?? <span className="text-gray-300">Belirtilmedi</span>}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
+                    <span className="text-[11px] text-gray-500">Sınıf</span>
+                    <span className="text-[11px] font-medium text-gray-800">
+                      {profile.department_year
+                        ? `${profile.department_year}. Sınıf`
+                        : <span className="text-gray-300">Belirtilmedi</span>}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
+                    <span className="text-[11px] text-gray-500">LinkedIn</span>
+                    {profile.linkedin_url ? (
+                      <a
+                        href={profile.linkedin_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="truncate text-[11px] font-medium text-[#1E3A5F] hover:underline"
+                      >
+                        Profili Gör
+                      </a>
+                    ) : (
+                      <span className="text-[11px] text-gray-300">Belirtilmedi</span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
+                    <span className="text-[11px] text-gray-500">CV</span>
+                    {profile.cv_url ? (
+                      <a
+                        href={profile.cv_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[11px] font-medium text-[#1E3A5F] hover:underline"
+                      >
+                        Görüntüle
+                      </a>
+                    ) : (
+                      <span className="text-[11px] text-gray-300">Yüklenmedi</span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
+                    <span className="text-[11px] text-gray-500">Durum</span>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-[9px] font-medium ${
+                        profile.is_verified
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-yellow-100 text-yellow-700'
+                      }`}
+                    >
+                      {profile.is_verified ? 'Doğrulandı' : 'Doğrulanmadı'}
+                    </span>
+                  </div>
+                </div>
+
                 <div className="mb-1 flex justify-between text-xs">
                   <span className="text-gray-500">Profil tamamlanma</span>
                   <span className="font-medium text-[#1E3A5F]">%{profile.completion_percentage}</span>
                 </div>
-                <div className="mb-2 h-1.5 rounded-full bg-gray-100">
+                <div className="mb-3 h-1.5 rounded-full bg-gray-100">
                   <div
                     className="h-full rounded-full bg-[#1E3A5F] transition-all"
                     style={{ width: `${profile.completion_percentage}%` }}
                   />
                 </div>
-                {profile.missing_fields.length > 0 ? (
-                  <div className="space-y-1">
-                    {profile.missing_fields.map((field) =>
-                      missingHints[field] ? (
-                        <button
-                          key={field}
-                          onClick={() => setEditOpen(true)}
-                          className="block text-[10px] text-blue-600 hover:underline"
-                        >
-                          {missingHints[field]}
-                        </button>
-                      ) : null
-                    )}
-                  </div>
-                ) : null}
               </>
             ) : null}
 

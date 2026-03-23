@@ -15,17 +15,17 @@ export const FOCUS_AREA_LABELS: Record<string, string> = {
 }
 
 export const FOCUS_AREA_COLORS: Record<string, string> = {
-  imalat_metal_makine: 'bg-blue-100 text-blue-800',
-  otomotiv_yan_sanayi: 'bg-amber-100 text-amber-900',
-  yazilim_bilisim_teknoloji: 'bg-purple-100 text-purple-800',
-  hizmet_finans_danismanlik: 'bg-green-100 text-green-800',
-  eticaret_perakende_fmcg: 'bg-pink-100 text-pink-800',
-  savunma_havacilik_enerji: 'bg-slate-100 text-slate-700',
-  gida_kimya_saglik: 'bg-teal-100 text-teal-800',
-  lojistik_tasimacilik: 'bg-orange-100 text-orange-800',
-  tekstil_moda: 'bg-rose-100 text-rose-800',
-  insaat_yapi_malzemeleri: 'bg-yellow-100 text-yellow-900',
-  diger: 'bg-gray-100 text-gray-600',
+  imalat_metal_makine: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)]',
+  otomotiv_yan_sanayi: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)]',
+  yazilim_bilisim_teknoloji: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)]',
+  hizmet_finans_danismanlik: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)]',
+  eticaret_perakende_fmcg: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)]',
+  savunma_havacilik_enerji: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)]',
+  gida_kimya_saglik: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)]',
+  lojistik_tasimacilik: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)]',
+  tekstil_moda: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)]',
+  insaat_yapi_malzemeleri: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)]',
+  diger: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)]',
 }
 
 export const PLATFORM_LABELS: Record<SourcePlatform, string> = {

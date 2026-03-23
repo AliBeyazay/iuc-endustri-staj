@@ -192,10 +192,10 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
           <Link href="/listings" className="flex min-w-0 items-center gap-3">
             <UniversityLogo className="h-11 w-11 shrink-0 sm:h-12 sm:w-12" />
             <div className="min-w-0">
-              <span className="campus-brand block text-lg leading-none sm:text-2xl">
+              <span className="campus-brand block truncate text-sm leading-tight sm:text-2xl sm:leading-none">
                 {'İstanbul Üniversitesi Cerrahpaşa'}
               </span>
-              <p className="hidden text-[10px] uppercase tracking-[0.28em] text-[#f4e3b3]/80 sm:block">
+              <p className="truncate text-[8px] uppercase tracking-[0.18em] text-[#f4e3b3]/80 sm:text-[10px] sm:tracking-[0.28em]">
                 {'Endüstri Mühendisliği Staj Platformu'}
               </p>
             </div>

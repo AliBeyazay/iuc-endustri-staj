@@ -24,7 +24,7 @@ const step1Schema = z.object({
   password: z.string().min(8, 'Sifre en az 8 karakter olmali.'),
   password_confirm: z.string(),
 }).refine((data) => data.password === data.password_confirm, {
-  message: 'Sifreler eslesmiyor.',
+  message: 'Şifreler eşleşmiyor.',
   path: ['password_confirm'],
 })
 

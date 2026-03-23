@@ -23,7 +23,7 @@ export default function DashboardError({
             onClick={() => router.push('/listings')}
             className="text-xs px-4 py-2 border border-gray-200 rounded-lg text-gray-500"
           >
-            Ilanlara Don
+            İlanlara Dön
           </button>
         </div>
       </div>

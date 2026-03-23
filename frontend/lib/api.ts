@@ -145,21 +145,21 @@ export async function createReview(
 
 export async function fetchBookmarks(): Promise<BookmarkedListing[]> {
   const { data } = await api.get<
-    Array<{
+    PaginatedResponse<{
       id: string
       listing: Listing
       bookmarked_at: string
     }>
   >('/bookmarks/')
 
-  return data.map(({ listing, bookmarked_at }) => ({
+  return data.results.map(({ listing, bookmarked_at }) => ({
     ...listing,
     bookmarked_at,
   }))
 }
 
 export async function addBookmark(listingId: string): Promise<void> {
-  await api.post('/bookmarks/', { listing: listingId })
+  await api.post('/bookmarks/', { listing_id: listingId })
 }
 
 export async function removeBookmark(listingId: string): Promise<void> {

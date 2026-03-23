@@ -11,7 +11,7 @@ interface Props {
 
 function Pill({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
-    <span className="campus-pill inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold">
+    <span className="inline-flex items-center gap-1 rounded-full bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)] px-2.5 py-1 text-[10px] font-semibold">
       {label}
       <button onClick={onRemove} className="leading-none hover:opacity-70">
         x

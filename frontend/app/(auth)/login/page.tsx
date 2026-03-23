@@ -229,7 +229,7 @@ function LoginPageContent() {
               disabled={verificationCode.length !== 6 || isVerifyingCode}
               className="rounded-lg bg-[#1E3A5F] px-3 text-xs font-medium text-white disabled:opacity-50"
             >
-              {isVerifyingCode ? 'Dogrulaniyor...' : 'Dogrula'}
+              {isVerifyingCode ? 'Doğrulanıyor...' : 'Doğrula'}
             </button>
           </div>
           <button

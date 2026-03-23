@@ -62,8 +62,8 @@ const SECTOR_LABELS: Record<string, string> = {
   savunma_havacilik_enerji: 'Savunma, Havacılık ve Enerji',
   gida_kimya_saglik: 'Gıda, Kimya ve Sağlık',
   lojistik_tasimacilik: 'Lojistik ve Taşımacılık',
-  'lojistik_tasimacilık': 'Lojistik ve Tasimacilik',
-  lojistik_taşimacilik: 'Lojistik ve Tasimacilik',
+  'lojistik_tasimacil\u0131k': 'Lojistik ve Ta\u015f\u0131mac\u0131l\u0131k',
+  lojistik_ta\u015fimacilik: 'Lojistik ve Ta\u015f\u0131mac\u0131l\u0131k',
   tekstil_moda: 'Tekstil ve Moda',
   insaat_yapi_malzemeleri: 'İnşaat ve Yapı Malzemeleri',
   diger: 'Diğer',
@@ -699,7 +699,7 @@ function FilterPanel({
                 className={classNames(
                   'w-full rounded-full border px-3 py-2 text-left text-xs font-medium transition',
                   active
-                    ? 'border-blue-200 bg-blue-50 text-blue-700'
+                    ? 'border-[rgba(216,173,67,0.18)] bg-[rgba(216,173,67,0.14)] text-[#8f670b]'
                     : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50',
                 )}
               >
@@ -712,30 +712,6 @@ function FilterPanel({
       </section>
 
       <section>
-        <h3 className="mb-3 text-sm font-semibold text-[#132843]">Platform</h3>
-        <div className="flex flex-col gap-2">
-          {platforms.map((platform) => {
-            const active = selectedPlatforms.includes(platform)
-            return (
-              <button
-                key={platform}
-                type="button"
-                onClick={() => onTogglePlatform(platform)}
-                className={classNames(
-                  'w-full rounded-full border px-3 py-2 text-left text-xs font-medium transition',
-                  active
-                    ? 'border-violet-200 bg-violet-50 text-violet-700'
-                    : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50',
-                )}
-              >
-                {platform}
-              </button>
-            )
-          })}
-        </div>
-      </section>
-
-      <section>
         <h3 className="mb-3 text-sm font-semibold text-[#132843]">Yetenek Programı</h3>
         <button
           type="button"
@@ -743,7 +719,7 @@ function FilterPanel({
           className={classNames(
             'w-full rounded-2xl border px-4 py-2 text-left text-sm font-medium transition',
             talentOnly
-              ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+              ? 'border-[rgba(216,173,67,0.18)] bg-[rgba(216,173,67,0.14)] text-[#8f670b]'
               : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50',
           )}
         >
@@ -813,7 +789,7 @@ export default function ListingsPage() {
         })
         const response = await fetch(`/api/listings?${queryString}`, { cache: 'no-store' })
         if (!response.ok) {
-          throw new Error('Ilanlar alinamadi.')
+          throw new Error('İlanlar alınamadı.')
         }
         const data = await response.json()
         const items = Array.isArray(data)
@@ -1023,10 +999,10 @@ export default function ListingsPage() {
           <Link href="/listings" className="flex min-w-0 items-center gap-3">
             <UniversityLogo className="h-11 w-11 shrink-0 sm:h-12 sm:w-12" />
             <div className="min-w-0">
-              <span className="campus-brand block text-lg leading-none sm:text-2xl">
+              <span className="campus-brand block truncate text-sm leading-tight sm:text-2xl sm:leading-none">
                 İstanbul Üniversitesi Cerrahpaşa
               </span>
-              <p className="hidden text-[10px] uppercase tracking-[0.28em] text-[#f4e3b3]/80 sm:block">
+              <p className="truncate text-[8px] uppercase tracking-[0.18em] text-[#f4e3b3]/80 sm:text-[10px] sm:tracking-[0.28em]">
                 Endüstri Mühendisliği Staj Platformu
               </p>
             </div>
@@ -1095,7 +1071,7 @@ export default function ListingsPage() {
                 }}
                 className="rounded-2xl border border-[#f1d27e]/40 bg-[#f1d27e] px-4 py-3 text-sm font-semibold text-[#10223b]"
               >
-                Ilanlar
+                İlanlar
               </button>
 
               {status === 'authenticated' ? (
@@ -1315,7 +1291,7 @@ export default function ListingsPage() {
                   key={sector}
                   type="button"
                   onClick={() => setSelectedSectors(selectedSectors.filter((item) => item !== sector))}
-                  className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700"
+                  className="rounded-full border border-[rgba(216,173,67,0.18)] bg-[rgba(216,173,67,0.14)] px-3 py-1 text-xs font-medium text-[#8f670b]"
                 >
                   {sector} ×
                 </button>
@@ -1328,7 +1304,7 @@ export default function ListingsPage() {
                   onClick={() =>
                     setSelectedPlatforms(selectedPlatforms.filter((item) => item !== platform))
                   }
-                  className="rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-medium text-violet-700"
+                  className="rounded-full border border-[rgba(216,173,67,0.18)] bg-[rgba(216,173,67,0.14)] px-3 py-1 text-xs font-medium text-[#8f670b]"
                 >
                   {platform} ×
                 </button>
@@ -1338,7 +1314,7 @@ export default function ListingsPage() {
                 <button
                   type="button"
                   onClick={() => setTalentOnly(false)}
-                  className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700"
+                  className="rounded-full border border-[rgba(216,173,67,0.18)] bg-[rgba(216,173,67,0.14)] px-3 py-1 text-xs font-medium text-[#8f670b]"
                 >
                   Yetenek Programı ×
                 </button>
