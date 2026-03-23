@@ -1,0 +1,51 @@
+databases:
+  - name: iuc-staj-db
+    plan: free
+    databaseName: iuc_staj_db
+    user: iuc_staj_user
+
+services:
+  - type: web
+    name: iuc-staj-backend
+    runtime: docker
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /health
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings.prod
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        value: .onrender.com
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://iuc-endustri-staj.vercel.app
+      - key: FRONTEND_URL
+        value: https://iuc-endustri-staj.vercel.app
+      - key: DATABASE_URL
+        fromDatabase:
+          name: iuc-staj-db
+          property: connectionString
+      - key: PGDATABASE
+        fromDatabase:
+          name: iuc-staj-db
+          property: database
+      - key: PGUSER
+        fromDatabase:
+          name: iuc-staj-db
+          property: user
+      - key: PGPASSWORD
+        fromDatabase:
+          name: iuc-staj-db
+          property: password
+      - key: PGHOST
+        fromDatabase:
+          name: iuc-staj-db
+          property: host
+      - key: PGPORT
+        fromDatabase:
+          name: iuc-staj-db
+          property: port
+      - key: USE_SQLITE
+        value: "False"

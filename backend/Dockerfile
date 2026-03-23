@@ -13,6 +13,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+RUN DJANGO_SETTINGS_MODULE=config.settings.prod python manage.py collectstatic --noinput 2>/dev/null || true
+
 EXPOSE 8000
 
 # Prepare the database schema on startup before serving requests.
