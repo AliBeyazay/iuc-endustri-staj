@@ -1,4 +1,5 @@
 import hashlib
+import logging
 import os
 import random
 import traceback
@@ -25,6 +26,8 @@ from .serializers import (
     ReviewSerializer,
     StudentProfileSerializer,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class ListingViewSet(viewsets.ReadOnlyModelViewSet):
@@ -187,23 +190,28 @@ class AccountStatusView(APIView):
 
     def post(self, request):
         email = (request.data.get('email', '') or '').strip().lower()
+        if not _is_allowed_iuc_email(email):
+            return Response({'exists': False, 'is_verified': False})
+
+        if _is_rate_limited(
+            _public_auth_rate_key('account-status', email, request),
+            limit=25,
+            window_seconds=60,
+        ):
+            return Response(
+                {'error': 'Cok fazla istek gonderildi. Lutfen biraz sonra tekrar deneyin.'},
+                status=429,
+            )
+
         try:
             student = Student.objects.get(iuc_email__iexact=email)
         except Student.DoesNotExist:
             return Response({'exists': False, 'is_verified': False})
 
-        response_data = {
+        return Response({
             'exists': True,
             'is_verified': student.is_verified,
-        }
-
-        if not student.is_verified:
-            response_data.update({
-                'debug_otp': _send_otp(student),
-                'delivery_method': 'onscreen',
-            })
-
-        return Response(response_data)
+        })
 
 
 class RegisterView(APIView):
@@ -216,11 +224,13 @@ class RegisterView(APIView):
 
         names = data['full_name'].split(' ', 1)
         student = Student.objects.filter(iuc_email__iexact=data['email']).first()
-        conflicting_student_no = Student.objects.filter(student_no=data.get('student_no')).exclude(
+        conflicting_student_no = Student.objects.filter(
+            student_no=data.get('student_no')
+        ).exclude(
             iuc_email__iexact=data['email']
-        ).first()
+        ).exists()
 
-        if conflicting_student_no and conflicting_student_no.is_verified:
+        if conflicting_student_no:
             return Response({'student_no': ['Bu ogrenci numarasi zaten kayitli.']}, status=400)
 
         if student and student.is_verified:
@@ -252,11 +262,8 @@ class RegisterView(APIView):
             student.save()
 
         otp = _send_otp(student)
-        response_data = {
-            'message': 'Kayit basarili. Dogrulama kodu olusturuldu.',
-            'debug_otp': otp,
-            'delivery_method': 'onscreen',
-        }
+        response_data = _otp_response_data(otp)
+        response_data['message'] = 'Kayit basarili. Dogrulama kodu gonderildi.'
         return Response(response_data, status=201)
 
 
@@ -266,6 +273,17 @@ class VerifyOTPView(APIView):
     def post(self, request):
         email = (request.data.get('email') or '').strip().lower()
         otp = request.data.get('otp')
+
+        if _is_rate_limited(
+            _public_auth_rate_key('verify-otp', email, request),
+            limit=10,
+            window_seconds=600,
+        ):
+            return Response(
+                {'error': 'Cok fazla dogrulama denemesi yapildi. Lutfen biraz sonra tekrar deneyin.'},
+                status=429,
+            )
+
         try:
             student = Student.objects.get(iuc_email__iexact=email)
         except Student.DoesNotExist:
@@ -284,17 +302,30 @@ class ResendOTPView(APIView):
 
     def post(self, request):
         email = (request.data.get('email') or '').strip().lower()
+        if not _is_allowed_iuc_email(email):
+            return Response({'error': 'Gecersiz e-posta adresi.'}, status=400)
+
+        if _is_rate_limited(
+            _public_auth_rate_key('resend-otp', email, request),
+            limit=5,
+            window_seconds=300,
+        ):
+            return Response(
+                {'error': 'Cok fazla kod talebi yapildi. Lutfen biraz sonra tekrar deneyin.'},
+                status=429,
+            )
+
         try:
             student = Student.objects.get(iuc_email__iexact=email)
         except Student.DoesNotExist:
             return Response({'error': 'Kullanici bulunamadi.'}, status=404)
 
+        if student.is_verified:
+            return Response({'error': 'Bu hesap zaten dogrulanmis.'}, status=400)
+
         otp = _send_otp(student)
-        response_data = {
-            'message': 'OTP yeniden olusturuldu.',
-            'debug_otp': otp,
-            'delivery_method': 'onscreen',
-        }
+        response_data = _otp_response_data(otp)
+        response_data['message'] = 'Dogrulama kodu yeniden gonderildi.'
         return Response(response_data)
 
 
@@ -328,6 +359,7 @@ class ResetPasswordView(APIView):
 def _send_otp(student: Student) -> str:
     otp = str(random.randint(100000, 999999))
     cache.set(f'otp:{student.iuc_email}', otp, timeout=600)
+    _send_otp_email(student, otp)
     return otp
 
 
@@ -360,3 +392,47 @@ def _verify_reset_token(token: str):
         return Student.objects.get(id=student_id)
     except Student.DoesNotExist:
         return None
+
+
+def _send_otp_email(student: Student, otp: str) -> None:
+    if not student.iuc_email:
+        return
+    try:
+        send_mail(
+            subject='IUC Staj - Dogrulama Kodu',
+            message=f'Dogrulama kodunuz: {otp}\n\nKod 10 dakika gecerlidir.',
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[student.iuc_email],
+        )
+    except Exception:
+        logger.exception('OTP email delivery failed for %s', student.iuc_email)
+
+
+def _otp_response_data(otp: str) -> dict:
+    response_data = {'delivery_method': 'email'}
+    if settings.DEBUG or os.getenv('EXPOSE_OTP_ONSCREEN') == '1':
+        response_data['debug_otp'] = otp
+        response_data['delivery_method'] = 'onscreen'
+    return response_data
+
+
+def _is_allowed_iuc_email(email: str) -> bool:
+    return email.endswith('@ogr.iuc.edu.tr') or email.endswith('@iuc.edu.tr')
+
+
+def _public_auth_rate_key(prefix: str, email: str, request) -> str:
+    ip = (request.META.get('HTTP_X_FORWARDED_FOR', '') or '').split(',')[0].strip()
+    if not ip:
+        ip = request.META.get('REMOTE_ADDR', '') or 'unknown'
+    return f'ratelimit:{prefix}:{ip}:{email}'
+
+
+def _is_rate_limited(key: str, *, limit: int, window_seconds: int) -> bool:
+    try:
+        current = int(cache.get(key) or 0)
+    except (TypeError, ValueError):
+        current = 0
+    if current >= limit:
+        return True
+    cache.set(key, current + 1, timeout=window_seconds)
+    return False

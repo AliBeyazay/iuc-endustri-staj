@@ -117,11 +117,15 @@ class RegisterSerializer(serializers.Serializer):
             raise serializers.ValidationError('Bu e-posta zaten kayitli.')
         return value
 
-    def validate_student_no(self, value):
-        existing_student = Student.objects.filter(student_no=value).first()
-        if existing_student and existing_student.is_verified:
-            raise serializers.ValidationError('Bu ogrenci numarasi zaten kayitli.')
-        return value
+    def validate(self, attrs):
+        email = (attrs.get('email') or '').strip().lower()
+        student_no = attrs.get('student_no')
+        conflicting_student_no = Student.objects.filter(student_no=student_no).exclude(
+            iuc_email__iexact=email
+        ).exists()
+        if conflicting_student_no:
+            raise serializers.ValidationError({'student_no': 'Bu ogrenci numarasi zaten kayitli.'})
+        return attrs
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
