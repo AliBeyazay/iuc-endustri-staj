@@ -25,7 +25,6 @@ async function proxy(request: NextRequest, context: { params: Promise<{ path: st
     method: request.method,
     headers,
     cache: 'no-store',
-    redirect: 'manual',
   }
 
   if (request.method !== 'GET' && request.method !== 'HEAD') {
