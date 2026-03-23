@@ -3,6 +3,7 @@ import os
 import random
 import traceback
 from datetime import date, timedelta
+from time import time
 
 from django.conf import settings
 from django.core.cache import cache
@@ -25,6 +26,8 @@ from .serializers import (
     ReviewSerializer,
     StudentProfileSerializer,
 )
+
+_volatile_cache_store: dict[str, tuple[str, float]] = {}
 
 
 class ListingViewSet(viewsets.ReadOnlyModelViewSet):
@@ -327,21 +330,21 @@ class ResetPasswordView(APIView):
 
 def _send_otp(student: Student) -> str:
     otp = str(random.randint(100000, 999999))
-    cache.set(f'otp:{student.iuc_email}', otp, timeout=600)
+    _cache_set(f'otp:{student.iuc_email}', otp, timeout=600)
     return otp
 
 
 def _verify_otp(student: Student, otp: str) -> bool:
-    stored = cache.get(f'otp:{student.iuc_email}')
+    stored = _cache_get(f'otp:{student.iuc_email}')
     if stored and stored == otp:
-        cache.delete(f'otp:{student.iuc_email}')
+        _cache_delete(f'otp:{student.iuc_email}')
         return True
     return False
 
 
 def _send_password_reset(student: Student):
     token = hashlib.sha256(f'{student.id}{now().timestamp()}'.encode()).hexdigest()
-    cache.set(f'reset:{token}', str(student.id), timeout=900)
+    _cache_set(f'reset:{token}', str(student.id), timeout=900)
     reset_url = f'{settings.FRONTEND_URL}/reset-password?token={token}'
     send_mail(
         subject='IUC Staj - Sifre Sifirlama',
@@ -352,11 +355,39 @@ def _send_password_reset(student: Student):
 
 
 def _verify_reset_token(token: str):
-    student_id = cache.get(f'reset:{token}')
+    student_id = _cache_get(f'reset:{token}')
     if not student_id:
         return None
-    cache.delete(f'reset:{token}')
+    _cache_delete(f'reset:{token}')
     try:
         return Student.objects.get(id=student_id)
     except Student.DoesNotExist:
         return None
+
+
+def _cache_set(key: str, value: str, *, timeout: int) -> None:
+    try:
+        cache.set(key, value, timeout=timeout)
+    except Exception:
+        _volatile_cache_store[key] = (value, time() + timeout)
+
+
+def _cache_get(key: str):
+    try:
+        return cache.get(key)
+    except Exception:
+        stored = _volatile_cache_store.get(key)
+        if not stored:
+            return None
+        value, expires_at = stored
+        if expires_at <= time():
+            _volatile_cache_store.pop(key, None)
+            return None
+        return value
+
+
+def _cache_delete(key: str) -> None:
+    try:
+        cache.delete(key)
+    except Exception:
+        _volatile_cache_store.pop(key, None)
