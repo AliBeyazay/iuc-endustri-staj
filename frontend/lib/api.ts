@@ -200,7 +200,7 @@ export async function uploadCV(file: File): Promise<{ cv_url: string }> {
 
 export async function checkEmailAvailable(email: string): Promise<boolean> {
   const data = await postPublicAuth<{ available: boolean }>(
-    '/auth/check-email', { email: normalizeIucEmail(email) }
+    '/auth/check-email/', { email: normalizeIucEmail(email) }
   )
   return data.available
 }
@@ -217,7 +217,7 @@ export async function fetchAccountStatus(email: string): Promise<{
     debug_otp?: string
     delivery_method?: string
   }>(
-    '/auth/account-status', { email: normalizeIucEmail(email) }
+    '/auth/account-status/', { email: normalizeIucEmail(email) }
   )
 }
 
@@ -229,34 +229,34 @@ export async function registerUser(payload: {
   department_year: number
   linkedin_url?: string
 }): Promise<{ delivery_method?: string; debug_otp?: string }> {
-  return postPublicAuth<{ delivery_method?: string; debug_otp?: string }>('/auth/register', {
+  return postPublicAuth<{ delivery_method?: string; debug_otp?: string }>('/auth/register/', {
     ...payload,
     email: normalizeIucEmail(payload.email),
   })
 }
 
 export async function verifyOTP(email: string, otp: string): Promise<void> {
-  await postPublicAuth('/auth/verify-otp', { email: normalizeIucEmail(email), otp })
+  await postPublicAuth('/auth/verify-otp/', { email: normalizeIucEmail(email), otp })
 }
 
 export async function resendOTP(
   email: string
 ): Promise<{ delivery_method?: string; debug_otp?: string }> {
   return postPublicAuth<{ delivery_method?: string; debug_otp?: string }>(
-    '/auth/resend-otp',
+    '/auth/resend-otp/',
     { email: normalizeIucEmail(email) }
   )
 }
 
 export async function forgotPassword(email: string): Promise<void> {
-  await postPublicAuth('/auth/forgot-password', { email: normalizeIucEmail(email) })
+  await postPublicAuth('/auth/forgot-password/', { email: normalizeIucEmail(email) })
 }
 
 export async function resetPassword(
   token: string,
   password: string
 ): Promise<void> {
-  await postPublicAuth('/auth/reset-password', { token, password })
+  await postPublicAuth('/auth/reset-password/', { token, password })
 }
 
 export default api

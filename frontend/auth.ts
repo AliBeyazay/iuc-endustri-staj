@@ -26,7 +26,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const normalizedEmail = String(credentials.email).trim().toLowerCase()
 
         try {
-          const res = await fetch(`${API_URL}/auth/login`, {
+          const res = await fetch(`${API_URL}/auth/login/`, {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
             body:    JSON.stringify({
@@ -76,7 +76,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         // Register or fetch user from Django
         try {
-          await fetch(`${API_URL}/auth/google`, {
+          await fetch(`${API_URL}/auth/google/`, {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
             body:    JSON.stringify({
@@ -108,7 +108,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // Google OAuth — fetch token from Django
       if (account?.provider === 'google' && account.id_token) {
         try {
-          const res = await fetch(`${API_URL}/auth/google/token`, {
+          const res = await fetch(`${API_URL}/auth/google/token/`, {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
             body:    JSON.stringify({ id_token: account.id_token }),
