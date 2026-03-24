@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
   const cookie = request.headers.get('cookie')
 
   const headers = new Headers({ Accept: 'application/json' })
+  headers.set('ngrok-skip-browser-warning', 'true')
   if (authorization) headers.set('Authorization', authorization)
   if (cookie) headers.set('Cookie', cookie)
 

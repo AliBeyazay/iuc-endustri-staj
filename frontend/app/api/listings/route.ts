@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
   const response = await fetch(targetUrl.toString(), {
     headers: {
       Accept: 'application/json',
+      'ngrok-skip-browser-warning': 'true',
     },
     cache: 'no-store',
   })

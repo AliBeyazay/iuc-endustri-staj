@@ -28,7 +28,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         try {
           const res = await fetch(`${API_URL}/auth/login/`, {
             method:  'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
             body:    JSON.stringify({
               email:     normalizedEmail,
               iuc_email: normalizedEmail,
@@ -78,7 +78,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         try {
           await fetch(`${API_URL}/auth/google/`, {
             method:  'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
             body:    JSON.stringify({
               email:      email,
               name:       profile?.name,
@@ -110,7 +110,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         try {
           const res = await fetch(`${API_URL}/auth/google/token/`, {
             method:  'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
             body:    JSON.stringify({ id_token: account.id_token }),
           })
           if (res.ok) {

@@ -17,6 +17,7 @@ async function proxy(request: NextRequest, context: { params: Promise<{ path: st
   const cookie = request.headers.get('cookie')
 
   const headers = new Headers({ Accept: accept })
+  headers.set('ngrok-skip-browser-warning', 'true')
   if (contentType) headers.set('Content-Type', contentType)
   if (authorization) headers.set('Authorization', authorization)
   if (cookie) headers.set('Cookie', cookie)

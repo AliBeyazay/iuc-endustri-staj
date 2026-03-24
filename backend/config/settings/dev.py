@@ -2,7 +2,7 @@ from .base import *
 import os
 
 DEBUG = True
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'backend', 'frontend']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'backend', 'frontend', '.ngrok-free.dev', '.ngrok.io']
 
 # In development, use real SMTP when credentials are configured.
 email_user = os.environ.get('EMAIL_HOST_USER', '').strip()

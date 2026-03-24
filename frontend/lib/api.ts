@@ -13,7 +13,7 @@ const browserPublicApiBaseUrl = browserApiBaseUrl
 
 const api = axios.create({
   baseURL: typeof window === 'undefined' ? serverApiBaseUrl : browserApiBaseUrl,
-  headers: { 'Content-Type': 'application/json' },
+  headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
 })
 
 export function normalizeIucEmail(email: string) {
@@ -27,6 +27,7 @@ async function postPublicAuth<T>(path: string, payload: unknown): Promise<T> {
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
+      'ngrok-skip-browser-warning': 'true',
     },
     body: JSON.stringify(payload),
     cache: 'no-store',
