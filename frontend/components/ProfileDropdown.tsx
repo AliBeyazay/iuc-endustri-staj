@@ -85,7 +85,7 @@ export default function ProfileDropdown() {
             {/* menu items */}
             <div className="p-2">
               <Link
-                href="/dashboard"
+                href="/listings"
                 onClick={() => setOpen(false)}
                 className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-[#f7ecd0] transition-colors hover:bg-white/10"
               >
