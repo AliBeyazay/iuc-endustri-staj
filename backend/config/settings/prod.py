@@ -1,10 +1,26 @@
 from .base import *
 import os
+import dj_database_url
 
 DEBUG = False
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+
+# Railway provides DATABASE_URL; fall back to individual DB_* vars from base.py
+_database_url = os.environ.get('DATABASE_URL')
+if _database_url:
+    DATABASES = {
+        'default': dj_database_url.parse(_database_url, conn_max_age=600),
+    }
+
 MIDDLEWARE = ['config.healthcheck.HealthcheckMiddleware', 'django.middleware.security.SecurityMiddleware', 'whitenoise.middleware.WhiteNoiseMiddleware', *[m for m in MIDDLEWARE if m not in ('config.healthcheck.HealthcheckMiddleware', 'django.middleware.security.SecurityMiddleware')]]
+
+# CORS — allow Vercel frontend
+CORS_ALLOWED_ORIGINS = os.environ.get(
+    'CORS_ALLOWED_ORIGINS',
+    'https://iuc-endustri-staj.vercel.app,http://localhost:3000',
+).split(',')
+CORS_ALLOW_CREDENTIALS = True
 
 # Security
 SECURE_PROXY_SSL_HEADER    = ('HTTP_X_FORWARDED_PROTO', 'https')
