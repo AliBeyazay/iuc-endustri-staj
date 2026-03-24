@@ -96,7 +96,7 @@ export default function ProfileDropdown() {
               </Link>
 
               <Link
-                href="/dashboard#profile"
+                href="/profile"
                 onClick={() => setOpen(false)}
                 className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-[#f7ecd0] transition-colors hover:bg-white/10"
               >
@@ -107,7 +107,7 @@ export default function ProfileDropdown() {
               </Link>
 
               <Link
-                href="/dashboard#saved"
+                href="/saved"
                 onClick={() => setOpen(false)}
                 className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-[#f7ecd0] transition-colors hover:bg-white/10"
               >
