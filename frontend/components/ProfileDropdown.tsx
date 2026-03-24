@@ -85,17 +85,6 @@ export default function ProfileDropdown() {
             {/* menu items */}
             <div className="p-2">
               <Link
-                href="/listings"
-                onClick={() => setOpen(false)}
-                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-[#f7ecd0] transition-colors hover:bg-white/10"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#d8ad43]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
-                İlanlar
-              </Link>
-
-              <Link
                 href="/dashboard"
                 onClick={() => setOpen(false)}
                 className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-[#f7ecd0] transition-colors hover:bg-white/10"
@@ -107,17 +96,6 @@ export default function ProfileDropdown() {
               </Link>
 
               <Link
-                href="/dashboard#saved"
-                onClick={() => setOpen(false)}
-                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-[#f7ecd0] transition-colors hover:bg-white/10"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#d8ad43]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                </svg>
-                Kaydedilenler
-              </Link>
-
-              <Link
                 href="/dashboard#profile"
                 onClick={() => setOpen(false)}
                 className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-[#f7ecd0] transition-colors hover:bg-white/10"
@@ -126,6 +104,17 @@ export default function ProfileDropdown() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
                 Profil
+              </Link>
+
+              <Link
+                href="/dashboard#saved"
+                onClick={() => setOpen(false)}
+                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-[#f7ecd0] transition-colors hover:bg-white/10"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#d8ad43]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                </svg>
+                Kaydedilenler
               </Link>
             </div>
 
