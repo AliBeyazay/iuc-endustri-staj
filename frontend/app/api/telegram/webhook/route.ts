@@ -9,6 +9,12 @@ type TelegramUpdate = {
   }
 }
 
+type OpenAiResult = {
+  ok: boolean
+  text?: string
+  error?: string
+}
+
 function getEnv(name: string) {
   const value = process.env[name]
   return value && value.trim() ? value.trim() : null
@@ -26,7 +32,11 @@ async function sendTelegramMessage(chatId: number, text: string, token: string) 
   })
 }
 
-async function generateReply(userText: string, openAiApiKey: string, model: string) {
+async function requestOpenAiReply(
+  userText: string,
+  openAiApiKey: string,
+  model: string,
+): Promise<OpenAiResult> {
   const response = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST',
     headers: {
@@ -50,11 +60,43 @@ async function generateReply(userText: string, openAiApiKey: string, model: stri
   })
 
   if (!response.ok) {
-    return 'Şu anda yanıt üretirken bir sorun oluştu. Lütfen tekrar dene.'
+    let errorMessage = `OpenAI ${response.status}`
+    try {
+      const errorData = (await response.json()) as {
+        error?: { message?: string; code?: string }
+      }
+      if (errorData?.error?.message) {
+        errorMessage = errorData.error.message
+      }
+    } catch {
+      // Keep status-based fallback message.
+    }
+    return { ok: false, error: errorMessage }
   }
 
   const data = (await response.json()) as { output_text?: string }
-  return data.output_text?.trim() || 'Bu mesaja yanıt üretemedim. Başka bir şekilde dener misin?'
+  const text = data.output_text?.trim()
+  if (!text) {
+    return { ok: false, error: 'Bos yanit alindi' }
+  }
+
+  return { ok: true, text }
+}
+
+async function generateReply(userText: string, openAiApiKey: string, model: string) {
+  const models = Array.from(new Set([model, 'gpt-4.1-mini']))
+  let lastError = 'Bilinmeyen hata'
+
+  for (const currentModel of models) {
+    const result = await requestOpenAiReply(userText, openAiApiKey, currentModel)
+    if (result.ok && result.text) {
+      return result.text
+    }
+    lastError = result.error ?? lastError
+    console.error('Telegram bot OpenAI call failed', { model: currentModel, error: lastError })
+  }
+
+  return 'Su anda yanit uretirken bir sorun olustu. Lutfen biraz sonra tekrar dene.'
 }
 
 export async function POST(request: NextRequest) {
@@ -83,7 +125,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (messageText === '/start') {
-    await sendTelegramMessage(chatId, 'Merhaba. Mesajını yaz, ben cevaplayayım.', telegramToken)
+    await sendTelegramMessage(chatId, 'Merhaba. Mesajini yaz, ben cevaplayayim.', telegramToken)
     return NextResponse.json({ ok: true })
   }
 
