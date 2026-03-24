@@ -273,21 +273,31 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
               İlan Açıklaması
             </h2>
 
-            <div className="mt-4 space-y-5">
+            <div className="mt-4 space-y-4">
               {visibleBlocks.map((block, index) => {
                 const isSectionTitle =
-                  block.length < 42 && !/[.!?]/.test(block) && block.split(' ').length <= 5
+                  block.length < 50 && !/[.!?]/.test(block) && block.split(' ').length <= 6
+
+                const isNumberedItem = /^\d+\s*[.)-]/.test(block)
 
                 if (isSectionTitle) {
                   return (
-                    <h3 key={`${block}-${index}`} className="text-sm font-semibold text-[#8f670b]">
+                    <h3 key={`${block}-${index}`} className="text-sm font-semibold text-[#8f670b] pt-1">
                       {block}
                     </h3>
                   )
                 }
 
+                if (isNumberedItem) {
+                  return (
+                    <p key={`${block}-${index}`} className="text-sm leading-7 text-[#173156]/82 pl-3 border-l-2 border-[#d8ad43]/25">
+                      {block}
+                    </p>
+                  )
+                }
+
                 return (
-                  <p key={`${block}-${index}`} className="text-sm leading-8 text-[#173156]/82">
+                  <p key={`${block}-${index}`} className="text-sm leading-7 text-[#173156]/82">
                     {block}
                   </p>
                 )

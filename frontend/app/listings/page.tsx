@@ -333,6 +333,14 @@ function cleanSummaryText(raw?: string | null) {
   if (!raw) return ''
 
   let text = raw
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\bShow more\b/gi, '')
+    .replace(/\bShow less\b/gi, '')
     .replace(/\r/g, '\n')
     .replace(/\t/g, ' ')
     .replace(/\u00a0/g, ' ')

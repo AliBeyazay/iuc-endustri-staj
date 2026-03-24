@@ -116,7 +116,27 @@ export function formatDateTurkish(dateStr: string): string {
 export function formatListingDescription(raw: string): string[] {
   if (!raw) return []
 
+  // Decode HTML entities
   let text = raw
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&#x27;/g, "'")
+    .replace(/&#x2F;/g, '/')
+
+  // Remove scraped UI artifacts
+  text = text
+    .replace(/\bShow more\b/gi, '')
+    .replace(/\bShow less\b/gi, '')
+    .replace(/\bDaha fazla göster\b/gi, '')
+    .replace(/\bDaha az göster\b/gi, '')
+    .replace(/\bDevamını oku\b/gi, '')
+    .replace(/\bDevamını gör\b/gi, '')
+
+  text = text
     .replace(/\s+/g, ' ')
     .replace(/\s([:;,.!?])/g, '$1')
     .trim()
@@ -210,12 +230,12 @@ export function formatListingDescription(raw: string): string[] {
     .filter((block, index, all) => all.indexOf(block) === index)
 
   const cleanedBlocks = blocks.flatMap((block) => {
-    if (block.length <= 140) return [block]
+    if (block.length <= 200) return [block]
 
     return block
       .replace(/(\d+\s*[.)-]\s+)/g, '\n$1')
       .replace(
-        /\s+(?=(Kimler Başvurabilir|Başvuru Süreci|Başvuru Dönemi|Staj Dönemi|Genel Yetenek Testi|Video Mülakat|Mülakat|Teklif|Program Hakkında|Seçim Süreci))/gi,
+        /\s+(?=(Kimler Başvurabilir|Başvuru Süreci|Başvuru Dönemi|Staj Dönemi|Genel Yetenek Testi|Video Mülakat|Mülakat|Teklif|Program Hakkında|Seçim Süreci|Peki seni neler bekliyor|Senin de başvurunu bekliyoruz))/gi,
         '\n'
       )
       .replace(/([.!?])\s+(?=[A-ZÇĞİÖŞÜ0-9])/g, '$1\n')
@@ -224,7 +244,7 @@ export function formatListingDescription(raw: string): string[] {
       .filter(Boolean)
       .reduce<string[]>((parts, part) => {
         const previous = parts[parts.length - 1]
-        if (previous && previous.length < 90 && part.length < 90) {
+        if (previous && previous.length < 140 && part.length < 140 && !part.match(/^\d+\s*[.)-]/)) {
           parts[parts.length - 1] = `${previous} ${part}`
         } else {
           parts.push(part)
@@ -234,14 +254,14 @@ export function formatListingDescription(raw: string): string[] {
   })
 
   if (cleanedBlocks.length > 0) {
-    return cleanedBlocks.slice(0, 10)
+    return cleanedBlocks.slice(0, 20)
   }
 
   return text
     .split(/(?<=[.!?])\s+/)
     .map((part) => part.trim())
     .filter(Boolean)
-    .slice(0, 6)
+    .slice(0, 10)
 }
 
 export function getDeadlineDisplay(listing: Listing): {
