@@ -46,13 +46,13 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <div className="flex-1 bg-[#f3efe5] text-[#132843]">
         {/* Mobile navbar - only visible on small screens */}
         <div className="lg:hidden campus-nav px-4 py-3 flex items-center gap-3">
-          <Link href="/listings" className="flex items-center gap-3">
+          <Link href="/listings" className="flex items-center gap-3 min-w-0">
             <UniversityLogo className="h-10 w-10 shrink-0" />
-            <div>
-              <div className="campus-brand text-base leading-tight text-white">
+            <div className="min-w-0">
+              <div className="campus-brand text-[11px] xs:text-xs sm:text-sm leading-tight text-white whitespace-nowrap">
                 {'\u0130STANBUL \u00dcN\u0130VERS\u0130TES\u0130 CERRAHPA\u015eA'}
               </div>
-              <div className="text-[10px] uppercase tracking-[0.18em] text-[#f4e3b3]/78">
+              <div className="text-[9px] xs:text-[10px] uppercase tracking-[0.14em] xs:tracking-[0.18em] text-[#f4e3b3]/78 whitespace-nowrap">
                 {'End\u00fcstri M\u00fchendisli\u011fi Staj Platformu'}
               </div>
             </div>
