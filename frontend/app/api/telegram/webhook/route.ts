@@ -96,7 +96,8 @@ async function generateReply(userText: string, openAiApiKey: string, model: stri
     console.error('Telegram bot OpenAI call failed', { model: currentModel, error: lastError })
   }
 
-  return 'Su anda yanit uretirken bir sorun olustu. Lutfen biraz sonra tekrar dene.'
+  const shortError = lastError.length > 180 ? `${lastError.slice(0, 180)}...` : lastError
+  return `OpenAI baglantisi basarisiz: ${shortError}`
 }
 
 export async function POST(request: NextRequest) {
@@ -134,4 +135,3 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({ ok: true })
 }
-
