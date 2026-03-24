@@ -15,7 +15,7 @@ import {
 } from '@/lib/api'
 import { BookmarkedListing, DashboardStats, UserProfile } from '@/types'
 import { getAvatarColor, getDeadlineDisplay, getInitials, FOCUS_AREA_LABELS, FOCUS_AREA_COLORS, PLATFORM_LABELS, timeAgoTurkish } from '@/lib/helpers'
-import MobileBottomNav from '@/components/MobileBottomNav'
+import ProfileDropdown from '@/components/ProfileDropdown'
 import UniversityLogo from '@/components/UniversityLogo'
 
 function BookmarkCard({
@@ -244,7 +244,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="campus-shell min-h-screen pb-24 lg:pb-0">
+    <div className="campus-shell min-h-screen">
       <nav className="campus-nav sticky top-0 z-10 flex items-center justify-between gap-3 px-4 py-3 sm:px-5">
         <Link href="/listings" className="relative z-10 flex min-w-0 items-center gap-3">
           <UniversityLogo className="h-11 w-11 shrink-0 sm:h-12 sm:w-12" />
@@ -257,21 +257,7 @@ export default function DashboardPage() {
             </p>
           </div>
         </Link>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => router.push('/listings')}
-            className="hidden rounded-full border border-[#d8ad43]/35 bg-white/8 px-3 py-2 text-xs font-semibold text-[#f7ecd0] transition-colors hover:bg-white/14 sm:inline-flex"
-          >
-            İlanlar
-          </button>
-          <button
-            onClick={() => router.push('/dashboard')}
-            className="flex h-10 min-w-10 items-center justify-center rounded-full border border-[#d8ad43]/35 bg-[#f1d27e] px-2 text-[10px] font-bold text-[#10223b] shadow-[0_6px_20px_rgba(0,0,0,0.18)]"
-            aria-label="Profil"
-          >
-            {profile ? getInitials(profile.full_name) : '??'}
-          </button>
-        </div>
+        <ProfileDropdown />
       </nav>
 
       <div className="mx-auto grid max-w-5xl grid-cols-1 gap-4 px-3 py-4 sm:px-4 sm:py-5 lg:grid-cols-[1fr_260px] lg:gap-5">
@@ -532,7 +518,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <MobileBottomNav current="profile" />
+
     </div>
   )
 }

@@ -19,7 +19,7 @@ import {
 } from '@/lib/helpers'
 import { createReview, fetchSimilarListings } from '@/lib/api'
 import { useBookmarks, useReviews } from '@/hooks'
-import MobileBottomNav from '@/components/MobileBottomNav'
+import ProfileDropdown from '@/components/ProfileDropdown'
 import UniversityLogo from '@/components/UniversityLogo'
 
 const INTERNSHIP_LABEL: Record<string, string> = {
@@ -201,12 +201,15 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
             </div>
           </Link>
 
-          <button
-            onClick={() => router.back()}
-            className="rounded-full border border-white/18 bg-white/8 px-3 py-2 text-xs font-semibold text-[#f7ecd0] transition-colors hover:bg-white/14"
-          >
-            Geri
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => router.back()}
+              className="rounded-full border border-white/18 bg-white/8 px-3 py-2 text-xs font-semibold text-[#f7ecd0] transition-colors hover:bg-white/14"
+            >
+              Geri
+            </button>
+            <ProfileDropdown />
+          </div>
         </div>
       </nav>
 
@@ -538,7 +541,7 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
         </aside>
       </div>
 
-      <MobileBottomNav current="detail" />
+
     </div>
   )
 }
