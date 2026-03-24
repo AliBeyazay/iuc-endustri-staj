@@ -1,0 +1,9 @@
+[build]
+dockerfilePath = "backend/Dockerfile.scraper"
+buildContext = "backend"
+watchPatterns = ["backend/**"]
+
+[deploy]
+# Railway cron: runs daily at 08:00 Istanbul time (05:00 UTC)
+cronSchedule = "0 5 * * *"
+restartPolicyType = "NEVER"
