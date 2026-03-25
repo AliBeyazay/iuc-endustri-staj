@@ -1,8 +1,33 @@
+import re
+
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.exceptions import AuthenticationFailed
 
 from .models import Bookmark, Listing, Review, Student
+
+
+def clean_company_name(name: str) -> str:
+    """Strip scraping artifacts from company_name."""
+    if not name:
+        return name
+    # Remove common metadata patterns scraped from job pages
+    patterns = [
+        r'Şehir/City\s*[^İı]*',           # "Şehir/City İstanbul(Avr.) ..."
+        r'İlan Bilgileri/?Job Announcement Info',
+        r'Firma Adı/?Company Name',
+        r'Sektör/?Sector[^\s]*',
+        r'Çalışan Sayısı/?Number of Employees[^\s]*',
+    ]
+    for pat in patterns:
+        name = re.sub(pat, '', name, flags=re.IGNORECASE).strip()
+    # Collapse multiple spaces
+    name = re.sub(r'\s{2,}', ' ', name).strip()
+    # If the remaining name is duplicated (e.g. "TEB A.Ş. TEB A.Ş."), deduplicate
+    half = len(name) // 2
+    if half > 3 and name[:half].strip() == name[half:].strip():
+        name = name[:half].strip()
+    return name
 
 
 class ListingSerializer(serializers.ModelSerializer):
@@ -20,6 +45,11 @@ class ListingSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['company_name'] = clean_company_name(data.get('company_name', ''))
+        return data
+
 
 class ListingListSerializer(serializers.ModelSerializer):
     class Meta:
@@ -33,6 +63,11 @@ class ListingListSerializer(serializers.ModelSerializer):
             'is_active', 'is_talent_program', 'program_type', 'duration_weeks',
             'created_at',
         ]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['company_name'] = clean_company_name(data.get('company_name', ''))
+        return data
 
 
 class ReviewSerializer(serializers.ModelSerializer):

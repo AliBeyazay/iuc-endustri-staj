@@ -20,6 +20,31 @@ os.environ.setdefault('DJANGO_ALLOW_ASYNC_UNSAFE', 'true')
 django.setup()
 
 
+class CompanyNameCleanPipeline:
+    """Strip scraped metadata artifacts from company_name."""
+
+    PATTERNS = [
+        r'Şehir/City\s*[^İı]*',
+        r'İlan Bilgileri/?Job Announcement Info',
+        r'Firma Adı/?Company Name',
+        r'Sektör/?Sector[^\s]*',
+        r'Çalışan Sayısı/?Number of Employees[^\s]*',
+    ]
+
+    def process_item(self, item, spider):
+        adapter = ItemAdapter(item)
+        name = adapter.get('company_name', '')
+        if name:
+            for pat in self.PATTERNS:
+                name = re.sub(pat, '', name, flags=re.IGNORECASE).strip()
+            name = re.sub(r'\s{2,}', ' ', name).strip()
+            half = len(name) // 2
+            if half > 3 and name[:half].strip() == name[half:].strip():
+                name = name[:half].strip()
+            adapter['company_name'] = name
+        return item
+
+
 class DeadlineValidationPipeline:
     """
     Validates deadline before DB save.

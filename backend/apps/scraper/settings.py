@@ -31,6 +31,7 @@ PLAYWRIGHT_LAUNCH_OPTIONS  = {
 TWISTED_REACTOR = 'twisted.internet.asyncioreactor.AsyncioSelectorReactor'
 
 ITEM_PIPELINES = {
+    'apps.scraper.pipelines.CompanyNameCleanPipeline': 50,
     'apps.scraper.pipelines.DeadlineValidationPipeline': 100,
     'apps.scraper.pipelines.DjangoORMPipeline': 200,
 }
