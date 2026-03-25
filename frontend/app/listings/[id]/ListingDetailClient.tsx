@@ -202,12 +202,6 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
           </Link>
 
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => router.back()}
-              className="rounded-full border border-white/18 bg-white/8 px-3 py-2 text-xs font-semibold text-[#f7ecd0] transition-colors hover:bg-white/14"
-            >
-              Geri
-            </button>
             <ProfileDropdown />
           </div>
         </div>
