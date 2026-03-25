@@ -8,7 +8,7 @@ from time import time
 from django.conf import settings
 from django.core.cache import cache
 from django.core.mail import send_mail
-from django.db.models import Avg
+from django.db.models import Avg, Q
 from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, permissions, status, viewsets
@@ -38,6 +38,16 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
     ordering_fields = ['created_at', 'application_deadline', 'company_name', 'em_focus_confidence']
     ordering = ['-created_at']
 
+    # Endüstri mühendisliğiyle ilgisiz ilanları filtrele
+    NEGATIVE_KEYWORDS = [
+        'avukat', 'hukuk', 'savcı', 'noter', 'icra',
+        'eczacı', 'eczane', 'eczacılık',
+        'diş hekimi', 'dişçi', 'diş kliniği',
+        'veteriner',
+        'kuaför', 'berber', 'güzellik salonu',
+        'aşçı', 'aşçıbaşı', 'pastane',
+    ]
+
     def get_serializer_class(self):
         if self.action == 'list':
             return ListingListSerializer
@@ -48,6 +58,14 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
         exclude_id = self.request.query_params.get('exclude')
         if exclude_id:
             qs = qs.exclude(id=exclude_id)
+
+        # Negatif anahtar kelime filtresi
+        neg = Q()
+        for kw in self.NEGATIVE_KEYWORDS:
+            neg |= Q(title__icontains=kw) | Q(company_name__icontains=kw)
+        if neg:
+            qs = qs.exclude(neg)
+
         return qs
 
     def list(self, request, *args, **kwargs):
