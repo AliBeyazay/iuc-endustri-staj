@@ -192,6 +192,15 @@ export default function DashboardPage() {
     }
   }, [router, status])
 
+  useEffect(() => {
+    if (window.location.hash === '#notifications') {
+      setNotifOpen(true)
+      setTimeout(() => {
+        document.getElementById('notifications')?.scrollIntoView({ behavior: 'smooth' })
+      }, 100)
+    }
+  }, [])
+
   const shouldFetchProtectedData = status === 'authenticated'
 
   const { data: statsData } = useSWR<DashboardStats>(
@@ -530,7 +539,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Bildirim Ayarları */}
-          <div className="campus-card rounded-2xl p-4">
+          <div id="notifications" className="campus-card scroll-mt-24 rounded-2xl p-4">
             <button
               onClick={() => setNotifOpen(!notifOpen)}
               className="flex w-full items-center justify-between"
