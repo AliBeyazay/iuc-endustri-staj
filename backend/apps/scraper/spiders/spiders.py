@@ -146,6 +146,7 @@ def fetch_remote_logo_url(url: str | None, *, company_name: str = "") -> str | N
             allow_redirects=True,
         )
         response.raise_for_status()
+        response.encoding = response.apparent_encoding or 'utf-8'
     except Exception:
         return None
 
@@ -397,6 +398,7 @@ def fetch_remote_html(url: str) -> str:
             allow_redirects=True,
             headers={"User-Agent": "Mozilla/5.0"},
         )
+        response.encoding = response.apparent_encoding or 'utf-8'
         content_type = (response.headers.get("content-type") or "").lower()
         if "text/html" not in content_type and "application/xhtml" not in content_type:
             return ""
@@ -658,11 +660,13 @@ class ItuKariyerLinkedinSpider(BaseEMSpider):
     )
 
     def parse(self, response):
-        html = requests.get(
+        resp = requests.get(
             response.url,
             timeout=30,
             headers={"User-Agent": "Mozilla/5.0"},
-        ).text
+        )
+        resp.encoding = resp.apparent_encoding or 'utf-8'
+        html = resp.text
         soup = BeautifulSoup(html, "html.parser")
 
         for card in soup.select("article[data-id='main-feed-card']"):

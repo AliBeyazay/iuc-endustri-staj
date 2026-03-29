@@ -20,6 +20,51 @@ os.environ.setdefault('DJANGO_ALLOW_ASYNC_UNSAFE', 'true')
 django.setup()
 
 
+# ── Common Turkish-char mojibake repair map ──────────────────────────────────
+_MOJIBAKE_MAP = {
+    'Ã¼': 'ü', 'Ã¶': 'ö', 'Ã§': 'ç', 'ÅŸ': 'ş', 'Äž': 'Ğ', 'Ä°': 'İ',
+    'Ä±': 'ı', 'Ã–': 'Ö', 'Ãœ': 'Ü', 'Ã‡': 'Ç', 'Åž': 'Ş', 'ÄŸ': 'ğ',
+    '\x00': '', '\ufffd': '',
+}
+_MOJIBAKE_RE = re.compile('|'.join(re.escape(k) for k in _MOJIBAKE_MAP))
+
+# Characters that become ? when encoding fails
+_TR_CHARS = 'çÇğĞıİöÖşŞüÜ'
+
+
+def repair_turkish_text(text: str) -> str:
+    """Fix common Turkish character encoding issues."""
+    if not text:
+        return text
+    # Fix mojibake sequences
+    text = _MOJIBAKE_RE.sub(lambda m: _MOJIBAKE_MAP[m.group()], text)
+    # If ? appears where a Turkish char should be, try re-encoding
+    if '?' in text:
+        for enc in ('latin-1', 'iso-8859-9', 'cp1254'):
+            try:
+                candidate = text.encode(enc).decode('utf-8')
+                if '?' not in candidate or candidate.count('?') < text.count('?'):
+                    text = candidate
+                    break
+            except (UnicodeDecodeError, UnicodeEncodeError):
+                continue
+    return text
+
+
+class EncodingRepairPipeline:
+    """Repair Turkish character encoding issues in text fields."""
+
+    TEXT_FIELDS = ('title', 'company_name', 'description', 'requirements', 'location')
+
+    def process_item(self, item, spider):
+        adapter = ItemAdapter(item)
+        for field in self.TEXT_FIELDS:
+            val = adapter.get(field)
+            if val and isinstance(val, str):
+                adapter[field] = repair_turkish_text(val)
+        return item
+
+
 class CompanyNameCleanPipeline:
     """Strip scraped metadata artifacts from company_name."""
 
