@@ -4,9 +4,11 @@ import unicodedata
 from datetime import date
 from difflib import SequenceMatcher
 from pathlib import Path
-from urllib.parse import urlsplit, urlunsplit
+from urllib.parse import urlsplit, urlunsplit, urlparse
 
+import requests as http_requests
 import django
+from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from itemadapter import ItemAdapter
 
@@ -87,6 +89,158 @@ class CompanyNameCleanPipeline:
             if half > 3 and name[:half].strip() == name[half:].strip():
                 name = name[:half].strip()
             adapter['company_name'] = name
+        return item
+
+
+class LogoEnrichmentPipeline:
+    """Find company logo when spider didn't provide one."""
+
+    # Well-known company domain mappings for Turkish companies
+    KNOWN_DOMAINS = {
+        'tiktok': 'tiktok.com',
+        'mercedes-benz': 'mercedes-benz.com.tr',
+        'mercedes': 'mercedes-benz.com.tr',
+        'ford': 'ford.com.tr',
+        'toyota': 'toyota.com.tr',
+        'bosch': 'bosch.com.tr',
+        'siemens': 'siemens.com.tr',
+        'arçelik': 'arcelik.com.tr',
+        'vestel': 'vestel.com.tr',
+        'koç': 'koc.com.tr',
+        'sabancı': 'sabanci.com',
+        'turkcell': 'turkcell.com.tr',
+        'türk telekom': 'turktelekom.com.tr',
+        'thy': 'turkishairlines.com',
+        'türk hava yolları': 'turkishairlines.com',
+        'aselsan': 'aselsan.com.tr',
+        'havelsan': 'havelsan.com.tr',
+        'tusaş': 'tusas.com',
+        'roketsan': 'roketsan.com.tr',
+        'baykar': 'baykartech.com',
+        'tüpraş': 'tupras.com.tr',
+        'petkim': 'petkim.com.tr',
+        'enerjisa': 'enerjisa.com.tr',
+        'akbank': 'akbank.com',
+        'garanti': 'garantibbva.com.tr',
+        'yapı kredi': 'yapikredi.com.tr',
+        'iş bankası': 'isbank.com.tr',
+        'ziraat': 'ziraatbank.com.tr',
+        'halkbank': 'halkbank.com.tr',
+        'qnb finansbank': 'qnb.com.tr',
+        'denizbank': 'denizbank.com',
+        'doğuş': 'dogus.com.tr',
+        'otokoç': 'otokoc.com.tr',
+        'unilever': 'unilever.com.tr',
+        'p&g': 'pg.com',
+        'procter': 'pg.com',
+        'nestlé': 'nestle.com.tr',
+        'nestle': 'nestle.com.tr',
+        'coca-cola': 'coca-cola.com.tr',
+        'pepsi': 'pepsico.com.tr',
+        'amazon': 'amazon.com.tr',
+        'google': 'google.com',
+        'microsoft': 'microsoft.com',
+        'meta': 'meta.com',
+        'apple': 'apple.com',
+        'huawei': 'huawei.com',
+        'samsung': 'samsung.com',
+        'lg': 'lg.com',
+        'hp': 'hp.com',
+        'dell': 'dell.com',
+        'intel': 'intel.com',
+        'bmw': 'bmw.com.tr',
+        'audi': 'audi.com.tr',
+        'volkswagen': 'volkswagen.com.tr',
+        'hyundai': 'hyundai.com.tr',
+        'renault': 'renault.com.tr',
+        'fiat': 'fiat.com.tr',
+        'honda': 'honda.com.tr',
+        'tofaş': 'tofas.com.tr',
+    }
+
+    def _domain_from_url(self, url):
+        """Extract clean domain from URL."""
+        if not url:
+            return None
+        try:
+            parsed = urlparse(url)
+            domain = parsed.netloc or parsed.path
+            domain = domain.split(':')[0]  # remove port
+            if domain.startswith('www.'):
+                domain = domain[4:]
+            return domain if '.' in domain else None
+        except Exception:
+            return None
+
+    def _find_domain_for_company(self, company_name, application_url):
+        """Try to resolve a domain for the company."""
+        # 1. Try known domains map
+        name_lower = (company_name or '').lower().strip()
+        for key, domain in self.KNOWN_DOMAINS.items():
+            if key in name_lower:
+                return domain
+
+        # 2. Try application URL domain
+        domain = self._domain_from_url(application_url)
+        if domain:
+            # Skip job board domains - we want the company domain
+            job_boards = (
+                'linkedin.com', 'kariyer.net', 'youthall.com', 'indeed.com',
+                'glassdoor.com', 'anbea.co', 'toptalent.co', 'savunmakariyer.com',
+                'boomerangkariyergunleri.com',
+            )
+            if not any(jb in domain for jb in job_boards):
+                return domain
+
+        return None
+
+    def _fetch_logo_from_domain(self, domain):
+        """Try multiple methods to get a logo for a domain."""
+        # Method 1: Google favicon service (always works, high-res)
+        google_url = f'https://www.google.com/s2/favicons?domain={domain}&sz=128'
+        try:
+            resp = http_requests.head(google_url, timeout=5, allow_redirects=True)
+            if resp.status_code == 200:
+                content_type = (resp.headers.get('content-type') or '').lower()
+                # Google returns a default globe icon for unknown domains
+                content_length = int(resp.headers.get('content-length', 0))
+                if content_length > 500:  # real logos are > 500 bytes
+                    return google_url
+        except Exception:
+            pass
+
+        # Method 2: Clearbit logo API (free, high quality)
+        clearbit_url = f'https://logo.clearbit.com/{domain}'
+        try:
+            resp = http_requests.head(clearbit_url, timeout=5, allow_redirects=True)
+            if resp.status_code == 200:
+                return clearbit_url
+        except Exception:
+            pass
+
+        return None
+
+    def process_item(self, item, spider):
+        adapter = ItemAdapter(item)
+        logo = adapter.get('company_logo_url')
+
+        if logo:
+            return item  # already has logo
+
+        company = adapter.get('company_name', '')
+        app_url = adapter.get('application_url', '')
+
+        domain = self._find_domain_for_company(company, app_url)
+        if domain:
+            logo_url = self._fetch_logo_from_domain(domain)
+            if logo_url:
+                adapter['company_logo_url'] = logo_url
+                spider.logger.info(f'LOGO_FOUND: {company} -> {logo_url}')
+            else:
+                spider.logger.debug(f'LOGO_NOT_FOUND: {company} (domain={domain})')
+        else:
+            spider.logger.debug(f'NO_DOMAIN: {company}')
+
         return item
 
 

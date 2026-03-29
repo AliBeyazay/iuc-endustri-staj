@@ -1,10 +1,86 @@
 import re
+from urllib.parse import urlparse
 
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.exceptions import AuthenticationFailed
 
 from .models import Bookmark, Listing, Review, Student
+
+
+# Well-known company domain mappings
+_KNOWN_DOMAINS = {
+    'tiktok': 'tiktok.com',
+    'mercedes-benz': 'mercedes-benz.com.tr',
+    'mercedes': 'mercedes-benz.com.tr',
+    'ford': 'ford.com.tr',
+    'toyota': 'toyota.com.tr',
+    'bosch': 'bosch.com.tr',
+    'siemens': 'siemens.com.tr',
+    'arçelik': 'arcelik.com.tr',
+    'vestel': 'vestel.com.tr',
+    'koç': 'koc.com.tr',
+    'sabancı': 'sabanci.com',
+    'turkcell': 'turkcell.com.tr',
+    'türk telekom': 'turktelekom.com.tr',
+    'thy': 'turkishairlines.com',
+    'türk hava yolları': 'turkishairlines.com',
+    'aselsan': 'aselsan.com.tr',
+    'havelsan': 'havelsan.com.tr',
+    'tusaş': 'tusas.com',
+    'roketsan': 'roketsan.com.tr',
+    'baykar': 'baykartech.com',
+    'akbank': 'akbank.com',
+    'garanti': 'garantibbva.com.tr',
+    'yapı kredi': 'yapikredi.com.tr',
+    'iş bankası': 'isbank.com.tr',
+    'unilever': 'unilever.com.tr',
+    'nestlé': 'nestle.com.tr',
+    'nestle': 'nestle.com.tr',
+    'coca-cola': 'coca-cola.com.tr',
+    'amazon': 'amazon.com.tr',
+    'google': 'google.com',
+    'microsoft': 'microsoft.com',
+    'meta': 'meta.com',
+    'samsung': 'samsung.com',
+    'bmw': 'bmw.com.tr',
+    'volkswagen': 'volkswagen.com.tr',
+    'coral travel': 'coraltravel.com.tr',
+    'beymen': 'beymen.com',
+}
+
+_JOB_BOARDS = (
+    'linkedin.com', 'kariyer.net', 'youthall.com', 'indeed.com',
+    'glassdoor.com', 'anbea.co', 'toptalent.co', 'savunmakariyer.com',
+)
+
+
+def _get_logo_fallback(company_name, application_url):
+    """Generate a fallback logo URL using Google Favicons."""
+    name_lower = (company_name or '').lower().strip()
+    domain = None
+
+    # Try known domains first
+    for key, d in _KNOWN_DOMAINS.items():
+        if key in name_lower:
+            domain = d
+            break
+
+    # Try application URL domain
+    if not domain and application_url:
+        try:
+            parsed = urlparse(application_url)
+            d = parsed.netloc or ''
+            if d.startswith('www.'):
+                d = d[4:]
+            if '.' in d and not any(jb in d for jb in _JOB_BOARDS):
+                domain = d
+        except Exception:
+            pass
+
+    if domain:
+        return f'https://www.google.com/s2/favicons?domain={domain}&sz=128'
+    return None
 
 
 def clean_company_name(name: str) -> str:
@@ -48,6 +124,11 @@ class ListingSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data['company_name'] = clean_company_name(data.get('company_name', ''))
+        if not data.get('company_logo_url'):
+            data['company_logo_url'] = _get_logo_fallback(
+                data.get('company_name', ''),
+                data.get('application_url', ''),
+            )
         return data
 
 
@@ -67,6 +148,11 @@ class ListingListSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data['company_name'] = clean_company_name(data.get('company_name', ''))
+        if not data.get('company_logo_url'):
+            data['company_logo_url'] = _get_logo_fallback(
+                data.get('company_name', ''),
+                data.get('application_url', ''),
+            )
         return data
 
 
