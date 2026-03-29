@@ -18,23 +18,6 @@ import { getAvatarColor, getDeadlineDisplay, getInitials, FOCUS_AREA_LABELS, FOC
 import ProfileDropdown from '@/components/ProfileDropdown'
 import ThemeToggle from '@/components/ThemeToggle'
 import UniversityLogo from '@/components/UniversityLogo'
-import OnboardingTour, { TourStep } from '@/components/OnboardingTour'
-
-const DASHBOARD_TOUR_STEPS: TourStep[] = [
-  {
-    target: 'dashboard-bookmarks',
-    title: 'Kayıtlı İlanların',
-    body: 'Beğendiğin ilanları kaydet, buradan hızlıca takip et. İlan detayında "Kaydet" butonunu kullanabilirsin.',
-    placement: 'bottom',
-  },
-  {
-    target: 'dashboard-profile',
-    title: 'Profil Tamamlama',
-    body: 'LinkedIn, CV ve öğrenci numaranı ekleyerek profilini tamamla. Tamamlama oranını burada takip edebilirsin.',
-    placement: 'left',
-  },
-]
-
 function BookmarkCard({
   listing,
   onRemove,
@@ -282,7 +265,7 @@ export default function DashboardPage() {
 
       <div className="mx-auto grid max-w-5xl grid-cols-1 gap-4 px-3 py-4 sm:px-4 sm:py-5 lg:grid-cols-[1fr_260px] lg:gap-5">
         <div className="space-y-4">
-          <div id="saved" data-tour="dashboard-bookmarks" className="campus-card scroll-mt-24 rounded-2xl p-4">
+          <div id="saved" className="campus-card scroll-mt-24 rounded-2xl p-4">
             <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
                 <h1 className="text-base font-medium text-gray-900 dark:text-[#e7edf4]">Hoş geldin, {firstName}</h1>
@@ -409,7 +392,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="space-y-4">
-          <div className="campus-card rounded-2xl p-4" data-tour="dashboard-profile">
+          <div className="campus-card rounded-2xl p-4">
             <div className="mb-4 flex items-center gap-3">
               <div
                 className={`flex h-12 w-12 items-center justify-center rounded-full text-sm font-semibold ${
@@ -538,7 +521,6 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <OnboardingTour tourId="dashboard" steps={DASHBOARD_TOUR_STEPS} />
     </div>
   )
 }

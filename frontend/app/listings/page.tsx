@@ -9,35 +9,7 @@ import { BriefcaseBusiness, Clock3, MapPin, History } from 'lucide-react'
 import UniversityLogo from '@/components/UniversityLogo'
 import ProfileDropdown from '@/components/ProfileDropdown'
 import ThemeToggle from '@/components/ThemeToggle'
-import OnboardingTour, { TourStep } from '@/components/OnboardingTour'
 import { useRecentlyViewed } from '@/hooks'
-
-const LISTINGS_TOUR_STEPS: TourStep[] = [
-  {
-    target: 'search-bar',
-    title: 'Arama Çubuğu',
-    body: 'Şirket adı, pozisyon veya anahtar kelime yazarak ilanları anında filtrele.',
-    placement: 'bottom',
-  },
-  {
-    target: 'filter-sidebar',
-    title: 'Filtreler',
-    body: 'Sektör, platform ve yetenek programı gibi kriterleri seçerek sonuçları daralt.',
-    placement: 'right',
-  },
-  {
-    target: 'filter-button-mobile',
-    title: 'Filtreler (Mobil)',
-    body: 'Mobil cihazda bu butona tıklayarak filtre panelini açabilirsin.',
-    placement: 'bottom',
-  },
-  {
-    target: 'listing-cards',
-    title: 'İlan Kartları',
-    body: 'Herhangi bir karta tıklayarak ilana git. Detay sayfasında kaydetme, başvuru ve benzer ilanları görebilirsin.',
-    placement: 'top',
-  },
-]
 
 type RawListing = {
   id: string | number
@@ -1107,7 +1079,6 @@ export default function ListingsPage() {
             <button
               type="button"
               onClick={() => setMobileFiltersOpen(true)}
-              data-tour="filter-button-mobile"
               className="inline-flex items-center justify-center rounded-2xl border border-[#d8ad43]/20 bg-white px-4 py-2 text-sm font-medium text-[#173156] shadow-sm lg:hidden dark:bg-white/8 dark:text-[#e7edf4]"
             >
               Filtreler
@@ -1170,7 +1141,7 @@ export default function ListingsPage() {
           )}
 
           <div className="relative z-[90] mt-5 flex flex-col gap-3 lg:flex-row">
-            <div className="relative z-[90] flex-1" ref={searchBoxRef} data-tour="search-bar">
+            <div className="relative z-[90] flex-1" ref={searchBoxRef}>
               <div className="relative z-[95] flex items-center rounded-[24px] border border-[#d8ad43]/18 bg-white px-4 py-3 shadow-sm ring-0 transition focus-within:border-[#d8ad43]/40 focus-within:ring-2 focus-within:ring-[#f1d27e]/30 dark:bg-[#0e1e33] dark:border-[#d8ad43]/22">
                 <span className="mr-3 text-[#173156]/45">⌕</span>
                 <input
@@ -1288,7 +1259,7 @@ export default function ListingsPage() {
         </div>
 
         <div className="relative z-0 grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
-          <aside className="hidden lg:block" data-tour="filter-sidebar">
+          <aside className="hidden lg:block">
             <div className="sticky top-6 rounded-[32px] border border-[#d8ad43]/16 bg-white/72 p-5 shadow-[0_24px_60px_rgba(18,40,67,0.08)] backdrop-blur dark:bg-[#0e1e33]/80 dark:border-[#d8ad43]/20">
               <FilterPanel
                 sectors={sectors}
@@ -1353,7 +1324,7 @@ export default function ListingsPage() {
                   </p>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3" data-tour="listing-cards">
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {listings.map((item) => {
                   return (
                     <article
@@ -1518,10 +1489,6 @@ export default function ListingsPage() {
         </div>
       )}
 
-      <OnboardingTour
-        tourId="listings"
-        steps={LISTINGS_TOUR_STEPS}
-      />
     </div>
   )
 }
