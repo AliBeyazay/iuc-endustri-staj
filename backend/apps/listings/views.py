@@ -46,6 +46,12 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
         'veteriner',
         'kuaför', 'berber', 'güzellik salonu',
         'aşçı', 'aşçıbaşı', 'pastane',
+        'muhasebe', 'mali müşavir', 'serbest muhasebeci',
+        'hemşire', 'hemşirelik', 'ebe', 'ebelik',
+        'odyolog', 'fizyoterapist', 'diyetisyen',
+        'psikolog', 'pedagog',
+        'sosyal hizmet',
+        'gazetecilik', 'muhabir',
     ]
 
     def get_serializer_class(self):
