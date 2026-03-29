@@ -52,6 +52,17 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
         'psikolog', 'pedagog',
         'sosyal hizmet',
         'gazetecilik', 'muhabir',
+        # Yazılım/IT pozisyonları (endüstri müh. değil)
+        'backend developer', 'frontend developer', 'full stack developer',
+        'fullstack developer', 'software developer', 'software engineer',
+        'web developer', 'mobile developer', 'ios developer', 'android developer',
+        'devops engineer', 'cloud engineer', 'site reliability',
+        'qa engineer', 'test engineer',
+        'ui developer', 'ux designer',
+        'cyber security', 'siber güvenlik',
+        'network engineer', 'ağ uzmanı',
+        'database administrator',
+        'game developer', 'oyun geliştirici',
     ]
 
     def get_serializer_class(self):
@@ -64,6 +75,10 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
         exclude_id = self.request.query_params.get('exclude')
         if exclude_id:
             qs = qs.exclude(id=exclude_id)
+
+        # Süresi geçmiş ilanları gizle
+        qs = qs.exclude(deadline_status='expired')
+        qs = qs.exclude(application_deadline__lt=date.today())
 
         # Negatif anahtar kelime filtresi
         neg = Q()
