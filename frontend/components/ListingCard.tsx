@@ -1,7 +1,7 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Image from 'next/image'
 import { ArrowUpRight, Bookmark, BookmarkCheck, MapPin, Share2, Sparkles } from 'lucide-react'
 import { Listing } from '@/types'
 import {
@@ -41,6 +41,7 @@ const ORIGIN_LABEL: Record<string, string> = {
 
 export default function ListingCard({ listing, isBookmarked, onBookmark }: Props) {
   const router = useRouter()
+  const [logoError, setLogoError] = useState(false)
   const deadline = getDeadlineDisplay(listing)
   const initials = getInitials(listing.company_name)
   const avatarColor = getAvatarColor(listing.company_name)
@@ -79,13 +80,16 @@ export default function ListingCard({ listing, isBookmarked, onBookmark }: Props
       </div>
 
       <div className="mb-4 flex items-start gap-3">
-        {listing.company_logo_url ? (
-          <Image
+        {listing.company_logo_url && !logoError ? (
+          <img
             src={listing.company_logo_url}
             alt={listing.company_name}
             width={46}
             height={46}
-            className="rounded-2xl border border-[#d8ad43]/20 bg-white/80 object-contain p-1.5"
+            loading="lazy"
+            referrerPolicy="no-referrer"
+            onError={() => setLogoError(true)}
+            className="h-12 w-12 min-w-[48px] rounded-2xl border border-[#d8ad43]/20 bg-white/80 object-contain p-1.5"
           />
         ) : (
           <div className={`flex h-12 w-12 min-w-[48px] items-center justify-center rounded-2xl border border-[#d8ad43]/20 text-[11px] font-semibold ${avatarColor}`}>

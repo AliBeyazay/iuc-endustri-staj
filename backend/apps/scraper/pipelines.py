@@ -97,57 +97,45 @@ class LogoEnrichmentPipeline:
 
     # Well-known company domain mappings for Turkish companies
     KNOWN_DOMAINS = {
+        # Tech / Social Media
         'tiktok': 'tiktok.com',
-        'mercedes-benz': 'mercedes-benz.com.tr',
-        'mercedes': 'mercedes-benz.com.tr',
-        'ford': 'ford.com.tr',
-        'toyota': 'toyota.com.tr',
-        'bosch': 'bosch.com.tr',
-        'siemens': 'siemens.com.tr',
-        'arçelik': 'arcelik.com.tr',
-        'vestel': 'vestel.com.tr',
-        'koç': 'koc.com.tr',
-        'sabancı': 'sabanci.com',
-        'turkcell': 'turkcell.com.tr',
-        'türk telekom': 'turktelekom.com.tr',
-        'thy': 'turkishairlines.com',
-        'türk hava yolları': 'turkishairlines.com',
-        'aselsan': 'aselsan.com.tr',
-        'havelsan': 'havelsan.com.tr',
-        'tusaş': 'tusas.com',
-        'roketsan': 'roketsan.com.tr',
-        'baykar': 'baykartech.com',
-        'tüpraş': 'tupras.com.tr',
-        'petkim': 'petkim.com.tr',
-        'enerjisa': 'enerjisa.com.tr',
-        'akbank': 'akbank.com',
-        'garanti': 'garantibbva.com.tr',
-        'yapı kredi': 'yapikredi.com.tr',
-        'iş bankası': 'isbank.com.tr',
-        'ziraat': 'ziraatbank.com.tr',
-        'halkbank': 'halkbank.com.tr',
-        'qnb finansbank': 'qnb.com.tr',
-        'denizbank': 'denizbank.com',
-        'doğuş': 'dogus.com.tr',
-        'otokoç': 'otokoc.com.tr',
-        'unilever': 'unilever.com.tr',
-        'p&g': 'pg.com',
-        'procter': 'pg.com',
-        'nestlé': 'nestle.com.tr',
-        'nestle': 'nestle.com.tr',
-        'coca-cola': 'coca-cola.com.tr',
-        'pepsi': 'pepsico.com.tr',
-        'amazon': 'amazon.com.tr',
         'google': 'google.com',
         'microsoft': 'microsoft.com',
         'meta': 'meta.com',
         'apple': 'apple.com',
+        'amazon': 'amazon.com.tr',
         'huawei': 'huawei.com',
         'samsung': 'samsung.com',
         'lg': 'lg.com',
         'hp': 'hp.com',
         'dell': 'dell.com',
         'intel': 'intel.com',
+        'nvidia': 'nvidia.com',
+        'oracle': 'oracle.com',
+        'sap': 'sap.com',
+        'ibm': 'ibm.com',
+        'cisco': 'cisco.com',
+        'adobe': 'adobe.com',
+        'spotify': 'spotify.com',
+        'uber': 'uber.com',
+        'airbnb': 'airbnb.com',
+        'booking.com': 'booking.com',
+        'trendyol': 'trendyol.com',
+        'hepsiburada': 'hepsiburada.com',
+        'getir': 'getir.com',
+        'n11': 'n11.com',
+        'sahibinden': 'sahibinden.com',
+        'yemeksepeti': 'yemeksepeti.com',
+        'pazarama': 'pazarama.com',
+        # Telco
+        'turkcell': 'turkcell.com.tr',
+        'türk telekom': 'turktelekom.com.tr',
+        'vodafone': 'vodafone.com.tr',
+        # Automotive
+        'mercedes-benz': 'mercedes-benz.com.tr',
+        'mercedes': 'mercedes-benz.com.tr',
+        'ford': 'ford.com.tr',
+        'toyota': 'toyota.com.tr',
         'bmw': 'bmw.com.tr',
         'audi': 'audi.com.tr',
         'volkswagen': 'volkswagen.com.tr',
@@ -156,6 +144,98 @@ class LogoEnrichmentPipeline:
         'fiat': 'fiat.com.tr',
         'honda': 'honda.com.tr',
         'tofaş': 'tofas.com.tr',
+        # Industry / Manufacturing
+        'bosch': 'bosch.com.tr',
+        'siemens': 'siemens.com.tr',
+        'arçelik': 'arcelik.com.tr',
+        'vestel': 'vestel.com.tr',
+        'schneider': 'se.com',
+        'abb': 'abb.com',
+        # Holdings / Conglomerates
+        'koç': 'koc.com.tr',
+        'sabancı': 'sabanci.com',
+        'doğuş': 'dogus.com.tr',
+        'otokoç': 'otokoc.com.tr',
+        'zorlu': 'zorlu.com',
+        # Defence / Aerospace
+        'aselsan': 'aselsan.com.tr',
+        'havelsan': 'havelsan.com.tr',
+        'tusaş': 'tusas.com',
+        'roketsan': 'roketsan.com.tr',
+        'baykar': 'baykartech.com',
+        # Banking / Finance
+        'akbank': 'akbank.com',
+        'garanti': 'garantibbva.com.tr',
+        'yapı kredi': 'yapikredi.com.tr',
+        'iş bankası': 'isbank.com.tr',
+        'ziraat': 'ziraatbank.com.tr',
+        'halkbank': 'halkbank.com.tr',
+        'qnb finansbank': 'qnb.com.tr',
+        'denizbank': 'denizbank.com',
+        'vakıfbank': 'vakifbank.com.tr',
+        'enpara': 'enpara.com',
+        # Energy / Petrochemical
+        'tüpraş': 'tupras.com.tr',
+        'petkim': 'petkim.com.tr',
+        'enerjisa': 'enerjisa.com.tr',
+        'socar': 'socar.com.tr',
+        'shell': 'shell.com.tr',
+        'bp': 'bp.com',
+        # FMCG / Food
+        'unilever': 'unilever.com.tr',
+        'p&g': 'pg.com',
+        'procter': 'pg.com',
+        'nestlé': 'nestle.com.tr',
+        'nestle': 'nestle.com.tr',
+        'coca-cola': 'coca-cola.com.tr',
+        'pepsi': 'pepsico.com.tr',
+        'danone': 'danone.com.tr',
+        'mondelez': 'mondelezinternational.com',
+        'ülker': 'ulker.com.tr',
+        'eti': 'etieti.com',
+        # Airlines / Logistics
+        'thy': 'turkishairlines.com',
+        'türk hava yolları': 'turkishairlines.com',
+        'pegasus': 'flypgs.com',
+        'aras kargo': 'araskargo.com.tr',
+        'yurtiçi kargo': 'yurticikargo.com',
+        'mng kargo': 'mngkargo.com.tr',
+        # Pharma / Health
+        'bayer': 'bayer.com.tr',
+        'roche': 'roche.com.tr',
+        'novartis': 'novartis.com.tr',
+        'pfizer': 'pfizer.com.tr',
+        'abdi ibrahim': 'abdiibrahim.com.tr',
+        'acıbadem': 'acibadem.com.tr',
+        'memorial': 'memorial.com.tr',
+        # Consulting / Services
+        'deloitte': 'deloitte.com',
+        'pwc': 'pwc.com.tr',
+        'kpmg': 'kpmg.com.tr',
+        'ey': 'ey.com',
+        'ernst': 'ey.com',
+        'mckinsey': 'mckinsey.com',
+        'bcg': 'bcg.com',
+        # Retail
+        'lcw': 'lcwaikiki.com',
+        'lc waikiki': 'lcwaikiki.com',
+        'watsons': 'watsons.com.tr',
+        'beymen': 'beymen.com',
+        'defacto': 'defacto.com.tr',
+        'koton': 'koton.com',
+        'mavi': 'mavi.com',
+        'migros': 'migros.com.tr',
+        'a101': 'a101.com.tr',
+        'bim': 'bim.com.tr',
+        'şok': 'sokmarket.com.tr',
+        'carrefour': 'carrefoursa.com',
+        # Media / Entertainment
+        'commencis': 'commencis.com',
+        'sestek': 'sestek.com',
+        'phinia': 'phinia.com',
+        'kızılay': 'kizilay.org.tr',
+        'kızılay teknoloji': 'kizilaykariyer.com',
+        'coral travel': 'coraltravel.com.tr',
     }
 
     def _domain_from_url(self, url):
@@ -201,7 +281,6 @@ class LogoEnrichmentPipeline:
         try:
             resp = http_requests.head(google_url, timeout=5, allow_redirects=True)
             if resp.status_code == 200:
-                content_type = (resp.headers.get('content-type') or '').lower()
                 # Google returns a default globe icon for unknown domains
                 content_length = int(resp.headers.get('content-length', 0))
                 if content_length > 500:  # real logos are > 500 bytes
@@ -209,12 +288,17 @@ class LogoEnrichmentPipeline:
         except Exception:
             pass
 
-        # Method 2: Clearbit logo API (free, high quality)
-        clearbit_url = f'https://logo.clearbit.com/{domain}'
+        # Method 2: Google faviconV2 (newer, better quality)
+        google_v2_url = (
+            f'https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON'
+            f'&fallback_opts=TYPE,SIZE,URL&url=https://{domain}&size=128'
+        )
         try:
-            resp = http_requests.head(clearbit_url, timeout=5, allow_redirects=True)
+            resp = http_requests.head(google_v2_url, timeout=5, allow_redirects=True)
             if resp.status_code == 200:
-                return clearbit_url
+                content_length = int(resp.headers.get('content-length', 0))
+                if content_length > 500:
+                    return google_v2_url
         except Exception:
             pass
 

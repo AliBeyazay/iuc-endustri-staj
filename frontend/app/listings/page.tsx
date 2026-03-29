@@ -1308,7 +1308,19 @@ export default function ListingsPage() {
                               className="h-12 w-12 object-contain"
                               loading="lazy"
                               referrerPolicy="no-referrer"
+                              onError={(e) => { (e.currentTarget).style.display = 'none'; (e.currentTarget.nextElementSibling as HTMLElement)?.style.removeProperty('display') }}
                             />
+                          ) : null}
+                          {item.company_logo_url ? (
+                            <div
+                              style={{ display: 'none' }}
+                              className={classNames(
+                                'flex h-[56px] w-[56px] items-center justify-center rounded-[18px] border bg-gradient-to-br text-[15px] font-semibold tracking-[0.08em] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]',
+                                getCompanyMonogramStyle(item.company_name),
+                              )}
+                            >
+                              {getCompanyBadgeText(item.company_name)}
+                            </div>
                           ) : (
                             <div
                               className={classNames(

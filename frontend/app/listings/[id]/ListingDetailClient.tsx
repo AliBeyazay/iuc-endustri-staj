@@ -93,6 +93,7 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
   const { reviews, isLoading: reviewsLoading, mutate: mutateReviews } = useReviews(listing.id)
   const [expandDesc, setExpandDesc] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [detailLogoError, setDetailLogoError] = useState(false)
   const [rating, setRating] = useState(0)
   const [comment, setComment] = useState('')
   const [internshipYear, setInternshipYear] = useState(new Date().getFullYear())
@@ -213,10 +214,12 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
             <p className="campus-heading text-[11px] text-[#8f670b]">İlan Özeti</p>
 
             <div className="mt-4 flex items-start gap-4">
-              {listing.company_logo_url ? (
+              {listing.company_logo_url && !detailLogoError ? (
                 <img
                   src={listing.company_logo_url}
                   alt={listing.company_name}
+                  referrerPolicy="no-referrer"
+                  onError={() => setDetailLogoError(true)}
                   className="h-14 w-14 rounded-2xl border border-[#d8ad43]/20 bg-white/80 object-contain p-1.5"
                 />
               ) : (
