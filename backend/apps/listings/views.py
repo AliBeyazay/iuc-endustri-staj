@@ -53,7 +53,8 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
         'sosyal hizmet',
         'gazetecilik', 'muhabir',
         # Yazılım/IT pozisyonları (endüstri müh. değil)
-        'backend developer', 'frontend developer', 'full stack developer',
+        'backend developer', 'frontend developer', 'front-end developer',
+        'full stack developer', 'full-stack developer',
         'fullstack developer', 'software developer', 'software engineer',
         'web developer', 'mobile developer', 'ios developer', 'android developer',
         'devops engineer', 'cloud engineer', 'site reliability',
