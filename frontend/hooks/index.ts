@@ -153,3 +153,42 @@ export function useMediaQuery(query: string): boolean {
   }, [query])
   return matches
 }
+
+// ─── useRecentlyViewed ───────────────────────────────────────────────────────
+
+const RECENT_KEY = 'iuc_recently_viewed'
+const RECENT_MAX = 10
+
+export interface RecentItem {
+  id: string
+  title: string
+  company_name: string
+  viewedAt: number
+}
+
+export function useRecentlyViewed() {
+  const [items, setItems] = useState<RecentItem[]>(() => {
+    if (typeof window === 'undefined') return []
+    try {
+      return JSON.parse(localStorage.getItem(RECENT_KEY) ?? '[]')
+    } catch {
+      return []
+    }
+  })
+
+  const addView = useCallback((listing: { id: string; title: string; company_name: string }) => {
+    setItems((prev) => {
+      const filtered = prev.filter((item) => item.id !== listing.id)
+      const next = [{ ...listing, viewedAt: Date.now() }, ...filtered].slice(0, RECENT_MAX)
+      localStorage.setItem(RECENT_KEY, JSON.stringify(next))
+      return next
+    })
+  }, [])
+
+  const clearAll = useCallback(() => {
+    localStorage.removeItem(RECENT_KEY)
+    setItems([])
+  }, [])
+
+  return { recentItems: items, addView, clearAll }
+}

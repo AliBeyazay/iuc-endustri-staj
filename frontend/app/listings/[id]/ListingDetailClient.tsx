@@ -1,6 +1,6 @@
 'use client'
 
-import { FormEvent, useMemo, useState } from 'react'
+import { FormEvent, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
@@ -18,7 +18,7 @@ import {
   timeAgoTurkish,
 } from '@/lib/helpers'
 import { createReview, fetchSimilarListings } from '@/lib/api'
-import { useBookmarks, useReviews } from '@/hooks'
+import { useBookmarks, useRecentlyViewed, useReviews } from '@/hooks'
 import ProfileDropdown from '@/components/ProfileDropdown'
 import ThemeToggle from '@/components/ThemeToggle'
 import UniversityLogo from '@/components/UniversityLogo'
@@ -91,7 +91,12 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
   const router = useRouter()
   const { data: session, status } = useSession()
   const { bookmarks, toggle } = useBookmarks()
+  const { addView } = useRecentlyViewed()
   const { reviews, isLoading: reviewsLoading, mutate: mutateReviews } = useReviews(listing.id)
+
+  useEffect(() => {
+    addView({ id: listing.id, title: listing.title, company_name: listing.company_name })
+  }, [listing.id, listing.title, listing.company_name, addView])
   const [expandDesc, setExpandDesc] = useState(false)
   const [copied, setCopied] = useState(false)
   const [detailLogoError, setDetailLogoError] = useState(false)

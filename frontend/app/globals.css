@@ -232,3 +232,11 @@ h3,
   border: 3px solid transparent;
   background-clip: padding-box;
 }
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

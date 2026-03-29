@@ -5,10 +5,11 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { BriefcaseBusiness, Clock3, MapPin } from 'lucide-react'
+import { BriefcaseBusiness, Clock3, MapPin, History } from 'lucide-react'
 import UniversityLogo from '@/components/UniversityLogo'
 import ProfileDropdown from '@/components/ProfileDropdown'
 import ThemeToggle from '@/components/ThemeToggle'
+import { useRecentlyViewed } from '@/hooks'
 
 type RawListing = {
   id: string | number
@@ -768,6 +769,7 @@ export default function ListingsPage() {
   const [currentPage, setCurrentPage] = useState(1)
 
   const searchBoxRef = useRef<HTMLDivElement>(null)
+  const { recentItems, clearAll: clearRecentlyViewed } = useRecentlyViewed()
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedQuery(query.trim()), 300)
@@ -1101,6 +1103,42 @@ export default function ListingsPage() {
               </div>
             ))}
           </div>
+
+          {recentItems.length > 0 && (
+            <div className="mt-5">
+              <div className="mb-2 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <History size={14} className="text-[#8f670b]/70 dark:text-[#f0cf7a]/60" />
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#8f670b]/70 dark:text-[#f0cf7a]/60">Son Görüntülenenler</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={clearRecentlyViewed}
+                  className="text-[10px] text-[#8f670b]/50 hover:text-[#8f670b] dark:text-[#f0cf7a]/40 dark:hover:text-[#f0cf7a]"
+                >
+                  Temizle
+                </button>
+              </div>
+              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                {recentItems.map((item) => (
+                  <Link
+                    key={item.id}
+                    href={`/listings/${item.id}`}
+                    className="group flex min-w-[180px] max-w-[220px] shrink-0 items-center gap-2.5 rounded-2xl border border-[#d8ad43]/16 bg-[#fffaf0] px-3 py-2.5 transition-colors hover:border-[#d8ad43]/35 hover:bg-white dark:bg-white/5 dark:hover:bg-white/10"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-xs font-semibold text-[#132843] group-hover:text-[#1E3A5F] dark:text-[#e7edf4] dark:group-hover:text-[#d8ad43]">
+                        {item.title}
+                      </p>
+                      <p className="mt-0.5 truncate text-[10px] text-[#173156]/55 dark:text-[#e7edf4]/45">
+                        {item.company_name}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="relative z-[90] mt-5 flex flex-col gap-3 lg:flex-row">
             <div className="relative z-[90] flex-1" ref={searchBoxRef}>
