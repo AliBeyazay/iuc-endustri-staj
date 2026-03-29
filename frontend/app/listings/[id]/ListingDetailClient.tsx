@@ -17,7 +17,7 @@ import {
   getInitials,
   timeAgoTurkish,
 } from '@/lib/helpers'
-import { createReview, fetchSimilarListings } from '@/lib/api'
+import { createReview, fetchSimilarListings, SimilarListing } from '@/lib/api'
 import { useBookmarks, useRecentlyViewed, useReviews } from '@/hooks'
 import ProfileDropdown from '@/components/ProfileDropdown'
 import ThemeToggle from '@/components/ThemeToggle'
@@ -108,9 +108,9 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
   const [reviewError, setReviewError] = useState('')
   const [reviewSuccess, setReviewSuccess] = useState('')
 
-  const { data: similar } = useSWR(
+  const { data: similar } = useSWR<SimilarListing[]>(
     `similar-${listing.id}`,
-    () => fetchSimilarListings(listing.em_focus_area, listing.id)
+    () => fetchSimilarListings(listing.id)
   )
 
   const deadline = getDeadlineDisplay(listing)
@@ -502,16 +502,38 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
                 Benzer İlanlar
               </h2>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                {similar.map((item) => (
-                  <Link
-                    key={item.id}
-                    href={`/listings/${item.id}`}
-                    className="rounded-2xl border border-[#d8ad43]/16 bg-white/55 px-4 py-4 transition-colors hover:border-[#d8ad43]/35 hover:bg-white/80 dark:bg-white/5 dark:hover:bg-white/10"
-                  >
-                    <p className="text-sm font-semibold text-[#132843] dark:text-[#e7edf4]">{item.title}</p>
-                    <p className="mt-1 text-xs text-[#173156]/62 dark:text-[#e7edf4]/50">{item.company_name}</p>
-                  </Link>
-                ))}
+                {similar.map((item) => {
+                  const reasons = item.match_reasons || []
+                  return (
+                    <Link
+                      key={item.id}
+                      href={`/listings/${item.id}`}
+                      className="group rounded-2xl border border-[#d8ad43]/16 bg-white/55 px-4 py-4 transition-colors hover:border-[#d8ad43]/35 hover:bg-white/80 dark:bg-white/5 dark:hover:bg-white/10"
+                    >
+                      <p className="text-sm font-semibold text-[#132843] group-hover:text-[#8f670b] dark:text-[#e7edf4] dark:group-hover:text-[#d8ad43] transition-colors">{item.title}</p>
+                      <p className="mt-1 text-xs text-[#173156]/62 dark:text-[#e7edf4]/50">{item.company_name}</p>
+                      {reasons.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {reasons.includes('company') && (
+                            <span className="inline-block rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700 dark:bg-blue-500/15 dark:text-blue-300">Aynı Şirket</span>
+                          )}
+                          {reasons.includes('focus_area') && (
+                            <span className="inline-block rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">Aynı Alan</span>
+                          )}
+                          {reasons.includes('secondary_focus') && (
+                            <span className="inline-block rounded-full bg-orange-50 px-2 py-0.5 text-[10px] font-medium text-orange-700 dark:bg-orange-500/15 dark:text-orange-300">Benzer Alan</span>
+                          )}
+                          {reasons.includes('location') && (
+                            <span className="inline-block rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-medium text-green-700 dark:bg-green-500/15 dark:text-green-300">Aynı Konum</span>
+                          )}
+                          {reasons.includes('title') && (
+                            <span className="inline-block rounded-full bg-purple-50 px-2 py-0.5 text-[10px] font-medium text-purple-700 dark:bg-purple-500/15 dark:text-purple-300">Benzer Başlık</span>
+                          )}
+                        </div>
+                      )}
+                    </Link>
+                  )
+                })}
               </div>
             </section>
           )}

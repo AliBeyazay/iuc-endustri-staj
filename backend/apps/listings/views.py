@@ -1,6 +1,7 @@
 import hashlib
 import os
 import random
+import re
 import traceback
 from datetime import date, timedelta
 from time import time
@@ -8,7 +9,7 @@ from time import time
 from django.conf import settings
 from django.core.cache import cache
 from django.core.mail import send_mail
-from django.db.models import Avg, Q
+from django.db.models import Avg, Case, IntegerField, Q, Value, When
 from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, permissions, status, viewsets
@@ -119,6 +120,98 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
             except (TypeError, ValueError):
                 return queryset
         return queryset
+
+    @action(detail=True, methods=['get'])
+    def similar(self, request, pk=None):
+        listing = self.get_object()
+        qs = self.get_queryset().exclude(id=listing.id)
+
+        company = listing.company_name.strip().lower()
+
+        # Extract city from location
+        loc = listing.location or ''
+        city = re.split(r'[,/()\-]', loc)[0].strip()
+
+        # Title keywords (exclude short / common words)
+        _STOP = {
+            'staj', 'stajyer', 'stajyeri', 'intern', 'internship',
+            'mühendis', 'mühendisi', 'endüstri', 'uzman', 'uzmanı',
+            've', 'ile', 'için', 'veya', 'olan', 'olarak',
+        }
+        title_words = [
+            w for w in re.split(r'\s+', listing.title.lower())
+            if len(w) > 3 and w not in _STOP
+        ][:5]
+
+        # ── Scoring via annotations ──────────────────────────────
+        score = Value(0, output_field=IntegerField())
+
+        # Same company  → +10
+        score = score + Case(
+            When(company_name__iexact=company, then=Value(10)),
+            default=Value(0), output_field=IntegerField(),
+        )
+
+        # Same primary em_focus_area → +5
+        score = score + Case(
+            When(em_focus_area=listing.em_focus_area, then=Value(5)),
+            default=Value(0), output_field=IntegerField(),
+        )
+
+        # Secondary focus cross-match → +3
+        if listing.secondary_em_focus_area:
+            score = score + Case(
+                When(em_focus_area=listing.secondary_em_focus_area, then=Value(3)),
+                When(secondary_em_focus_area=listing.em_focus_area, then=Value(3)),
+                default=Value(0), output_field=IntegerField(),
+            )
+        else:
+            score = score + Case(
+                When(secondary_em_focus_area=listing.em_focus_area, then=Value(3)),
+                default=Value(0), output_field=IntegerField(),
+            )
+
+        # Same city → +4
+        if city and len(city) > 2:
+            score = score + Case(
+                When(location__icontains=city, then=Value(4)),
+                default=Value(0), output_field=IntegerField(),
+            )
+
+        # Title keyword overlap → +2 each
+        for word in title_words:
+            score = score + Case(
+                When(title__icontains=word, then=Value(2)),
+                default=Value(0), output_field=IntegerField(),
+            )
+
+        results = list(
+            qs.annotate(similarity_score=score)
+            .filter(similarity_score__gt=0)
+            .order_by('-similarity_score', '-created_at')[:6]
+        )
+
+        serializer = ListingListSerializer(results, many=True)
+        data = serializer.data
+
+        # Attach human-readable match reasons
+        for item, obj in zip(data, results):
+            reasons = []
+            if obj.company_name.strip().lower() == company:
+                reasons.append('company')
+            if obj.em_focus_area == listing.em_focus_area:
+                reasons.append('focus_area')
+            sec = listing.secondary_em_focus_area
+            if (sec and obj.em_focus_area == sec) or \
+               obj.secondary_em_focus_area == listing.em_focus_area:
+                reasons.append('secondary_focus')
+            if city and len(city) > 2 and city.lower() in obj.location.lower():
+                reasons.append('location')
+            if any(w in obj.title.lower() for w in title_words):
+                reasons.append('title')
+            item['match_reasons'] = reasons
+
+        return Response(data)
 
     @action(detail=True, methods=['get'])
     def reviews(self, request, pk=None):

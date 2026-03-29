@@ -116,14 +116,17 @@ export async function fetchListingById(id: string): Promise<Listing> {
   return data
 }
 
+export interface SimilarListing extends Listing {
+  match_reasons: string[]
+}
+
 export async function fetchSimilarListings(
-  focusArea: string,
-  excludeId: string
-): Promise<Listing[]> {
-  const { data } = await api.get<PaginatedResponse<Listing>>(
-    `/listings/?em_focus_area=${focusArea}&exclude=${excludeId}&limit=3`
+  listingId: string
+): Promise<SimilarListing[]> {
+  const { data } = await api.get<SimilarListing[]>(
+    `/listings/${listingId}/similar/`
   )
-  return data.results
+  return data
 }
 
 // ─── Reviews ─────────────────────────────────────────────────────────────────
