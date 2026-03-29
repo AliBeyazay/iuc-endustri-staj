@@ -19,4 +19,4 @@ EXPOSE 8000
 
 # Prepare the database schema on startup before serving requests.
 # Import real listings on startup so production always has the latest seeded dataset.
-CMD ["sh", "-c", "DJANGO_SETTINGS_MODULE=config.settings.prod python manage.py migrate && DJANGO_SETTINGS_MODULE=config.settings.prod python manage.py import_production_listings && if [ \"${RUN_DEMO_SEED:-false}\" = \"true\" ]; then DJANGO_SETTINGS_MODULE=config.settings.prod python manage.py seed_demo_listings; fi && gunicorn config.wsgi:application --bind 0.0.0.0:${PORT:-8000}"]
+CMD ["sh", "-c", "DJANGO_SETTINGS_MODULE=config.settings.prod python manage.py migrate && DJANGO_SETTINGS_MODULE=config.settings.prod python manage.py import_production_listings && DJANGO_SETTINGS_MODULE=config.settings.prod python manage.py delete_listing --title 'Ziraat Mühendisi Stajyeri' || true && if [ \"${RUN_DEMO_SEED:-false}\" = \"true\" ]; then DJANGO_SETTINGS_MODULE=config.settings.prod python manage.py seed_demo_listings; fi && gunicorn config.wsgi:application --bind 0.0.0.0:${PORT:-8000}"]
