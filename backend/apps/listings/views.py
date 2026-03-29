@@ -72,6 +72,9 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
         if neg:
             qs = qs.exclude(neg)
 
+        # Bozuk encoding'li ilanları gizle (? içeren title/company_name)
+        qs = qs.exclude(title__contains='?').exclude(company_name__contains='?')
+
         return qs
 
     def list(self, request, *args, **kwargs):
