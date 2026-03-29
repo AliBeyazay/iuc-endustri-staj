@@ -22,7 +22,7 @@ export default function ShareButton({ url, className = '' }: Props) {
     <>
       <button
         onClick={handleClick}
-        className={`text-[10px] text-gray-400 hover:text-gray-600 px-1.5 py-1 rounded transition-colors ${className}`}
+        className={`text-[10px] text-gray-400 hover:text-gray-600 dark:text-[#e7edf4]/40 dark:hover:text-[#e7edf4]/70 px-1.5 py-1 rounded transition-colors ${className}`}
       >
         {copied ? 'Kopyalandı ✓' : 'Paylaş'}
       </button>

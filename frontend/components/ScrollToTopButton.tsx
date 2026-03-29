@@ -20,7 +20,7 @@ export default function ScrollToTopButton() {
       type="button"
       aria-label="Yukarı çık"
       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-      className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-xl border border-gray-200 bg-white text-[#d8ad43] shadow-[0_12px_30px_rgba(0,0,0,0.15)] transition hover:bg-gray-50"
+      className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-xl border border-gray-200 bg-white text-[#d8ad43] shadow-[0_12px_30px_rgba(0,0,0,0.15)] transition hover:bg-gray-50 dark:border-[#d8ad43]/25 dark:bg-[#132843] dark:hover:bg-[#1a3558]"
     >
       <svg
         aria-hidden="true"

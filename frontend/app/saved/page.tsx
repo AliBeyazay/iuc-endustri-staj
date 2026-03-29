@@ -9,6 +9,7 @@ import { fetchBookmarks, removeBookmark } from '@/lib/api'
 import { BookmarkedListing } from '@/types'
 import { getAvatarColor, getDeadlineDisplay, getInitials, timeAgoTurkish } from '@/lib/helpers'
 import ProfileDropdown from '@/components/ProfileDropdown'
+import ThemeToggle from '@/components/ThemeToggle'
 import UniversityLogo from '@/components/UniversityLogo'
 
 function BookmarkCard({
@@ -27,21 +28,21 @@ function BookmarkCard({
   return (
     <div
       onClick={() => router.push(`/listings/${listing.id}`)}
-      className={`group cursor-pointer rounded-xl border bg-white p-3 transition-all hover:shadow-md ${
-        deadline.color === 'red' ? 'border-red-200' : 'border-gray-100'
+      className={`group cursor-pointer rounded-xl border bg-white p-3 transition-all hover:shadow-md dark:bg-white/5 dark:hover:shadow-none ${
+        deadline.color === 'red' ? 'border-red-200 dark:border-red-400/30' : 'border-gray-100 dark:border-[#d8ad43]/12'
       }`}
     >
       <div className="flex items-start gap-3">
         <div
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-gray-100 text-[10px] font-semibold ${avatarColor}`}
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-gray-100 text-[10px] font-semibold dark:border-[#d8ad43]/15 ${avatarColor}`}
         >
           {initials}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium text-gray-800 group-hover:text-[#1E3A5F]">
+          <p className="truncate text-sm font-medium text-gray-800 group-hover:text-[#1E3A5F] dark:text-[#e7edf4] dark:group-hover:text-[#d8ad43]">
             {listing.title}
           </p>
-          <p className="mt-0.5 truncate text-xs text-gray-500">{listing.company_name}</p>
+          <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-[#e7edf4]/50">{listing.company_name}</p>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1" onClick={(e) => e.stopPropagation()}>
           {deadline.label ? (
@@ -87,7 +88,7 @@ function BookmarkCard({
         </div>
       </div>
       {listing.bookmarked_at && (
-        <p className="mt-2 text-right text-[9px] text-gray-300">
+        <p className="mt-2 text-right text-[9px] text-gray-300 dark:text-[#e7edf4]/30">
           Kaydedildi: {timeAgoTurkish(listing.bookmarked_at)}
         </p>
       )}
@@ -130,7 +131,7 @@ export default function SavedPage() {
 
   if (status === 'loading') {
     return (
-      <div className="flex min-h-screen items-center justify-center px-6 text-sm text-gray-500">
+      <div className="flex min-h-screen items-center justify-center px-6 text-sm text-gray-500 dark:text-[#e7edf4]/50">
         Yükleniyor...
       </div>
     )
@@ -152,14 +153,17 @@ export default function SavedPage() {
             </p>
           </div>
         </Link>
-        <ProfileDropdown />
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <ProfileDropdown />
+        </div>
       </nav>
 
       <div className="mx-auto max-w-2xl px-3 py-6 sm:px-4">
         <div className="campus-card rounded-2xl p-5">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h1 className="text-base font-medium text-gray-900">
+              <h1 className="text-base font-medium text-gray-900 dark:text-[#e7edf4]">
                 Kaydedilen İlanlar
                 {bookmarks.length > 0 ? (
                   <span className="ml-1.5 text-xs text-gray-400">({bookmarks.length})</span>
@@ -178,7 +182,7 @@ export default function SavedPage() {
             </div>
             <button
               onClick={() => router.push('/listings')}
-              className="rounded-full border border-[#1E3A5F]/20 px-3 py-1 text-[10px] font-medium text-[#1E3A5F] hover:bg-blue-50"
+              className="rounded-full border border-[#1E3A5F]/20 px-3 py-1 text-[10px] font-medium text-[#1E3A5F] hover:bg-blue-50 dark:border-[#d8ad43]/25 dark:text-[#d8ad43] dark:hover:bg-[#d8ad43]/10"
             >
               + İlan Keşfet
             </button>
@@ -186,18 +190,18 @@ export default function SavedPage() {
 
           {!bookmarks || bookmarks.length === 0 ? (
             <div className="py-10 text-center">
-              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-50">
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-50 dark:bg-white/5">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                 </svg>
               </div>
-              <p className="mb-1 text-sm font-medium text-gray-500">Henüz kaydettiğin ilan yok</p>
-              <p className="mb-3 text-xs text-gray-400">
+              <p className="mb-1 text-sm font-medium text-gray-500 dark:text-[#e7edf4]/60">Henüz kaydettiğin ilan yok</p>
+              <p className="mb-3 text-xs text-gray-400 dark:text-[#e7edf4]/40">
                 İlanlara göz at ve beğendiklerini kaydet
               </p>
               <button
                 onClick={() => router.push('/listings')}
-                className="rounded-lg bg-[#1E3A5F] px-4 py-2 text-xs text-white hover:bg-[#15304f]"
+                className="rounded-lg bg-[#1E3A5F] px-4 py-2 text-xs text-white hover:bg-[#15304f] dark:bg-[#d8ad43] dark:text-[#10223b] dark:hover:bg-[#e4c05c]"
               >
                 İlanlara Göz At
               </button>

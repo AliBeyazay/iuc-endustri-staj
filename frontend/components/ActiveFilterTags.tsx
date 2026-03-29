@@ -11,7 +11,7 @@ interface Props {
 
 function Pill({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)] px-2.5 py-1 text-[10px] font-semibold">
+    <span className="inline-flex items-center gap-1 rounded-full bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)] px-2.5 py-1 text-[10px] font-semibold dark:text-[#f0cf7a] dark:bg-[rgba(216,173,67,0.12)]">
       {label}
       <button onClick={onRemove} className="leading-none hover:opacity-70">
         x
@@ -30,7 +30,7 @@ export default function ActiveFilterTags({ filters, onRemove, onClearAll }: Prop
 
   return (
     <div className="campus-card mx-3 mt-3 flex flex-wrap items-center gap-1.5 rounded-2xl px-4 py-3">
-      <span className="campus-heading text-[11px] text-[#8f670b]">Aktif Filtreler</span>
+      <span className="campus-heading text-[11px] text-[#8f670b] dark:text-[#f0cf7a]">Aktif Filtreler</span>
 
       {filters.em_focus_area.map((v) => (
         <Pill key={v} label={FOCUS_AREA_LABELS[v] ?? v} onRemove={() => onRemove('em_focus_area', v)} />
@@ -47,7 +47,7 @@ export default function ActiveFilterTags({ filters, onRemove, onClearAll }: Prop
         </span>
       )}
 
-      <button onClick={onClearAll} className="ml-1 text-[10px] text-[#8f670b] hover:underline">
+      <button onClick={onClearAll} className="ml-1 text-[10px] text-[#8f670b] hover:underline dark:text-[#f0cf7a]">
         Tumunu temizle
       </button>
     </div>

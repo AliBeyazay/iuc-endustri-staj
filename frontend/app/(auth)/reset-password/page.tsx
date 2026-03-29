@@ -99,23 +99,23 @@ function ResetPasswordPageContent() {
     return (
       <div className="w-full max-w-sm text-center">
         <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-xl mx-auto mb-4">✓</div>
-        <h1 className="text-xl font-medium text-gray-900 mb-2">Şifren Güncellendi</h1>
-        <p className="text-sm text-gray-500">Giriş sayfasına yönlendiriliyorsun...</p>
+        <h1 className="text-xl font-medium text-gray-900 mb-2 dark:text-[#e7edf4]">Şifren Güncellendi</h1>
+        <p className="text-sm text-gray-500 dark:text-[#e7edf4]/50">Giriş sayfasına yönlendiriliyorsun...</p>
       </div>
     )
   }
 
   return (
     <div className="w-full max-w-sm">
-      <h1 className="text-xl font-medium text-gray-900 mb-1">Yeni Şifre Belirle</h1>
-      <p className="text-sm text-gray-500 mb-5">En az 8 karakter, büyük harf ve rakam içermeli</p>
+      <h1 className="text-xl font-medium text-gray-900 mb-1 dark:text-[#e7edf4]">Yeni Şifre Belirle</h1>
+      <p className="text-sm text-gray-500 mb-5 dark:text-[#e7edf4]/50">En az 8 karakter, büyük harf ve rakam içermeli</p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
         <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1">Yeni Şifre</label>
+          <label className="block text-xs font-medium text-gray-600 mb-1 dark:text-[#e7edf4]/60">Yeni Şifre</label>
           <div className="relative">
             <input {...register('password')} type={showPw ? 'text' : 'password'}
-              className="w-full h-9 px-3 pr-8 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1E3A5F]" />
+              className="w-full h-9 px-3 pr-8 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1E3A5F] dark:border-[#d8ad43]/18 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:focus:border-[#d8ad43]/40" />
             <button type="button" onClick={() => setShowPw(!showPw)}
               className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-gray-400">
               {showPw ? 'Gizle' : 'Göster'}
@@ -126,16 +126,16 @@ function ResetPasswordPageContent() {
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1">Şifre Tekrar</label>
+          <label className="block text-xs font-medium text-gray-600 mb-1 dark:text-[#e7edf4]/60">Şifre Tekrar</label>
           <input {...register('password_confirm')} type="password"
-            className="w-full h-9 px-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1E3A5F]" />
+            className="w-full h-9 px-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1E3A5F] dark:border-[#d8ad43]/18 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:focus:border-[#d8ad43]/40" />
           {errors.password_confirm && (
             <p className="text-[10px] text-red-500 mt-1">{errors.password_confirm.message}</p>
           )}
         </div>
 
         <button type="submit" disabled={isSubmitting}
-          className="w-full h-10 bg-[#1E3A5F] text-white rounded-lg text-sm font-medium disabled:opacity-50 mt-1">
+          className="w-full h-10 bg-[#1E3A5F] text-white rounded-lg text-sm font-medium disabled:opacity-50 mt-1 dark:bg-[#d8ad43] dark:text-[#10223b]">
           {isSubmitting ? 'Kaydediliyor...' : 'Şifremi Güncelle'}
         </button>
       </form>

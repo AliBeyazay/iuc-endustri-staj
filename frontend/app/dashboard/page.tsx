@@ -16,6 +16,7 @@ import {
 import { BookmarkedListing, DashboardStats, UserProfile } from '@/types'
 import { getAvatarColor, getDeadlineDisplay, getInitials, FOCUS_AREA_LABELS, FOCUS_AREA_COLORS, PLATFORM_LABELS, timeAgoTurkish } from '@/lib/helpers'
 import ProfileDropdown from '@/components/ProfileDropdown'
+import ThemeToggle from '@/components/ThemeToggle'
 import UniversityLogo from '@/components/UniversityLogo'
 
 function BookmarkCard({
@@ -37,21 +38,21 @@ function BookmarkCard({
   return (
     <div
       onClick={() => router.push(`/listings/${listing.id}`)}
-      className={`group cursor-pointer rounded-xl border bg-white p-3 transition-all hover:shadow-md ${
-        deadline.color === 'red' ? 'border-red-200' : 'border-gray-100'
+      className={`group cursor-pointer rounded-xl border bg-white p-3 transition-all hover:shadow-md dark:bg-white/5 dark:hover:shadow-none ${
+        deadline.color === 'red' ? 'border-red-200 dark:border-red-400/30' : 'border-gray-100 dark:border-[#d8ad43]/12'
       }`}
     >
       <div className="flex items-start gap-3">
         <div
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-gray-100 text-[10px] font-semibold ${avatarColor}`}
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-gray-100 text-[10px] font-semibold dark:border-[#d8ad43]/15 ${avatarColor}`}
         >
           {initials}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium text-gray-800 group-hover:text-[#1E3A5F]">
+          <p className="truncate text-sm font-medium text-gray-800 group-hover:text-[#1E3A5F] dark:text-[#e7edf4] dark:group-hover:text-[#d8ad43]">
             {listing.title}
           </p>
-          <p className="mt-0.5 truncate text-xs text-gray-500">{listing.company_name}</p>
+          <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-[#e7edf4]/50">{listing.company_name}</p>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1" onClick={(e) => e.stopPropagation()}>
           {deadline.label ? (
@@ -97,7 +98,7 @@ function BookmarkCard({
         </div>
       </div>
       {listing.bookmarked_at && (
-        <p className="mt-2 text-right text-[9px] text-gray-300">
+        <p className="mt-2 text-right text-[9px] text-gray-300 dark:text-[#e7edf4]/30">
           Kaydedildi: {timeAgoTurkish(listing.bookmarked_at)}
         </p>
       )}
@@ -130,19 +131,19 @@ function ProfileEdit({
   }
 
   return (
-    <div className="mt-3 space-y-3 rounded-lg border border-gray-100 p-3">
+    <div className="mt-3 space-y-3 rounded-lg border border-gray-100 p-3 dark:border-[#d8ad43]/12">
       <div>
-        <label className="mb-1 block text-xs text-gray-500">LinkedIn URL</label>
+        <label className="mb-1 block text-xs text-gray-500 dark:text-[#e7edf4]/50">LinkedIn URL</label>
         <input
           value={linkedinUrl}
           onChange={(event) => setLinkedinUrl(event.target.value)}
           placeholder="https://linkedin.com/in/..."
-          className="h-8 w-full rounded border border-gray-200 px-2.5 text-xs focus:border-[#1E3A5F] focus:outline-none"
+          className="h-8 w-full rounded border border-gray-200 px-2.5 text-xs focus:border-[#1E3A5F] focus:outline-none dark:border-[#d8ad43]/18 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:focus:border-[#d8ad43]/40"
         />
       </div>
       <div>
-        <label className="mb-1 block text-xs text-gray-500">
-          CV Yükle <span className="text-gray-400">(PDF, maks 5MB)</span>
+        <label className="mb-1 block text-xs text-gray-500 dark:text-[#e7edf4]/50">
+          CV Yükle <span className="text-gray-400 dark:text-[#e7edf4]/35">(PDF, maks 5MB)</span>
         </label>
         <input
           type="file"
@@ -167,7 +168,7 @@ function ProfileEdit({
       <button
         onClick={handleSave}
         disabled={saving}
-        className="h-8 w-full rounded bg-[#1E3A5F] text-xs text-white disabled:opacity-50"
+        className="h-8 w-full rounded bg-[#1E3A5F] text-xs text-white disabled:opacity-50 dark:bg-[#d8ad43] dark:text-[#10223b]"
       >
         {saving ? 'Kaydediliyor...' : 'Kaydet'}
       </button>
@@ -233,7 +234,7 @@ export default function DashboardPage() {
 
   if (status === 'loading') {
     return (
-      <div className="flex min-h-screen items-center justify-center px-6 text-sm text-gray-500">
+      <div className="flex min-h-screen items-center justify-center px-6 text-sm text-gray-500 dark:text-[#e7edf4]/50">
         Dashboard yükleniyor...
       </div>
     )
@@ -257,7 +258,10 @@ export default function DashboardPage() {
             </p>
           </div>
         </Link>
-        <ProfileDropdown />
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <ProfileDropdown />
+        </div>
       </nav>
 
       <div className="mx-auto grid max-w-5xl grid-cols-1 gap-4 px-3 py-4 sm:px-4 sm:py-5 lg:grid-cols-[1fr_260px] lg:gap-5">
@@ -265,8 +269,8 @@ export default function DashboardPage() {
           <div id="saved" className="campus-card scroll-mt-24 rounded-2xl p-4">
             <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
-                <h1 className="text-base font-medium text-gray-900">Hoş geldin, {firstName}</h1>
-                <p className="mt-0.5 text-xs text-gray-400">
+                <h1 className="text-base font-medium text-gray-900 dark:text-[#e7edf4]">Hoş geldin, {firstName}</h1>
+                <p className="mt-0.5 text-xs text-gray-400 dark:text-[#e7edf4]/40">
                   {new Date().toLocaleDateString('tr-TR', {
                     weekday: 'long',
                     day: 'numeric',
@@ -312,9 +316,9 @@ export default function DashboardPage() {
                   cls: stats?.listings_expiring_soon ? 'text-red-600' : 'text-[#1E3A5F]',
                 },
               ].map(({ label, value, cls }) => (
-                <div key={label} className="rounded-lg bg-gray-50 p-2.5 text-center">
+                <div key={label} className="rounded-lg bg-gray-50 p-2.5 text-center dark:bg-white/5">
                   <p className={`text-2xl font-medium ${cls}`}>{value}</p>
-                  <p className="mt-0.5 text-[9px] text-gray-400">{label}</p>
+                  <p className="mt-0.5 text-[9px] text-gray-400 dark:text-[#e7edf4]/40">{label}</p>
                 </div>
               ))}
             </div>
@@ -323,7 +327,7 @@ export default function DashboardPage() {
           <div id="profile" className="campus-card scroll-mt-24 rounded-2xl p-4">
             <div className="mb-3 flex items-center justify-between">
               <div>
-                <h2 className="text-sm font-medium text-gray-800">
+                <h2 className="text-sm font-medium text-gray-800 dark:text-[#e7edf4]">
                   Kaydedilen İlanlar
                   {bookmarks.length > 0 ? (
                     <span className="ml-1.5 text-xs text-gray-400">({bookmarks.length})</span>
@@ -342,7 +346,7 @@ export default function DashboardPage() {
               </div>
               <button
                 onClick={() => router.push('/listings')}
-                className="rounded-full border border-[#1E3A5F]/20 px-3 py-1 text-[10px] font-medium text-[#1E3A5F] hover:bg-blue-50"
+                className="rounded-full border border-[#1E3A5F]/20 px-3 py-1 text-[10px] font-medium text-[#1E3A5F] hover:bg-blue-50 dark:border-[#d8ad43]/25 dark:text-[#d8ad43] dark:hover:bg-[#d8ad43]/10"
               >
                 + İlan Keşfet
               </button>
@@ -350,18 +354,18 @@ export default function DashboardPage() {
 
             {!bookmarks || bookmarks.length === 0 ? (
               <div className="py-10 text-center">
-                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-50">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-50 dark:bg-white/5">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                   </svg>
                 </div>
-                <p className="mb-1 text-sm font-medium text-gray-500">Henüz kaydettiğin ilan yok</p>
-                <p className="mb-3 text-xs text-gray-400">
+                <p className="mb-1 text-sm font-medium text-gray-500 dark:text-[#e7edf4]/60">Henüz kaydettiğin ilan yok</p>
+                <p className="mb-3 text-xs text-gray-400 dark:text-[#e7edf4]/40">
                   İlanlara göz at ve beğendiklerini kaydet
                 </p>
                 <button
                   onClick={() => router.push('/listings')}
-                  className="rounded-lg bg-[#1E3A5F] px-4 py-2 text-xs text-white hover:bg-[#15304f]"
+                  className="rounded-lg bg-[#1E3A5F] px-4 py-2 text-xs text-white hover:bg-[#15304f] dark:bg-[#d8ad43] dark:text-[#10223b] dark:hover:bg-[#e4c05c]"
                 >
                   İlanlara Göz At
                 </button>
@@ -378,7 +382,7 @@ export default function DashboardPage() {
                 {!showAll && bookmarks.length > 5 ? (
                   <button
                     onClick={() => setShowAll(true)}
-                    className="w-full py-1.5 text-xs text-gray-400 hover:text-gray-600"
+                    className="w-full py-1.5 text-xs text-gray-400 hover:text-gray-600 dark:text-[#e7edf4]/40 dark:hover:text-[#e7edf4]/70"
                   >
                     {bookmarks.length - 5} ilan daha göster
                   </button>
@@ -399,30 +403,30 @@ export default function DashboardPage() {
                 {profile ? getInitials(profile.full_name) : '??'}
               </div>
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-gray-800">{profile?.full_name ?? '-'}</p>
-                <p className="truncate text-[11px] text-gray-400">{profile?.iuc_email ?? '-'}</p>
+                <p className="truncate text-sm font-semibold text-gray-800 dark:text-[#e7edf4]">{profile?.full_name ?? '-'}</p>
+                <p className="truncate text-[11px] text-gray-400 dark:text-[#e7edf4]/40">{profile?.iuc_email ?? '-'}</p>
               </div>
             </div>
 
             {profile ? (
               <>
                 <div className="mb-3 space-y-2.5">
-                  <div className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
-                    <span className="text-[11px] text-gray-500">Öğrenci No</span>
-                    <span className="text-[11px] font-medium text-gray-800">
+                  <div className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 dark:bg-white/5">
+                    <span className="text-[11px] text-gray-500 dark:text-[#e7edf4]/50">Öğrenci No</span>
+                    <span className="text-[11px] font-medium text-gray-800 dark:text-[#e7edf4]">
                       {profile.student_no ?? <span className="text-gray-300">Belirtilmedi</span>}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
-                    <span className="text-[11px] text-gray-500">Sınıf</span>
-                    <span className="text-[11px] font-medium text-gray-800">
+                  <div className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 dark:bg-white/5">
+                    <span className="text-[11px] text-gray-500 dark:text-[#e7edf4]/50">Sınıf</span>
+                    <span className="text-[11px] font-medium text-gray-800 dark:text-[#e7edf4]">
                       {profile.department_year
                         ? `${profile.department_year}. Sınıf`
                         : <span className="text-gray-300">Belirtilmedi</span>}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
-                    <span className="text-[11px] text-gray-500">LinkedIn</span>
+                  <div className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 dark:bg-white/5">
+                    <span className="text-[11px] text-gray-500 dark:text-[#e7edf4]/50">LinkedIn</span>
                     {profile.linkedin_url ? (
                       <a
                         href={profile.linkedin_url}
@@ -436,8 +440,8 @@ export default function DashboardPage() {
                       <span className="text-[11px] text-gray-300">Belirtilmedi</span>
                     )}
                   </div>
-                  <div className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
-                    <span className="text-[11px] text-gray-500">CV</span>
+                  <div className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 dark:bg-white/5">
+                    <span className="text-[11px] text-gray-500 dark:text-[#e7edf4]/50">CV</span>
                     {profile.cv_url ? (
                       <a
                         href={profile.cv_url}
@@ -451,8 +455,8 @@ export default function DashboardPage() {
                       <span className="text-[11px] text-gray-300">Yüklenmedi</span>
                     )}
                   </div>
-                  <div className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
-                    <span className="text-[11px] text-gray-500">Durum</span>
+                  <div className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 dark:bg-white/5">
+                    <span className="text-[11px] text-gray-500 dark:text-[#e7edf4]/50">Durum</span>
                     <span
                       className={`rounded-full px-2 py-0.5 text-[9px] font-medium ${
                         profile.is_verified
@@ -466,12 +470,12 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="mb-1 flex justify-between text-xs">
-                  <span className="text-gray-500">Profil tamamlanma</span>
-                  <span className="font-medium text-[#1E3A5F]">%{profile.completion_percentage}</span>
+                  <span className="text-gray-500 dark:text-[#e7edf4]/50">Profil tamamlanma</span>
+                  <span className="font-medium text-[#1E3A5F] dark:text-[#d8ad43]">%{profile.completion_percentage}</span>
                 </div>
-                <div className="mb-3 h-1.5 rounded-full bg-gray-100">
+                <div className="mb-3 h-1.5 rounded-full bg-gray-100 dark:bg-white/10">
                   <div
-                    className="h-full rounded-full bg-[#1E3A5F] transition-all"
+                    className="h-full rounded-full bg-[#1E3A5F] transition-all dark:bg-[#d8ad43]"
                     style={{ width: `${profile.completion_percentage}%` }}
                   />
                 </div>
@@ -480,7 +484,7 @@ export default function DashboardPage() {
 
             <button
               onClick={() => setEditOpen(!editOpen)}
-              className="mt-3 w-full rounded-lg border border-gray-200 py-1.5 text-xs text-gray-500 hover:bg-gray-50"
+              className="mt-3 w-full rounded-lg border border-gray-200 py-1.5 text-xs text-gray-500 hover:bg-gray-50 dark:border-[#d8ad43]/18 dark:text-[#e7edf4]/50 dark:hover:bg-white/5"
             >
               {editOpen ? 'Kapat' : 'Profili Düzenle'}
             </button>
@@ -497,15 +501,15 @@ export default function DashboardPage() {
 
           <div className="campus-card rounded-2xl p-4">
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-sm font-medium text-gray-800">Bugün Yeni</h3>
+              <h3 className="text-sm font-medium text-gray-800 dark:text-[#e7edf4]">Bugün Yeni</h3>
               <button
                 onClick={() => router.push('/listings?ordering=-created_at')}
-                className="text-xs text-[#1E3A5F] hover:underline"
+                className="text-xs text-[#1E3A5F] hover:underline dark:text-[#d8ad43]"
               >
                 Tümü
               </button>
             </div>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-400 dark:text-[#e7edf4]/40">
               Bugün {stats?.new_listings_today ?? 0} yeni ilan eklendi.{' '}
               <button
                 onClick={() => router.push('/listings')}

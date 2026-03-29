@@ -20,7 +20,7 @@ function Section({
     <div className="mb-5">
       <button
         onClick={() => setOpen(!open)}
-        className="campus-heading mb-2 flex w-full items-center justify-between text-[11px] text-[#8f670b]"
+        className="campus-heading mb-2 flex w-full items-center justify-between text-[11px] text-[#8f670b] dark:text-[#f0cf7a]"
       >
         {title}
         {open ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
@@ -34,18 +34,18 @@ function CheckItem({
   label, checked, count, onChange,
 }: { label: string; checked: boolean; count?: number; onChange: () => void }) {
   return (
-    <label className="group flex cursor-pointer items-center gap-2 rounded-2xl border border-transparent bg-white/35 px-2.5 py-2 transition-colors hover:border-[#d8ad43]/20 hover:bg-white/70">
+    <label className="group flex cursor-pointer items-center gap-2 rounded-2xl border border-transparent bg-white/35 px-2.5 py-2 transition-colors hover:border-[#d8ad43]/20 hover:bg-white/70 dark:bg-white/5 dark:hover:bg-white/10">
       <input
         type="checkbox"
         checked={checked}
         onChange={onChange}
         className="h-3.5 w-3.5 accent-[#b6891d]"
       />
-      <span className="flex-1 text-[11px] leading-tight text-[#173156]/74 group-hover:text-[#132843]">
+      <span className="flex-1 text-[11px] leading-tight text-[#173156]/74 group-hover:text-[#132843] dark:text-[#e7edf4]/65 dark:group-hover:text-[#e7edf4]">
         {label}
       </span>
       {count !== undefined && (
-        <span className="rounded-full bg-[#173156]/6 px-2 py-0.5 text-[10px] text-[#173156]/46">
+        <span className="rounded-full bg-[#173156]/6 px-2 py-0.5 text-[10px] text-[#173156]/46 dark:bg-white/8 dark:text-white/40">
           {count}
         </span>
       )}
@@ -104,8 +104,8 @@ export default function FilterSidebar({
           <label
             className={`mt-2 flex items-start gap-2 rounded-3xl border px-3 py-3 transition-colors ${
               filters.is_talent_program
-                ? 'border-[#d8ad43]/35 bg-[#f7ecd0]'
-                : 'border-[#173156]/10 bg-white/55 hover:border-[#d8ad43]/30 hover:bg-[#fbf3de]'
+                ? 'border-[#d8ad43]/35 bg-[#f7ecd0] dark:bg-[#d8ad43]/15'
+                : 'border-[#173156]/10 bg-white/55 hover:border-[#d8ad43]/30 hover:bg-[#fbf3de] dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10'
             }`}
           >
             <input
@@ -117,11 +117,11 @@ export default function FilterSidebar({
               className="mt-0.5 h-3.5 w-3.5 accent-[#b6891d]"
             />
             <div className="min-w-0 flex-1">
-              <span className="flex items-center gap-1 text-[11px] font-semibold leading-tight text-[#8f670b]">
+              <span className="flex items-center gap-1 text-[11px] font-semibold leading-tight text-[#8f670b] dark:text-[#f0cf7a]">
                 <Sparkles size={12} />
                 Yetenek Programlari
               </span>
-              <span className="mt-1 block text-[10px] text-[#173156]/55">
+              <span className="mt-1 block text-[10px] text-[#173156]/55 dark:text-[#e7edf4]/45">
                 Yapilandirilmis staj ve uzun soluklu kariyer akisları
               </span>
             </div>

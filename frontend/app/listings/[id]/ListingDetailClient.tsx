@@ -20,6 +20,7 @@ import {
 import { createReview, fetchSimilarListings } from '@/lib/api'
 import { useBookmarks, useReviews } from '@/hooks'
 import ProfileDropdown from '@/components/ProfileDropdown'
+import ThemeToggle from '@/components/ThemeToggle'
 import UniversityLogo from '@/components/UniversityLogo'
 
 const INTERNSHIP_LABEL: Record<string, string> = {
@@ -203,6 +204,7 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
           </Link>
 
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <ProfileDropdown />
           </div>
         </div>
@@ -211,7 +213,7 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
       <div className="mx-auto grid max-w-6xl grid-cols-1 gap-4 px-3 py-4 sm:px-4 sm:py-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-5">
         <div className="space-y-4">
           <section className="campus-card rounded-[28px] p-5 sm:p-6">
-            <p className="campus-heading text-[11px] text-[#8f670b]">İlan Özeti</p>
+            <p className="campus-heading text-[11px] text-[#8f670b] dark:text-[#f0cf7a]">İlan Özeti</p>
 
             <div className="mt-4 flex items-start gap-4">
               {listing.company_logo_url && !detailLogoError ? (
@@ -220,7 +222,7 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
                   alt={listing.company_name}
                   referrerPolicy="no-referrer"
                   onError={() => setDetailLogoError(true)}
-                  className="h-14 w-14 rounded-2xl border border-[#d8ad43]/20 bg-white/80 object-contain p-1.5"
+                  className="h-14 w-14 rounded-2xl border border-[#d8ad43]/20 bg-white/80 object-contain p-1.5 dark:bg-white/10"
                 />
               ) : (
                 <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-sm font-semibold ${avatarColor}`}>
@@ -229,14 +231,12 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
               )}
 
               <div className="min-w-0">
-                <h1 className="campus-heading text-2xl leading-tight text-[#132843] sm:text-3xl">
+                <h1 className="campus-heading text-2xl leading-tight text-[#132843] sm:text-3xl dark:text-[#e7edf4]">
                   {listing.title}
                 </h1>
-                <p className="mt-2 text-sm text-[#173156]/70">
-                  {listing.company_name} - {listing.location}
+                <p className="mt-2 text-sm text-[#173156]/70 dark:text-[#e7edf4]/60">
                 </p>
-                <p className="mt-2 text-xs text-[#173156]/55">
-                  {timeAgoTurkish(listing.created_at)} yayınlandı
+                <p className="mt-2 text-xs text-[#173156]/55 dark:text-[#e7edf4]/45"> yayınlandı
                 </p>
               </div>
             </div>
@@ -266,7 +266,7 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
           </section>
 
           <section className="campus-card rounded-[28px] p-5 sm:p-6">
-            <h2 className="text-xs font-medium uppercase tracking-[0.22em] text-[#8f670b]/80">
+            <h2 className="text-xs font-medium uppercase tracking-[0.22em] text-[#8f670b]/80 dark:text-[#f0cf7a]/70">
               İlan Açıklaması
             </h2>
 
@@ -279,7 +279,7 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
 
                 if (isSectionTitle) {
                   return (
-                    <h3 key={`${block}-${index}`} className="text-sm font-semibold text-[#8f670b] pt-1">
+                    <h3 key={`${block}-${index}`} className="text-sm font-semibold text-[#8f670b] pt-1 dark:text-[#f0cf7a]">
                       {block}
                     </h3>
                   )
@@ -287,14 +287,14 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
 
                 if (isNumberedItem) {
                   return (
-                    <p key={`${block}-${index}`} className="text-sm leading-7 text-[#173156]/82 pl-3 border-l-2 border-[#d8ad43]/25">
+                    <p key={`${block}-${index}`} className="text-sm leading-7 text-[#173156]/82 pl-3 border-l-2 border-[#d8ad43]/25 dark:text-[#e7edf4]/70">
                       {block}
                     </p>
                   )
                 }
 
                 return (
-                  <p key={`${block}-${index}`} className="text-sm leading-7 text-[#173156]/82">
+                  <p key={`${block}-${index}`} className="text-sm leading-7 text-[#173156]/82 dark:text-[#e7edf4]/70">
                     {block}
                   </p>
                 )
@@ -314,22 +314,21 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
           <section className="campus-card rounded-[28px] p-5 sm:p-6">
             <div className="flex flex-col gap-3 border-b border-dashed border-[#d8ad43]/28 pb-5 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h2 className="text-xs font-medium uppercase tracking-[0.22em] text-[#8f670b]/80">
+                <h2 className="text-xs font-medium uppercase tracking-[0.22em] text-[#8f670b]/80 dark:text-[#f0cf7a]/70">
                   Öğrenci Değerlendirmeleri
                 </h2>
-                <p className="mt-2 text-sm text-[#173156]/68">
+                <p className="mt-2 text-sm text-[#173156]/68 dark:text-[#e7edf4]/55">
                   Bu ilan hakkında deneyim, süreç ve görüş paylaşabilirsin.
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-[#d8ad43]/16 bg-white/60 px-4 py-3">
+              <div className="rounded-2xl border border-[#d8ad43]/16 bg-white/60 px-4 py-3 dark:bg-white/5">
                 <div className="flex items-center gap-3">
                   <ReviewStars value={Math.round(averageRating)} />
                   <div>
-                    <p className="text-lg font-semibold text-[#132843]">
-                      {reviews.length ? averageRating.toFixed(1) : '0.0'}
+                    <p className="text-lg font-semibold text-[#132843] dark:text-[#e7edf4]">
                     </p>
-                    <p className="text-xs text-[#173156]/58">{reviews.length} değerlendirme</p>
+                    <p className="text-xs text-[#173156]/58 dark:text-[#e7edf4]/45">{reviews.length} değerlendirme</p>
                   </div>
                 </div>
               </div>
@@ -338,38 +337,36 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
             <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
               <div className="space-y-3">
                 {reviewsLoading ? (
-                  <div className="rounded-2xl border border-[#d8ad43]/14 bg-white/45 px-4 py-4 text-sm text-[#173156]/60">
+                  <div className="rounded-2xl border border-[#d8ad43]/14 bg-white/45 px-4 py-4 text-sm text-[#173156]/60 dark:bg-white/5 dark:text-[#e7edf4]/50">
                     Değerlendirmeler yükleniyor...
                   </div>
                 ) : reviews.length === 0 ? (
-                  <div className="rounded-2xl border border-[#d8ad43]/14 bg-white/45 px-4 py-4 text-sm text-[#173156]/60">
+                  <div className="rounded-2xl border border-[#d8ad43]/14 bg-white/45 px-4 py-4 text-sm text-[#173156]/60 dark:bg-white/5 dark:text-[#e7edf4]/50">
                     Henüz öğrenci değerlendirmesi yok. İlk yorumu sen paylaşabilirsin.
                   </div>
                 ) : (
                   reviews.map((review) => (
                     <article
                       key={review.id}
-                      className="rounded-2xl border border-[#d8ad43]/14 bg-white/55 px-4 py-4"
+                      className="rounded-2xl border border-[#d8ad43]/14 bg-white/55 px-4 py-4 dark:bg-white/5"
                     >
                       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                         <div>
                           <div className="flex items-center gap-2">
                             <ReviewStars value={review.rating} />
-                            <span className="text-sm font-semibold text-[#132843]">
-                              {review.rating.toFixed(1)} / 5
+                            <span className="text-sm font-semibold text-[#132843] dark:text-[#e7edf4]">
                             </span>
                           </div>
-                          <p className="mt-2 text-xs text-[#173156]/58">
+                          <p className="mt-2 text-xs text-[#173156]/58 dark:text-[#e7edf4]/45">
                             {review.is_anonymous ? 'Anonim öğrenci' : 'Öğrenci'} - {review.internship_year}
                           </p>
                         </div>
-                        <span className="text-xs text-[#173156]/52">
+                        <span className="text-xs text-[#173156]/52 dark:text-[#e7edf4]/40">
                           {formatDateTurkish(review.created_at)}
                         </span>
                       </div>
 
-                      <p className="mt-3 text-sm leading-7 text-[#173156]/82">
-                        {review.comment}
+                      <p className="mt-3 text-sm leading-7 text-[#173156]/82 dark:text-[#e7edf4]/70">
                       </p>
                     </article>
                   ))
@@ -378,15 +375,15 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
 
               <form
                 onSubmit={handleReviewSubmit}
-                className="rounded-[24px] border border-[#d8ad43]/16 bg-white/65 p-4"
+                className="rounded-[24px] border border-[#d8ad43]/16 bg-white/65 p-4 dark:bg-white/5"
               >
-                <h3 className="text-sm font-semibold text-[#132843]">Görüşünü Paylaş</h3>
-                <p className="mt-1 text-xs leading-6 text-[#173156]/62">
+                <h3 className="text-sm font-semibold text-[#132843] dark:text-[#e7edf4]">Görüşünü Paylaş</h3>
+                <p className="mt-1 text-xs leading-6 text-[#173156]/62 dark:text-[#e7edf4]/50">
                   Puan verip kısa bir yorum bırak. Bu alan diğer öğrenciler için yol gösterici olacak.
                 </p>
 
                 <div className="mt-4">
-                  <label className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8f670b]/80">
+                  <label className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8f670b]/80 dark:text-[#f0cf7a]/70">
                     Puanın
                   </label>
                   <div className="mt-2">
@@ -397,7 +394,7 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
                 <div className="mt-4">
                   <label
                     htmlFor="internship-year"
-                    className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8f670b]/80"
+                    className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8f670b]/80 dark:text-[#f0cf7a]/70"
                   >
                     Staj Yılı
                   </label>
@@ -408,14 +405,14 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
                     onChange={(event) => setInternshipYear(Number(event.target.value))}
                     min={2000}
                     max={2100}
-                    className="mt-2 w-full rounded-2xl border border-[#d8ad43]/18 bg-white px-4 py-3 text-sm text-[#132843] outline-none transition-colors focus:border-[#d8ad43]/40"
+                    className="mt-2 w-full rounded-2xl border border-[#d8ad43]/18 bg-white px-4 py-3 text-sm text-[#132843] outline-none transition-colors focus:border-[#d8ad43]/40 dark:bg-[#0e1e33] dark:text-[#e7edf4]"
                   />
                 </div>
 
                 <div className="mt-4">
                   <label
                     htmlFor="review-comment"
-                    className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8f670b]/80"
+                    className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8f670b]/80 dark:text-[#f0cf7a]/70"
                   >
                     Yorumun
                   </label>
@@ -425,11 +422,11 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
                     onChange={(event) => setComment(event.target.value)}
                     rows={5}
                     placeholder="Başvuru süreci, mülakat deneyimi veya ilanın faydası hakkında kısa bir görüş yaz."
-                    className="mt-2 w-full rounded-2xl border border-[#d8ad43]/18 bg-white px-4 py-3 text-sm leading-7 text-[#132843] outline-none transition-colors placeholder:text-[#173156]/38 focus:border-[#d8ad43]/40"
+                    className="mt-2 w-full rounded-2xl border border-[#d8ad43]/18 bg-white px-4 py-3 text-sm leading-7 text-[#132843] outline-none transition-colors placeholder:text-[#173156]/38 focus:border-[#d8ad43]/40 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:placeholder:text-[#e7edf4]/30"
                   />
                 </div>
 
-                <label className="mt-4 flex items-center gap-2 text-sm text-[#173156]/70">
+                <label className="mt-4 flex items-center gap-2 text-sm text-[#173156]/70 dark:text-[#e7edf4]/60">
                   <input
                     type="checkbox"
                     checked={isAnonymous}
@@ -440,7 +437,7 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
                 </label>
 
                 {!isAuthenticated && (
-                  <p className="mt-4 rounded-2xl border border-[#d8ad43]/16 bg-[#fff8e8] px-4 py-3 text-xs leading-6 text-[#173156]/70">
+                  <p className="mt-4 rounded-2xl border border-[#d8ad43]/16 bg-[#fff8e8] px-4 py-3 text-xs leading-6 text-[#173156]/70 dark:bg-[#d8ad43]/10 dark:text-[#e7edf4]/60">
                     Değerlendirme bırakmak için önce giriş yapman gerekiyor.
                   </p>
                 )}
@@ -460,13 +457,13 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
                 <button
                   type="submit"
                   disabled={reviewSubmitting}
-                  className="mt-5 w-full rounded-2xl bg-[#1E3A5F] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#173156] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="mt-5 w-full rounded-2xl bg-[#1E3A5F] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#173156] disabled:cursor-not-allowed disabled:opacity-60 dark:bg-[#d8ad43] dark:text-[#10223b] dark:hover:bg-[#e4c05c]"
                 >
                   {reviewSubmitting ? 'Gönderiliyor...' : 'Değerlendirmeyi Gönder'}
                 </button>
 
                 {isAuthenticated && session?.user && (
-                  <p className="mt-3 text-xs text-[#173156]/50">
+                  <p className="mt-3 text-xs text-[#173156]/50 dark:text-[#e7edf4]/40">
                     Giriş yapan kullanıcı olarak yorumun hesabına bağlı kaydedilir.
                   </p>
                 )}
@@ -476,7 +473,7 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
 
           {listing.requirements && (
             <section className="campus-card rounded-[28px] p-5 sm:p-6">
-              <h2 className="text-xs font-medium uppercase tracking-[0.22em] text-[#8f670b]/80">
+              <h2 className="text-xs font-medium uppercase tracking-[0.22em] text-[#8f670b]/80 dark:text-[#f0cf7a]/70">
                 Aranan Nitelikler
               </h2>
               <ul className="mt-4 space-y-2">
@@ -485,8 +482,8 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
                   .map((item) => item.trim())
                   .filter(Boolean)
                   .map((item, index) => (
-                    <li key={`${item}-${index}`} className="flex items-start gap-2 text-sm text-[#173156]/82">
-                      <span className="mt-0.5 text-[#8f670b]">•</span>
+                    <li key={`${item}-${index}`} className="flex items-start gap-2 text-sm text-[#173156]/82 dark:text-[#e7edf4]/70">
+                      <span className="mt-0.5 text-[#8f670b] dark:text-[#f0cf7a]">•</span>
                       <span>{item}</span>
                     </li>
                   ))}
@@ -496,7 +493,7 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
 
           {similar && similar.length > 0 && (
             <section className="campus-card rounded-[28px] p-5 sm:p-6">
-              <h2 className="text-xs font-medium uppercase tracking-[0.22em] text-[#8f670b]/80">
+              <h2 className="text-xs font-medium uppercase tracking-[0.22em] text-[#8f670b]/80 dark:text-[#f0cf7a]/70">
                 Benzer İlanlar
               </h2>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -504,10 +501,10 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
                   <Link
                     key={item.id}
                     href={`/listings/${item.id}`}
-                    className="rounded-2xl border border-[#d8ad43]/16 bg-white/55 px-4 py-4 transition-colors hover:border-[#d8ad43]/35 hover:bg-white/80"
+                    className="rounded-2xl border border-[#d8ad43]/16 bg-white/55 px-4 py-4 transition-colors hover:border-[#d8ad43]/35 hover:bg-white/80 dark:bg-white/5 dark:hover:bg-white/10"
                   >
-                    <p className="text-sm font-semibold text-[#132843]">{item.title}</p>
-                    <p className="mt-1 text-xs text-[#173156]/62">{item.company_name}</p>
+                    <p className="text-sm font-semibold text-[#132843] dark:text-[#e7edf4]">{item.title}</p>
+                    <p className="mt-1 text-xs text-[#173156]/62 dark:text-[#e7edf4]/50">{item.company_name}</p>
                   </Link>
                 ))}
               </div>
@@ -517,7 +514,7 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
 
         <aside className="space-y-4">
           <section className="campus-card rounded-[28px] p-5">
-            <p className="campus-heading text-[11px] text-[#8f670b]">Başvuru</p>
+            <p className="campus-heading text-[11px] text-[#8f670b] dark:text-[#f0cf7a]">Başvuru</p>
 
             <div className="mt-4 space-y-3">
               <a
@@ -538,7 +535,7 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
 
               <button
                 onClick={handleShare}
-                className="w-full rounded-2xl border border-[#173156]/12 bg-white/55 px-4 py-3 text-sm font-semibold text-[#173156] transition-colors hover:bg-white/80"
+                className="w-full rounded-2xl border border-[#173156]/12 bg-white/55 px-4 py-3 text-sm font-semibold text-[#173156] transition-colors hover:bg-white/80 dark:border-[#e7edf4]/12 dark:bg-white/5 dark:text-[#e7edf4] dark:hover:bg-white/10"
               >
                 {copied ? 'Bağlantı Kopyalandı' : 'Bağlantıyı Kopyala'}
               </button>

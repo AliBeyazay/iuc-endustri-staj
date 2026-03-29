@@ -43,7 +43,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </div>
       </div>
 
-      <div className="flex-1 bg-[#f3efe5] text-[#132843]">
+      <div className="flex-1 bg-[#f3efe5] text-[#132843] dark:bg-[#0b1a2c] dark:text-[#e7edf4]">
         {/* Mobile navbar - only visible on small screens */}
         <div className="lg:hidden campus-nav px-4 py-3 flex items-center gap-3">
           <Link href="/listings" className="flex items-center gap-3 min-w-0">

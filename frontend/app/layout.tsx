@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Oswald, Source_Sans_3 } from 'next/font/google'
 import './globals.css'
 import { SessionProvider } from 'next-auth/react'
+import ThemeProvider from '@/components/ThemeProvider'
 import SiteFooter from '@/components/SiteFooter'
 import ScrollToTopButton from '@/components/ScrollToTopButton'
 
@@ -29,14 +30,16 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="tr">
+    <html lang="tr" suppressHydrationWarning>
       <body className={`${headingFont.variable} ${bodyFont.variable} font-sans`}>
         <SessionProvider>
-          <div className="min-h-screen flex flex-col">
-            <main className="flex-1">{children}</main>
-            <SiteFooter />
-            <ScrollToTopButton />
-          </div>
+          <ThemeProvider>
+            <div className="min-h-screen flex flex-col">
+              <main className="flex-1">{children}</main>
+              <SiteFooter />
+              <ScrollToTopButton />
+            </div>
+          </ThemeProvider>
         </SessionProvider>
       </body>
     </html>

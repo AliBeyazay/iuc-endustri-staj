@@ -55,7 +55,7 @@ export default function ListingCard({ listing, isBookmarked, onBookmark }: Props
   return (
     <article
       onClick={() => router.push(`/listings/${listing.id}`)}
-      className="campus-card group cursor-pointer overflow-hidden rounded-[26px] border p-4 transition-all duration-200 hover:-translate-y-1 hover:border-[#d8ad43]/45 hover:shadow-[0_28px_60px_rgba(10,21,35,0.16)]"
+      className="campus-card group cursor-pointer overflow-hidden rounded-[26px] border p-4 transition-all duration-200 hover:-translate-y-1 hover:border-[#d8ad43]/45 hover:shadow-[0_28px_60px_rgba(10,21,35,0.16)] dark:hover:border-[#d8ad43]/40"
     >
       <div className="mb-3 flex items-center justify-between gap-3">
         <span className="campus-pill inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold">
@@ -68,7 +68,7 @@ export default function ListingCard({ listing, isBookmarked, onBookmark }: Props
             e.stopPropagation()
             onBookmark(listing.id)
           }}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#173156]/10 bg-white/70 text-[#173156]/60 transition-colors hover:text-[#173156]"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#173156]/10 bg-white/70 text-[#173156]/60 transition-colors hover:text-[#173156] dark:border-white/10 dark:bg-white/8 dark:text-white/50 dark:hover:text-white"
           aria-label={isBookmarked ? 'Kayd\u0131 kald\u0131r' : 'Kaydet'}
         >
           {isBookmarked ? (
@@ -89,7 +89,7 @@ export default function ListingCard({ listing, isBookmarked, onBookmark }: Props
             loading="lazy"
             referrerPolicy="no-referrer"
             onError={() => setLogoError(true)}
-            className="h-12 w-12 min-w-[48px] rounded-2xl border border-[#d8ad43]/20 bg-white/80 object-contain p-1.5"
+            className="h-12 w-12 min-w-[48px] rounded-2xl border border-[#d8ad43]/20 bg-white/80 object-contain p-1.5 dark:bg-white/10"
           />
         ) : (
           <div className={`flex h-12 w-12 min-w-[48px] items-center justify-center rounded-2xl border border-[#d8ad43]/20 text-[11px] font-semibold ${avatarColor}`}>
@@ -98,13 +98,13 @@ export default function ListingCard({ listing, isBookmarked, onBookmark }: Props
         )}
 
         <div className="min-w-0 flex-1">
-          <p className="campus-heading line-clamp-2 text-[1.05rem] leading-[1.15] text-[#132843]">
+          <p className="campus-heading line-clamp-2 text-[1.05rem] leading-[1.15] text-[#132843] dark:text-[#e7edf4]">
             {listing.title}
           </p>
-          <p className="mt-1 truncate text-[12px] font-medium text-[#173156]/72">
+          <p className="mt-1 truncate text-[12px] font-medium text-[#173156]/72 dark:text-[#e7edf4]/65">
             {listing.company_name}
           </p>
-          <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] text-[#173156]/58">
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] text-[#173156]/58 dark:text-[#e7edf4]/50">
             <span className="inline-flex items-center gap-1">
               <MapPin size={12} />
               {listing.location}
@@ -144,7 +144,7 @@ export default function ListingCard({ listing, isBookmarked, onBookmark }: Props
               e.stopPropagation()
               navigator.clipboard.writeText(`${window.location.origin}/listings/${listing.id}`)
             }}
-            className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] text-[#173156]/55 transition-colors hover:bg-[#173156]/5 hover:text-[#173156]"
+            className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] text-[#173156]/55 transition-colors hover:bg-[#173156]/5 hover:text-[#173156] dark:text-[#e7edf4]/50 dark:hover:bg-white/8 dark:hover:text-[#e7edf4]"
           >
             <Share2 size={12} />
             {'Payla\u015f'}

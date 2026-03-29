@@ -1,6 +1,6 @@
 export default function SiteFooter() {
   return (
-    <footer className="bg-[#132843] text-[#f3ead1] border-t border-[#d8ad43]/20">
+    <footer className="bg-[#132843] text-[#f3ead1] border-t border-[#d8ad43]/20 dark:bg-[#060e1a] dark:border-[#d8ad43]/15">
       <div className="mx-auto grid max-w-6xl gap-6 px-6 py-6 md:grid-cols-[1.7fr_0.9fr] md:px-8">
         <div>
           <h2 className="campus-heading text-[1.65rem] text-[#d8ad43]">{'\u0130leti\u015fim'}</h2>

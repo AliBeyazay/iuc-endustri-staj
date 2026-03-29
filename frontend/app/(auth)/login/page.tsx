@@ -177,8 +177,8 @@ function LoginPageContent() {
 
   return (
     <div className="w-full max-w-sm">
-      <h1 className="mb-1 text-xl font-medium text-gray-900">Giris Yap</h1>
-      <p className="mb-5 text-sm text-gray-500">IUC ogrenci hesabinla devam et</p>
+      <h1 className="mb-1 text-xl font-medium text-gray-900 dark:text-[#e7edf4]">Giris Yap</h1>
+      <p className="mb-5 text-sm text-gray-500 dark:text-[#e7edf4]/50">IUC ogrenci hesabinla devam et</p>
 
       {registered ? (
         <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-xs text-emerald-800">
@@ -245,23 +245,23 @@ function LoginPageContent() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600">E-posta</label>
+          <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-[#e7edf4]/60">E-posta</label>
           <input
             {...register('email')}
             type="email"
             placeholder="ornek@ogr.iuc.edu.tr"
-            className="h-9 w-full rounded-lg border border-gray-200 px-3 text-sm focus:border-[#1E3A5F] focus:outline-none"
+            className="h-9 w-full rounded-lg border border-gray-200 px-3 text-sm focus:border-[#1E3A5F] focus:outline-none dark:border-[#d8ad43]/18 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:focus:border-[#d8ad43]/40"
           />
           {errors.email ? <p className="mt-1 text-[10px] text-red-500">{errors.email.message}</p> : null}
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600">Sifre</label>
+          <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-[#e7edf4]/60">Sifre</label>
           <div className="relative">
             <input
               {...register('password')}
               type={showPassword ? 'text' : 'password'}
-              className="h-9 w-full rounded-lg border border-gray-200 px-3 pr-8 text-sm focus:border-[#1E3A5F] focus:outline-none"
+              className="h-9 w-full rounded-lg border border-gray-200 px-3 pr-8 text-sm focus:border-[#1E3A5F] focus:outline-none dark:border-[#d8ad43]/18 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:focus:border-[#d8ad43]/40"
             />
             <button
               type="button"
@@ -289,17 +289,17 @@ function LoginPageContent() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="h-10 w-full rounded-lg bg-[#1E3A5F] text-sm font-medium text-white disabled:opacity-50"
+          className="h-10 w-full rounded-lg bg-[#1E3A5F] text-sm font-medium text-white disabled:opacity-50 dark:bg-[#d8ad43] dark:text-[#10223b]"
         >
           {isSubmitting ? 'Giris yapiliyor...' : 'Giris Yap'}
         </button>
       </form>
 
-      <p className="mt-4 text-center text-xs text-gray-400">
+      <p className="mt-4 text-center text-xs text-gray-400 dark:text-[#e7edf4]/40">
         Hesabin yok mu?{' '}
         <button
           onClick={() => router.push('/register')}
-          className="font-medium text-[#1E3A5F] hover:underline"
+          className="font-medium text-[#1E3A5F] hover:underline dark:text-[#d8ad43]"
         >
           Kayit Ol
         </button>

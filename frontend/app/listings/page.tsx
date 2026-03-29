@@ -8,6 +8,7 @@ import { useSession } from 'next-auth/react'
 import { BriefcaseBusiness, Clock3, MapPin } from 'lucide-react'
 import UniversityLogo from '@/components/UniversityLogo'
 import ProfileDropdown from '@/components/ProfileDropdown'
+import ThemeToggle from '@/components/ThemeToggle'
 
 type RawListing = {
   id: string | number
@@ -695,7 +696,7 @@ function FilterPanel({
   return (
     <div className="space-y-6">
       <section>
-        <h3 className="mb-3 text-sm font-semibold text-[#132843]">Sektör</h3>
+        <h3 className="mb-3 text-sm font-semibold text-[#132843] dark:text-[#e7edf4]">Sektör</h3>
         <div className="filter-scrollbar max-h-[360px] overflow-y-scroll pr-1">
           <div className="flex flex-col gap-2">
           {sectors.map((sector) => {
@@ -708,8 +709,8 @@ function FilterPanel({
                 className={classNames(
                   'w-full rounded-full border px-3 py-2 text-left text-xs font-medium transition',
                   active
-                    ? 'border-[rgba(216,173,67,0.18)] bg-[rgba(216,173,67,0.14)] text-[#8f670b]'
-                    : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50',
+                    ? 'border-[rgba(216,173,67,0.18)] bg-[rgba(216,173,67,0.14)] text-[#8f670b] dark:text-[#f0cf7a]'
+                    : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10',
                 )}
               >
                 {sector}
@@ -721,15 +722,15 @@ function FilterPanel({
       </section>
 
       <section>
-        <h3 className="mb-3 text-sm font-semibold text-[#132843]">Yetenek Programı</h3>
+        <h3 className="mb-3 text-sm font-semibold text-[#132843] dark:text-[#e7edf4]">Yetenek Programı</h3>
         <button
           type="button"
           onClick={onToggleTalent}
           className={classNames(
             'w-full rounded-2xl border px-4 py-2 text-left text-sm font-medium transition',
             talentOnly
-              ? 'border-[rgba(216,173,67,0.18)] bg-[rgba(216,173,67,0.14)] text-[#8f670b]'
-              : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50',
+              ? 'border-[rgba(216,173,67,0.18)] bg-[rgba(216,173,67,0.14)] text-[#8f670b] dark:text-[#f0cf7a]'
+              : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10',
           )}
         >
           Yetenek Programları
@@ -739,7 +740,7 @@ function FilterPanel({
       <button
         type="button"
         onClick={onClearAll}
-        className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700"
+        className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 dark:border-white/10 dark:bg-white/5 dark:text-gray-300"
       >
         Filtreleri temizle
       </button>
@@ -1008,19 +1009,22 @@ export default function ListingsPage() {
             </div>
           </Link>
 
-          <ProfileDropdown />
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <ProfileDropdown />
+          </div>
         </div>
       </nav>
 
       <div className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
-        <div className="relative z-40 isolate mb-6 overflow-visible rounded-[32px] border border-[#d8ad43]/16 bg-white/72 p-5 shadow-[0_24px_60px_rgba(18,40,67,0.08)] backdrop-blur">
+        <div className="relative z-40 isolate mb-6 overflow-visible rounded-[32px] border border-[#d8ad43]/16 bg-white/72 p-5 shadow-[0_24px_60px_rgba(18,40,67,0.08)] backdrop-blur dark:bg-[#0e1e33]/80 dark:border-[#d8ad43]/20">
           <div className="grid gap-5 border-b border-[#d8ad43]/12 pb-6 lg:grid-cols-[minmax(0,1.35fr)_360px] lg:items-end">
             <div className="min-w-0">
-              <p className="text-sm font-medium text-[#8f670b]">IUC Staj Platformu</p>
-              <h1 className="campus-heading mt-3 max-w-4xl text-3xl leading-[0.95] text-[#132843] sm:text-4xl lg:text-5xl">
+              <p className="text-sm font-medium text-[#8f670b] dark:text-[#f0cf7a]">IUC Staj Platformu</p>
+              <h1 className="campus-heading mt-3 max-w-4xl text-3xl leading-[0.95] text-[#132843] sm:text-4xl lg:text-5xl dark:text-[#e7edf4]">
                 Endüstri mühendisliği odaklı staj ve yetenek programlarını tek ekranda keşfet.
               </h1>
-              <p className="mt-4 max-w-3xl text-sm leading-6 text-[#173156]/72 sm:text-base">
+              <p className="mt-4 max-w-3xl text-sm leading-6 text-[#173156]/72 sm:text-base dark:text-[#e7edf4]/60">
                 LinkedIn, Youthall, Anbean, TopTalent ve diğer kaynaklardan çekilen ilanları tek
                 bir akışta takip et. Önce genel resmi gör, sonra filtrelerle kendi sektörüne ve
                 hedeflerine en uygun ilanlara hızla ulaş.
@@ -1035,23 +1039,23 @@ export default function ListingsPage() {
                 <p className="mt-2 text-3xl font-semibold">{loading ? '...' : totalCount}</p>
                 <p className="mt-1 text-[11px] text-white/68">Aktif ilan ve program</p>
               </div>
-              <div className="rounded-[26px] border border-[#d8ad43]/18 bg-white/70 px-4 py-4">
-                <p className="text-[11px] uppercase tracking-[0.24em] text-[#8f670b]/72">
+              <div className="rounded-[26px] border border-[#d8ad43]/18 bg-white/70 px-4 py-4 dark:bg-white/5">
+                <p className="text-[11px] uppercase tracking-[0.24em] text-[#8f670b]/72 dark:text-[#f0cf7a]/60">
                   Kaynak Çeşitliliği
                 </p>
-                <p className="mt-2 text-3xl font-semibold text-[#132843]">
+                <p className="mt-2 text-3xl font-semibold text-[#132843] dark:text-[#e7edf4]">
                   {platforms.length || '0'}
                 </p>
-                <p className="mt-1 text-[11px] text-[#173156]/58">Farklı platformdan veri</p>
+                <p className="mt-1 text-[11px] text-[#173156]/58 dark:text-[#e7edf4]/45">Farklı platformdan veri</p>
               </div>
-              <div className="rounded-[26px] border border-[#d8ad43]/18 bg-white/70 px-4 py-4">
-                <p className="text-[11px] uppercase tracking-[0.24em] text-[#8f670b]/72">
+              <div className="rounded-[26px] border border-[#d8ad43]/18 bg-white/70 px-4 py-4 dark:bg-white/5">
+                <p className="text-[11px] uppercase tracking-[0.24em] text-[#8f670b]/72 dark:text-[#f0cf7a]/60">
                   Hızlı Eylem
                 </p>
-                <p className="mt-2 text-base font-semibold text-[#132843]">
+                <p className="mt-2 text-base font-semibold text-[#132843] dark:text-[#e7edf4]">
                   Filtrele, incele, yönlen
                 </p>
-                <p className="mt-1 text-[11px] text-[#173156]/58">
+                <p className="mt-1 text-[11px] text-[#173156]/58 dark:text-[#e7edf4]/45">
                   Detaydan kaynağa anında geç
                 </p>
               </div>
@@ -1060,12 +1064,11 @@ export default function ListingsPage() {
 
           <div className="mt-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="min-w-0">
-              <p className="text-sm font-medium text-[#8f670b]">Arama ve Filtreleme</p>
-              <h2 className="mt-1 text-2xl font-semibold tracking-tight text-[#132843] sm:text-3xl">
+              <p className="text-sm font-medium text-[#8f670b] dark:text-[#f0cf7a]">Arama ve Filtreleme</p>
+              <h2 className="mt-1 text-2xl font-semibold tracking-tight text-[#132843] sm:text-3xl dark:text-[#e7edf4]">
                 {dynamicTitle}
               </h2>
-              <p className="mt-2 max-w-3xl text-sm text-[#173156]/72">
-                Filtrelere göre anında güncellenen ilan görünümü. Sektör, platform ve güven
+              <p className="mt-2 max-w-3xl text-sm text-[#173156]/72 dark:text-[#e7edf4]/55"> anında güncellenen ilan görünümü. Sektör, platform ve güven
                 skoru birlikte okunabilir olsun diye arama, metrikler ve filtre özeti aynı alanda
                 toplandı.
               </p>
@@ -1074,7 +1077,7 @@ export default function ListingsPage() {
             <button
               type="button"
               onClick={() => setMobileFiltersOpen(true)}
-              className="inline-flex items-center justify-center rounded-2xl border border-[#d8ad43]/20 bg-white px-4 py-2 text-sm font-medium text-[#173156] shadow-sm lg:hidden"
+              className="inline-flex items-center justify-center rounded-2xl border border-[#d8ad43]/20 bg-white px-4 py-2 text-sm font-medium text-[#173156] shadow-sm lg:hidden dark:bg-white/8 dark:text-[#e7edf4]"
             >
               Filtreler
               {activeFilterCount > 0 && (
@@ -1089,19 +1092,19 @@ export default function ListingsPage() {
             {summaryCards.map((card) => (
               <div
                 key={card.label}
-                className="rounded-[24px] border border-[#d8ad43]/18 bg-[#fffaf0] px-4 py-3"
+                className="rounded-[24px] border border-[#d8ad43]/18 bg-[#fffaf0] px-4 py-3 dark:bg-white/5"
               >
-                <p className="text-xs font-medium uppercase tracking-wide text-[#8f670b]/72">
+                <p className="text-xs font-medium uppercase tracking-wide text-[#8f670b]/72 dark:text-[#f0cf7a]/60">
                   {card.label}
                 </p>
-                <p className="mt-1 text-2xl font-semibold text-[#132843]">{card.value}</p>
+                <p className="mt-1 text-2xl font-semibold text-[#132843] dark:text-[#e7edf4]">{card.value}</p>
               </div>
             ))}
           </div>
 
           <div className="relative z-[90] mt-5 flex flex-col gap-3 lg:flex-row">
             <div className="relative z-[90] flex-1" ref={searchBoxRef}>
-              <div className="relative z-[95] flex items-center rounded-[24px] border border-[#d8ad43]/18 bg-white px-4 py-3 shadow-sm ring-0 transition focus-within:border-[#d8ad43]/40 focus-within:ring-2 focus-within:ring-[#f1d27e]/30">
+              <div className="relative z-[95] flex items-center rounded-[24px] border border-[#d8ad43]/18 bg-white px-4 py-3 shadow-sm ring-0 transition focus-within:border-[#d8ad43]/40 focus-within:ring-2 focus-within:ring-[#f1d27e]/30 dark:bg-[#0e1e33] dark:border-[#d8ad43]/22">
                 <span className="mr-3 text-[#173156]/45">⌕</span>
                 <input
                   value={query}
@@ -1117,15 +1120,15 @@ export default function ListingsPage() {
                     }
                   }}
                   placeholder="Şirket, pozisyon veya anahtar kelime ara"
-                  className="w-full bg-transparent text-sm text-[#132843] outline-none placeholder:text-[#173156]/40"
+                  className="w-full bg-transparent text-sm text-[#132843] outline-none placeholder:text-[#173156]/40 dark:text-[#e7edf4] dark:placeholder:text-[#e7edf4]/35"
                 />
               </div>
 
               {showSuggestions && (
-                <div className="absolute left-0 top-full z-[94] mt-2 max-h-[320px] w-full overflow-y-auto rounded-[24px] border border-[#d8ad43]/18 bg-white p-2 shadow-[0_24px_60px_rgba(18,40,67,0.18)] sm:max-w-[40rem]">
+                <div className="absolute left-0 top-full z-[94] mt-2 max-h-[320px] w-full overflow-y-auto rounded-[24px] border border-[#d8ad43]/18 bg-white p-2 shadow-[0_24px_60px_rgba(18,40,67,0.18)] sm:max-w-[40rem] dark:bg-[#132843] dark:border-[#d8ad43]/22">
                   {autocompleteSuggestions.length > 0 && (
                     <div className="mb-2">
-                      <p className="px-2 py-1 text-xs font-semibold uppercase tracking-wide text-[#173156]/35">
+                      <p className="px-2 py-1 text-xs font-semibold uppercase tracking-wide text-[#173156]/35 dark:text-[#e7edf4]/35">
                         Öneriler
                       </p>
                       {autocompleteSuggestions.map((item) => (
@@ -1133,7 +1136,7 @@ export default function ListingsPage() {
                           key={item}
                           type="button"
                           onClick={() => submitSuggestion(item)}
-                          className="block w-full rounded-xl px-3 py-2 text-left text-sm text-[#173156] hover:bg-[#fff7e6]"
+                          className="block w-full rounded-xl px-3 py-2 text-left text-sm text-[#173156] hover:bg-[#fff7e6] dark:text-[#e7edf4] dark:hover:bg-white/8"
                         >
                           {item}
                         </button>
@@ -1143,7 +1146,7 @@ export default function ListingsPage() {
 
                   {recentSearches.length > 0 && (
                     <div>
-                      <p className="px-2 py-1 text-xs font-semibold uppercase tracking-wide text-[#173156]/35">
+                      <p className="px-2 py-1 text-xs font-semibold uppercase tracking-wide text-[#173156]/35 dark:text-[#e7edf4]/35">
                         Son aramalar
                       </p>
                       {recentSearches.map((item) => (
@@ -1151,7 +1154,7 @@ export default function ListingsPage() {
                           key={item}
                           type="button"
                           onClick={() => submitSuggestion(item)}
-                          className="block w-full rounded-xl px-3 py-2 text-left text-sm text-[#173156] hover:bg-[#fff7e6]"
+                          className="block w-full rounded-xl px-3 py-2 text-left text-sm text-[#173156] hover:bg-[#fff7e6] dark:text-[#e7edf4] dark:hover:bg-white/8"
                         >
                           {item}
                         </button>
@@ -1160,7 +1163,7 @@ export default function ListingsPage() {
                   )}
 
                   {autocompleteSuggestions.length === 0 && recentSearches.length === 0 && (
-                    <div className="px-3 py-4 text-sm text-[#173156]/58">
+                    <div className="px-3 py-4 text-sm text-[#173156]/58 dark:text-[#e7edf4]/45">
                       Henüz öneri yok. Firma adı, şehir veya pozisyon yaz.
                     </div>
                   )}
@@ -1219,7 +1222,7 @@ export default function ListingsPage() {
 
         <div className="relative z-0 grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
           <aside className="hidden lg:block">
-            <div className="sticky top-6 rounded-[32px] border border-[#d8ad43]/16 bg-white/72 p-5 shadow-[0_24px_60px_rgba(18,40,67,0.08)] backdrop-blur">
+            <div className="sticky top-6 rounded-[32px] border border-[#d8ad43]/16 bg-white/72 p-5 shadow-[0_24px_60px_rgba(18,40,67,0.08)] backdrop-blur dark:bg-[#0e1e33]/80 dark:border-[#d8ad43]/20">
               <FilterPanel
                 sectors={sectors}
                 platforms={platforms}
@@ -1242,7 +1245,7 @@ export default function ListingsPage() {
                 {Array.from({ length: 9 }).map((_, index) => (
                   <div
                     key={index}
-                    className="h-64 animate-pulse rounded-[32px] border border-[#d8ad43]/16 bg-white/70"
+                    className="h-64 animate-pulse rounded-[32px] border border-[#d8ad43]/16 bg-white/70 dark:bg-white/5"
                   />
                 ))}
               </div>
@@ -1259,9 +1262,9 @@ export default function ListingsPage() {
                 </button>
               </div>
             ) : listings.length === 0 ? (
-              <div className="rounded-[32px] border border-[#d8ad43]/16 bg-white/72 p-10 text-center shadow-sm">
-                <p className="text-lg font-semibold text-[#132843]">Sonuç bulunamadı</p>
-                <p className="mt-2 text-sm text-[#173156]/72">
+              <div className="rounded-[32px] border border-[#d8ad43]/16 bg-white/72 p-10 text-center shadow-sm dark:bg-[#0e1e33]/80">
+                <p className="text-lg font-semibold text-[#132843] dark:text-[#e7edf4]">Sonuç bulunamadı</p>
+                <p className="mt-2 text-sm text-[#173156]/72 dark:text-[#e7edf4]/55">
                   Seçtiğin filtre kombinasyonu fazla dar olabilir. Bazı filtreleri kaldır.
                 </p>
                 <button
@@ -1274,7 +1277,7 @@ export default function ListingsPage() {
               </div>
             ) : (
               <>
-                <div className="mb-4 flex flex-col gap-2 rounded-[24px] border border-[#d8ad43]/12 bg-white/60 px-4 py-3 text-sm text-[#173156]/72 sm:flex-row sm:items-center sm:justify-between">
+                <div className="mb-4 flex flex-col gap-2 rounded-[24px] border border-[#d8ad43]/12 bg-white/60 px-4 py-3 text-sm text-[#173156]/72 sm:flex-row sm:items-center sm:justify-between dark:bg-white/5 dark:text-[#e7edf4]/55">
                   <p>
                     {visibleRange.start}-{visibleRange.end} arası gösteriliyor
                   </p>
@@ -1297,10 +1300,10 @@ export default function ListingsPage() {
                           router.push(`/listings/${item.id}`)
                         }
                       }}
-                      className="group cursor-pointer rounded-[28px] border border-[#e9edf5] bg-white px-4 py-4 shadow-[0_14px_34px_rgba(15,23,42,0.06)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_22px_46px_rgba(15,23,42,0.1)]"
+                      className="group cursor-pointer rounded-[28px] border border-[#e9edf5] bg-white px-4 py-4 shadow-[0_14px_34px_rgba(15,23,42,0.06)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_22px_46px_rgba(15,23,42,0.1)] dark:bg-[#0e1e33] dark:border-[#d8ad43]/15"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="flex h-[78px] w-[78px] shrink-0 items-center justify-center rounded-[22px] border border-[#dde4f0] bg-white shadow-[0_8px_22px_rgba(15,23,42,0.05)]">
+                        <div className="flex h-[78px] w-[78px] shrink-0 items-center justify-center rounded-[22px] border border-[#dde4f0] bg-white shadow-[0_8px_22px_rgba(15,23,42,0.05)] dark:bg-[#132843] dark:border-[#d8ad43]/15">
                           {item.company_logo_url ? (
                             <img
                               src={item.company_logo_url}
@@ -1334,29 +1337,29 @@ export default function ListingsPage() {
                         </div>
 
                         <div className="min-w-0 flex-1">
-                          <p className="text-[13px] font-medium text-[#173156]/58">{item.company_name}</p>
-                          <h2 className="mt-1 text-[0.98rem] font-semibold leading-[1.14] tracking-[-0.015em] text-[#132843] sm:text-[1.05rem]">
+                          <p className="text-[13px] font-medium text-[#173156]/58 dark:text-[#e7edf4]/55">{item.company_name}</p>
+                          <h2 className="mt-1 text-[0.98rem] font-semibold leading-[1.14] tracking-[-0.015em] text-[#132843] sm:text-[1.05rem] dark:text-[#e7edf4]">
                             {item.title}
                           </h2>
                         </div>
                       </div>
 
-                      <p className="mt-4 line-clamp-2 text-[0.9rem] leading-6 text-[#173156]/76">
+                      <p className="mt-4 line-clamp-2 text-[0.9rem] leading-6 text-[#173156]/76 dark:text-[#e7edf4]/60">
                         {getListingSummary(item)}
                       </p>
 
-                      <div className="mt-4 border-t border-dashed border-[#e1e6ef]" />
+                      <div className="mt-4 border-t border-dashed border-[#e1e6ef] dark:border-[#d8ad43]/12" />
 
                       <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-                        <span className="inline-flex items-center gap-1.5 rounded-[15px] border border-[#e7ebf3] bg-[#f8fafc] px-3 py-1.5 text-[12px] font-medium text-[#4a5c76] shadow-[0_2px_8px_rgba(15,23,42,0.03)]">
+                        <span className="inline-flex items-center gap-1.5 rounded-[15px] border border-[#e7ebf3] bg-[#f8fafc] px-3 py-1.5 text-[12px] font-medium text-[#4a5c76] shadow-[0_2px_8px_rgba(15,23,42,0.03)] dark:border-white/10 dark:bg-white/5 dark:text-[#e7edf4]/65">
                           <BriefcaseBusiness size={16} strokeWidth={2} />
                           {getEmploymentTypeLabel(item.employment_type)}
                         </span>
-                        <span className="inline-flex items-center gap-1.5 rounded-[15px] border border-[#e7ebf3] bg-[#f8fafc] px-3 py-1.5 text-[12px] font-medium text-[#4a5c76] shadow-[0_2px_8px_rgba(15,23,42,0.03)]">
+                        <span className="inline-flex items-center gap-1.5 rounded-[15px] border border-[#e7ebf3] bg-[#f8fafc] px-3 py-1.5 text-[12px] font-medium text-[#4a5c76] shadow-[0_2px_8px_rgba(15,23,42,0.03)] dark:border-white/10 dark:bg-white/5 dark:text-[#e7edf4]/65">
                           <Clock3 size={16} strokeWidth={2} />
                           {formatDate(item.deadline)}
                         </span>
-                        <span className="inline-flex items-center gap-1.5 rounded-[15px] border border-[#e7ebf3] bg-[#f8fafc] px-3 py-1.5 text-[12px] font-medium text-[#4a5c76] shadow-[0_2px_8px_rgba(15,23,42,0.03)]">
+                        <span className="inline-flex items-center gap-1.5 rounded-[15px] border border-[#e7ebf3] bg-[#f8fafc] px-3 py-1.5 text-[12px] font-medium text-[#4a5c76] shadow-[0_2px_8px_rgba(15,23,42,0.03)] dark:border-white/10 dark:bg-white/5 dark:text-[#e7edf4]/65">
                           <MapPin size={16} strokeWidth={2} />
                           {getWorkModelLabel(item)}
                         </span>
@@ -1372,7 +1375,7 @@ export default function ListingsPage() {
                       type="button"
                       onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
                       disabled={currentPage === 1}
-                      className="rounded-2xl border border-[#d8ad43]/20 bg-white px-4 py-2 text-sm font-medium text-[#173156] disabled:cursor-not-allowed disabled:opacity-45"
+                      className="rounded-2xl border border-[#d8ad43]/20 bg-white px-4 py-2 text-sm font-medium text-[#173156] disabled:cursor-not-allowed disabled:opacity-45 dark:bg-white/5 dark:text-[#e7edf4]"
                     >
                       Önceki
                     </button>
@@ -1385,8 +1388,8 @@ export default function ListingsPage() {
                         className={classNames(
                           'rounded-2xl px-4 py-2 text-sm font-medium transition',
                           currentPage === page
-                            ? 'bg-[#132843] text-white'
-                            : 'border border-[#d8ad43]/20 bg-white text-[#173156]',
+                            ? 'bg-[#132843] text-white dark:bg-[#d8ad43] dark:text-[#10223b]'
+                            : 'border border-[#d8ad43]/20 bg-white text-[#173156] dark:bg-white/5 dark:text-[#e7edf4]',
                         )}
                       >
                         {page}
@@ -1397,7 +1400,7 @@ export default function ListingsPage() {
                       type="button"
                       onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
                       disabled={currentPage === totalPages}
-                      className="rounded-2xl border border-[#d8ad43]/20 bg-white px-4 py-2 text-sm font-medium text-[#173156] disabled:cursor-not-allowed disabled:opacity-45"
+                      className="rounded-2xl border border-[#d8ad43]/20 bg-white px-4 py-2 text-sm font-medium text-[#173156] disabled:cursor-not-allowed disabled:opacity-45 dark:bg-white/5 dark:text-[#e7edf4]"
                     >
                       Sonraki
                     </button>
@@ -1411,13 +1414,13 @@ export default function ListingsPage() {
 
       {mobileFiltersOpen && (
         <div className="fixed inset-0 z-40 bg-black/40 lg:hidden">
-          <div className="absolute inset-y-0 right-0 w-full max-w-sm overflow-y-auto bg-white p-5 shadow-2xl">
+          <div className="absolute inset-y-0 right-0 w-full max-w-sm overflow-y-auto bg-white p-5 shadow-2xl dark:bg-[#0e1e33]">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-[#132843]">Filtreler</h2>
+              <h2 className="text-lg font-semibold text-[#132843] dark:text-[#e7edf4]">Filtreler</h2>
               <button
                 type="button"
                 onClick={() => setMobileFiltersOpen(false)}
-                className="rounded-xl border border-gray-200 px-3 py-1.5 text-sm text-gray-700"
+                className="rounded-xl border border-gray-200 px-3 py-1.5 text-sm text-gray-700 dark:border-white/15 dark:text-[#e7edf4]"
               >
                 Kapat
               </button>

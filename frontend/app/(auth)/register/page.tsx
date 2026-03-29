@@ -300,7 +300,7 @@ export default function RegisterPage() {
           <div
             key={value}
             className={`h-1.5 rounded-full transition-all ${
-              value === step ? 'w-4 bg-[#1E3A5F]' : 'w-1.5 bg-gray-200'
+              value === step ? 'w-4 bg-[#1E3A5F] dark:bg-[#d8ad43]' : 'w-1.5 bg-gray-200 dark:bg-white/15'
             }`}
           />
         ))}
@@ -314,8 +314,8 @@ export default function RegisterPage() {
 
       {step === 1 && (
         <>
-          <h1 className="mb-1 text-xl font-medium text-gray-900">Hesap Olustur</h1>
-          <p className="mb-5 text-sm text-gray-500">Adim 1/3 - Temel bilgiler</p>
+          <h1 className="mb-1 text-xl font-medium text-gray-900 dark:text-[#e7edf4]">Hesap Olustur</h1>
+          <p className="mb-5 text-sm text-gray-500 dark:text-[#e7edf4]/50">Adim 1/3 - Temel bilgiler</p>
 
           {step1Status ? (
             <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5 text-xs text-blue-800">
@@ -343,12 +343,12 @@ export default function RegisterPage() {
               { name: 'password_confirm' as const, label: 'Sifre Tekrar', type: 'password', placeholder: '' },
             ].map(({ hint, label, name, placeholder, type }) => (
               <div key={name}>
-                <label className="mb-1 block text-xs font-medium text-gray-600">{label}</label>
+                <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-[#e7edf4]/60">{label}</label>
                 <input
                   {...form1.register(name)}
                   type={type}
                   placeholder={placeholder}
-                  className="h-9 w-full rounded-lg border border-gray-200 px-3 text-sm focus:border-[#1E3A5F] focus:outline-none"
+                  className="h-9 w-full rounded-lg border border-gray-200 px-3 text-sm focus:border-[#1E3A5F] focus:outline-none dark:border-[#d8ad43]/18 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:focus:border-[#d8ad43]/40"
                 />
                 {hint ? <p className="mt-1 text-[10px] text-gray-400">{hint}</p> : null}
                 {form1.formState.errors[name] ? (
@@ -362,7 +362,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={form1.formState.isSubmitting}
-              className="h-10 w-full rounded-lg bg-[#1E3A5F] text-sm font-medium text-white disabled:opacity-50"
+              className="h-10 w-full rounded-lg bg-[#1E3A5F] text-sm font-medium text-white disabled:opacity-50 dark:bg-[#d8ad43] dark:text-[#10223b]"
             >
               {form1.formState.isSubmitting ? 'Kontrol ediliyor...' : 'Devam Et ->'}
             </button>
@@ -383,11 +383,11 @@ export default function RegisterPage() {
             </div>
           ) : null}
 
-          <p className="mt-4 text-center text-xs text-gray-400">
+          <p className="mt-4 text-center text-xs text-gray-400 dark:text-[#e7edf4]/40">
             Zaten hesabin var mi?{' '}
             <button
               onClick={() => router.push('/login')}
-              className="font-medium text-[#1E3A5F] hover:underline"
+              className="font-medium text-[#1E3A5F] hover:underline dark:text-[#d8ad43]"
             >
               Giris Yap
             </button>
@@ -397,18 +397,18 @@ export default function RegisterPage() {
 
       {step === 2 && (
         <>
-          <h1 className="mb-1 text-xl font-medium text-gray-900">Ogrenci Bilgileri</h1>
-          <p className="mb-5 text-sm text-gray-500">Adim 2/3 - Profil kurulumu</p>
+          <h1 className="mb-1 text-xl font-medium text-gray-900 dark:text-[#e7edf4]">Ogrenci Bilgileri</h1>
+          <p className="mb-5 text-sm text-gray-500 dark:text-[#e7edf4]/50">Adim 2/3 - Profil kurulumu</p>
 
           <form onSubmit={form2.handleSubmit(onStep2)} className="space-y-4">
             <div>
-              <label className="mb-1 block text-xs font-medium text-gray-600">Ogrenci Numarasi</label>
+              <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-[#e7edf4]/60">Ogrenci Numarasi</label>
               <input
                 {...form2.register('student_no')}
                 type="text"
                 placeholder="0401210045"
                 maxLength={10}
-                className="h-9 w-full rounded-lg border border-gray-200 px-3 text-sm focus:border-[#1E3A5F] focus:outline-none"
+                className="h-9 w-full rounded-lg border border-gray-200 px-3 text-sm focus:border-[#1E3A5F] focus:outline-none dark:border-[#d8ad43]/18 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:focus:border-[#d8ad43]/40"
               />
               {form2.formState.errors.student_no ? (
                 <p className="mt-1 text-[10px] text-red-500">
@@ -418,7 +418,7 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label className="mb-2 block text-xs font-medium text-gray-600">Sinif</label>
+              <label className="mb-2 block text-xs font-medium text-gray-600 dark:text-[#e7edf4]/60">Sinif</label>
               <div className="grid grid-cols-4 gap-1">
                 {[1, 2, 3, 4].map((year) => (
                   <button
@@ -433,8 +433,8 @@ export default function RegisterPage() {
                     }}
                     className={`rounded-lg border py-1.5 text-xs transition-colors ${
                       selectedYear === year
-                        ? 'border-[#1E3A5F] bg-blue-50 font-medium text-[#1E3A5F]'
-                        : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                        ? 'border-[#1E3A5F] bg-blue-50 font-medium text-[#1E3A5F] dark:border-[#d8ad43] dark:bg-[#d8ad43]/15 dark:text-[#d8ad43]'
+                        : 'border-gray-200 text-gray-500 hover:border-gray-300 dark:border-[#d8ad43]/18 dark:text-[#e7edf4]/50 dark:hover:border-[#d8ad43]/30'
                     }`}
                   >
                     {year}. Sinif
@@ -445,14 +445,14 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label className="mb-1 block text-xs font-medium text-gray-600">
-                LinkedIn <span className="font-normal text-gray-400">(opsiyonel)</span>
+              <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-[#e7edf4]/60">
+                LinkedIn <span className="font-normal text-gray-400 dark:text-[#e7edf4]/35">(opsiyonel)</span>
               </label>
               <input
                 {...form2.register('linkedin_url')}
                 type="url"
                 placeholder="https://linkedin.com/in/..."
-                className="h-9 w-full rounded-lg border border-gray-200 px-3 text-sm focus:border-[#1E3A5F] focus:outline-none"
+                className="h-9 w-full rounded-lg border border-gray-200 px-3 text-sm focus:border-[#1E3A5F] focus:outline-none dark:border-[#d8ad43]/18 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:focus:border-[#d8ad43]/40"
               />
               {form2.formState.errors.linkedin_url ? (
                 <p className="mt-1 text-[10px] text-red-500">
@@ -478,14 +478,14 @@ export default function RegisterPage() {
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="h-9 flex-1 rounded-lg border border-gray-200 text-xs text-gray-500 hover:bg-gray-50"
+                className="h-9 flex-1 rounded-lg border border-gray-200 text-xs text-gray-500 hover:bg-gray-50 dark:border-[#d8ad43]/18 dark:text-[#e7edf4]/50 dark:hover:bg-white/5"
               >
                 {'<-'} Geri
               </button>
               <button
                 type="submit"
                 disabled={form2.formState.isSubmitting}
-                className="h-9 flex-[2] rounded-lg bg-[#1E3A5F] text-sm font-medium text-white disabled:opacity-50"
+                className="h-9 flex-[2] rounded-lg bg-[#1E3A5F] text-sm font-medium text-white disabled:opacity-50 dark:bg-[#d8ad43] dark:text-[#10223b]"
               >
                 {form2.formState.isSubmitting ? 'Kaydediliyor...' : 'Devam Et ->'}
               </button>
@@ -496,8 +496,8 @@ export default function RegisterPage() {
 
       {step === 3 && (
         <>
-          <h1 className="mb-1 text-xl font-medium text-gray-900">Dogrulama Kodunu Gir</h1>
-          <p className="mb-5 text-sm text-gray-500">Adim 3/3 - Hesap aktivasyonu</p>
+          <h1 className="mb-1 text-xl font-medium text-gray-900 dark:text-[#e7edf4]">Dogrulama Kodunu Gir</h1>
+          <p className="mb-5 text-sm text-gray-500 dark:text-[#e7edf4]/50">Adim 3/3 - Hesap aktivasyonu</p>
 
           <div className="mb-4 rounded-xl border border-blue-200 bg-blue-50 p-4 text-center">
             <p className="mb-1 text-sm font-medium text-blue-800">Kod Hazir</p>
@@ -524,7 +524,7 @@ export default function RegisterPage() {
             <p className="mb-3 text-center text-xs text-red-500">Kod hatali veya suresi dolmus.</p>
           ) : null}
 
-          <p className="mt-2 text-center text-xs text-gray-400">
+          <p className="mt-2 text-center text-xs text-gray-400 dark:text-[#e7edf4]/40">
             Yeni kod ister misin?{' '}
             {resendCountdown > 0 ? (
               <span className="text-gray-400">{resendCountdown}s sonra tekrar olustur</span>
@@ -539,8 +539,8 @@ export default function RegisterPage() {
 
       {step === 4 && (
         <>
-          <h1 className="mb-1 text-xl font-medium text-gray-900">Kayit Tamamlandi</h1>
-          <p className="mb-5 text-sm text-gray-500">Hesabin basariyla olusturuldu.</p>
+          <h1 className="mb-1 text-xl font-medium text-gray-900 dark:text-[#e7edf4]">Kayit Tamamlandi</h1>
+          <p className="mb-5 text-sm text-gray-500 dark:text-[#e7edf4]/50">Hesabin basariyla olusturuldu.</p>
 
           <div className="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-center">
             <p className="text-base font-semibold text-emerald-800">
@@ -554,7 +554,7 @@ export default function RegisterPage() {
           <button
             type="button"
             onClick={() => router.push('/login?registered=1')}
-            className="h-10 w-full rounded-lg bg-[#1E3A5F] text-sm font-medium text-white"
+            className="h-10 w-full rounded-lg bg-[#1E3A5F] text-sm font-medium text-white dark:bg-[#d8ad43] dark:text-[#10223b]"
           >
             Giris Yap
           </button>
