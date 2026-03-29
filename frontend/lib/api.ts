@@ -2,7 +2,7 @@ import axios from 'axios'
 import { getSession } from 'next-auth/react'
 import {
   Listing, Review, UserProfile, DashboardStats,
-  BookmarkedListing, FilterState, PaginatedResponse,
+  BookmarkedListing, FilterState, NotificationPreferences, PaginatedResponse,
 } from '@/types'
 import { buildQueryString } from './helpers'
 import { getBackendApiBaseUrl } from './backend-url'
@@ -197,6 +197,18 @@ export async function uploadCV(file: File): Promise<{ cv_url: string }> {
   const { data } = await api.post<{ cv_url: string }>('/profile/cv/', form, {
     headers: { 'Content-Type': 'multipart/form-data' },
   })
+  return data
+}
+
+export async function fetchNotificationPreferences(): Promise<NotificationPreferences> {
+  const { data } = await api.get<NotificationPreferences>('/profile/notifications/')
+  return data
+}
+
+export async function updateNotificationPreferences(
+  prefs: NotificationPreferences
+): Promise<NotificationPreferences> {
+  const { data } = await api.put<NotificationPreferences>('/profile/notifications/', prefs)
   return data
 }
 

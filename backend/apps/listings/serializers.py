@@ -5,7 +5,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.exceptions import AuthenticationFailed
 
-from .models import Bookmark, Listing, Review, Student
+from .models import Bookmark, EM_FOCUS_CHOICES, Listing, Review, Student
 
 
 # Well-known company domain mappings
@@ -282,6 +282,7 @@ class StudentProfileSerializer(serializers.ModelSerializer):
             'department_year', 'linkedin_url', 'cv_url',
             'avatar_url', 'is_verified',
             'completion_percentage', 'missing_fields',
+            'notification_preferences',
         ]
         read_only_fields = [
             'id', 'iuc_email', 'is_verified',
@@ -290,6 +291,18 @@ class StudentProfileSerializer(serializers.ModelSerializer):
 
     def get_full_name(self, obj):
         return f'{obj.first_name} {obj.last_name}'.strip()
+
+
+class NotificationPreferencesSerializer(serializers.Serializer):
+    enabled = serializers.BooleanField(default=False)
+    sectors = serializers.ListField(
+        child=serializers.ChoiceField(choices=[c[0] for c in EM_FOCUS_CHOICES]),
+        required=False, default=list,
+    )
+    locations = serializers.ListField(
+        child=serializers.CharField(max_length=100),
+        required=False, default=list,
+    )
 
 
 class RegisterSerializer(serializers.Serializer):

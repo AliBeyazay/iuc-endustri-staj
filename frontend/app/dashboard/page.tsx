@@ -8,12 +8,14 @@ import useSWR from 'swr'
 import {
   fetchBookmarks,
   fetchDashboardStats,
+  fetchNotificationPreferences,
   fetchUserProfile,
   removeBookmark,
+  updateNotificationPreferences,
   updateUserProfile,
   uploadCV,
 } from '@/lib/api'
-import { BookmarkedListing, DashboardStats, UserProfile } from '@/types'
+import { BookmarkedListing, DashboardStats, EMFocusArea, NotificationPreferences, UserProfile } from '@/types'
 import { getAvatarColor, getDeadlineDisplay, getInitials, FOCUS_AREA_LABELS, FOCUS_AREA_COLORS, PLATFORM_LABELS, timeAgoTurkish } from '@/lib/helpers'
 import ProfileDropdown from '@/components/ProfileDropdown'
 import ThemeToggle from '@/components/ThemeToggle'
@@ -180,6 +182,9 @@ export default function DashboardPage() {
   const { status } = useSession()
   const [showAll, setShowAll] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
+  const [notifOpen, setNotifOpen] = useState(false)
+  const [notifSaving, setNotifSaving] = useState(false)
+  const [locationInput, setLocationInput] = useState('')
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -203,6 +208,11 @@ export default function DashboardPage() {
   } = useSWR<BookmarkedListing[]>(
     shouldFetchProtectedData ? 'bookmarks' : null,
     fetchBookmarks
+  )
+
+  const { data: notifPrefs, mutate: mutateNotifPrefs } = useSWR<NotificationPreferences>(
+    shouldFetchProtectedData ? 'notif-prefs' : null,
+    fetchNotificationPreferences
   )
 
   const stats = statsData ?? null
@@ -517,6 +527,159 @@ export default function DashboardPage() {
                 Göz at
               </button>
             </p>
+          </div>
+
+          {/* Bildirim Ayarları */}
+          <div className="campus-card rounded-2xl p-4">
+            <button
+              onClick={() => setNotifOpen(!notifOpen)}
+              className="flex w-full items-center justify-between"
+            >
+              <h3 className="text-sm font-medium text-gray-800 dark:text-[#e7edf4]">Bildirim Ayarları</h3>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className={`h-4 w-4 text-gray-400 transition-transform ${notifOpen ? 'rotate-180' : ''}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <p className="mt-1 text-[10px] text-gray-400 dark:text-[#e7edf4]/40">
+              Haftalık e-posta ile yeni ilanlardan haberdar ol
+            </p>
+
+            {notifOpen && (
+              <div className="mt-3 space-y-3">
+                {/* Enabled toggle */}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-600 dark:text-[#e7edf4]/70">E-posta bildirimleri</span>
+                  <button
+                    onClick={async () => {
+                      const current = notifPrefs ?? { enabled: false, sectors: [], locations: [] }
+                      const updated = { ...current, enabled: !current.enabled }
+                      await updateNotificationPreferences(updated)
+                      mutateNotifPrefs(updated, false)
+                    }}
+                    className={`relative h-5 w-9 rounded-full transition-colors ${
+                      notifPrefs?.enabled
+                        ? 'bg-[#1E3A5F] dark:bg-[#d8ad43]'
+                        : 'bg-gray-200 dark:bg-white/10'
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${
+                        notifPrefs?.enabled ? 'translate-x-4' : 'translate-x-0.5'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {/* Sektör tercihleri */}
+                <div>
+                  <p className="mb-1.5 text-[11px] font-medium text-gray-500 dark:text-[#e7edf4]/50">Sektörler</p>
+                  <div className="flex flex-wrap gap-1">
+                    {Object.entries(FOCUS_AREA_LABELS).map(([key, label]) => {
+                      const selected = notifPrefs?.sectors?.includes(key as EMFocusArea) ?? false
+                      return (
+                        <button
+                          key={key}
+                          onClick={async () => {
+                            const current = notifPrefs ?? { enabled: false, sectors: [], locations: [] }
+                            const sectors = selected
+                              ? current.sectors.filter((s) => s !== key)
+                              : [...current.sectors, key as EMFocusArea]
+                            const updated = { ...current, sectors }
+                            await updateNotificationPreferences(updated)
+                            mutateNotifPrefs(updated, false)
+                          }}
+                          className={`rounded-full px-2 py-0.5 text-[9px] transition-colors ${
+                            selected
+                              ? 'bg-[#1E3A5F] text-white dark:bg-[#d8ad43] dark:text-[#10223b]'
+                              : 'bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-white/5 dark:text-[#e7edf4]/50 dark:hover:bg-white/10'
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Konum tercihleri */}
+                <div>
+                  <p className="mb-1.5 text-[11px] font-medium text-gray-500 dark:text-[#e7edf4]/50">Konumlar</p>
+                  {(notifPrefs?.locations?.length ?? 0) > 0 && (
+                    <div className="mb-1.5 flex flex-wrap gap-1">
+                      {notifPrefs!.locations.map((loc) => (
+                        <span
+                          key={loc}
+                          className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[9px] text-gray-600 dark:bg-white/5 dark:text-[#e7edf4]/60"
+                        >
+                          {loc}
+                          <button
+                            onClick={async () => {
+                              const current = notifPrefs!
+                              const updated = {
+                                ...current,
+                                locations: current.locations.filter((l) => l !== loc),
+                              }
+                              await updateNotificationPreferences(updated)
+                              mutateNotifPrefs(updated, false)
+                            }}
+                            className="hover:text-red-500"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex gap-1">
+                    <input
+                      value={locationInput}
+                      onChange={(e) => setLocationInput(e.target.value)}
+                      onKeyDown={async (e) => {
+                        if (e.key === 'Enter' && locationInput.trim()) {
+                          const current = notifPrefs ?? { enabled: false, sectors: [], locations: [] }
+                          if (!current.locations.includes(locationInput.trim())) {
+                            const updated = {
+                              ...current,
+                              locations: [...current.locations, locationInput.trim()],
+                            }
+                            await updateNotificationPreferences(updated)
+                            mutateNotifPrefs(updated, false)
+                          }
+                          setLocationInput('')
+                        }
+                      }}
+                      placeholder="Şehir ekle..."
+                      className="h-7 flex-1 rounded border border-gray-200 px-2 text-[10px] focus:border-[#1E3A5F] focus:outline-none dark:border-[#d8ad43]/18 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:placeholder:text-[#e7edf4]/30 dark:focus:border-[#d8ad43]/40"
+                    />
+                    <button
+                      onClick={async () => {
+                        if (!locationInput.trim()) return
+                        const current = notifPrefs ?? { enabled: false, sectors: [], locations: [] }
+                        if (!current.locations.includes(locationInput.trim())) {
+                          const updated = {
+                            ...current,
+                            locations: [...current.locations, locationInput.trim()],
+                          }
+                          await updateNotificationPreferences(updated)
+                          mutateNotifPrefs(updated, false)
+                        }
+                        setLocationInput('')
+                      }}
+                      className="h-7 rounded bg-[#1E3A5F] px-2 text-[10px] text-white hover:bg-[#15304f] dark:bg-[#d8ad43] dark:text-[#10223b] dark:hover:bg-[#e4c05c]"
+                    >
+                      Ekle
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

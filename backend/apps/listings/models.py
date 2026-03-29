@@ -14,6 +14,7 @@ class Student(AbstractUser):
     cv_url        = models.URLField(null=True, blank=True)
     avatar_url    = models.URLField(null=True, blank=True)
     is_verified   = models.BooleanField(default=False)
+    notification_preferences = models.JSONField(default=dict, blank=True)
 
     USERNAME_FIELD = 'iuc_email'
     REQUIRED_FIELDS = ['username']

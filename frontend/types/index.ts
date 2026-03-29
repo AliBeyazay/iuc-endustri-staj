@@ -71,6 +71,12 @@ export interface Review {
   created_at: string
 }
 
+export interface NotificationPreferences {
+  enabled: boolean
+  sectors: EMFocusArea[]
+  locations: string[]
+}
+
 export interface UserProfile {
   id: string
   full_name: string
@@ -83,6 +89,7 @@ export interface UserProfile {
   is_verified: boolean
   completion_percentage: number
   missing_fields: string[]
+  notification_preferences: NotificationPreferences
 }
 
 export interface DashboardStats {

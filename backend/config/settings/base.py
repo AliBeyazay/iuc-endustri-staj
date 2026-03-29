@@ -113,6 +113,10 @@ CELERY_BEAT_SCHEDULE     = {
         'task': 'apps.scraper.tasks.deactivate_expired_listings',
         'schedule': 86400,  # daily
     },
+    'weekly-digest': {
+        'task': 'apps.scraper.tasks.send_weekly_digest',
+        'schedule': 604800,  # weekly (7 days)
+    },
 }
 
 if USE_SQLITE:

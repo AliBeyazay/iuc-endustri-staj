@@ -23,6 +23,7 @@ from .serializers import (
     BookmarkSerializer,
     ListingListSerializer,
     ListingSerializer,
+    NotificationPreferencesSerializer,
     RegisterSerializer,
     ReviewSerializer,
     StudentProfileSerializer,
@@ -270,6 +271,22 @@ class ProfileView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+
+
+class NotificationPreferencesView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        prefs = request.user.notification_preferences or {}
+        defaults = {'enabled': False, 'sectors': [], 'locations': []}
+        return Response({**defaults, **prefs})
+
+    def put(self, request):
+        serializer = NotificationPreferencesSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        request.user.notification_preferences = serializer.validated_data
+        request.user.save(update_fields=['notification_preferences'])
+        return Response(serializer.validated_data)
 
 
 class CVUploadView(APIView):

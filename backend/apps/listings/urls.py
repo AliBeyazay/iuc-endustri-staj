@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     ListingViewSet, ReviewViewSet, BookmarkViewSet,
     ProfileView, CVUploadView, DashboardStatsView,
+    NotificationPreferencesView,
     CheckEmailView, AccountStatusView, RegisterView, VerifyOTPView,
     ResendOTPView, ForgotPasswordView, ResetPasswordView,
 )
@@ -18,6 +19,7 @@ urlpatterns = [
     # Profile
     path('profile/',     ProfileView.as_view()),
     path('profile/cv/',  CVUploadView.as_view()),
+    path('profile/notifications/', NotificationPreferencesView.as_view()),
 
     # Dashboard
     path('dashboard/stats/', DashboardStatsView.as_view()),

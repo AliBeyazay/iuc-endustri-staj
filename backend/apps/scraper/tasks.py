@@ -181,3 +181,87 @@ def _log_scraper(spider_name, started_at, finished_at, new_count=0,
         error_count=error_count,
         error_log=error_log[:5000],
     )
+
+
+# ─── Weekly Digest ────────────────────────────────────────────────────────────
+
+@shared_task(name='apps.scraper.tasks.send_weekly_digest')
+def send_weekly_digest():
+    """Send a weekly email digest to users who opted in, based on their sector/location preferences."""
+    from datetime import date, timedelta
+    from django.conf import settings
+    from django.core.mail import send_mail
+    from django.db.models import Q
+    from apps.listings.models import EM_FOCUS_CHOICES, Listing, Student
+
+    focus_labels = dict(EM_FOCUS_CHOICES)
+    one_week_ago = date.today() - timedelta(days=7)
+    sent = 0
+    skipped = 0
+
+    students = Student.objects.filter(
+        is_verified=True,
+        notification_preferences__enabled=True,
+    )
+
+    for student in students.iterator():
+        prefs = student.notification_preferences or {}
+        sectors = prefs.get('sectors', [])
+        locations = prefs.get('locations', [])
+
+        if not sectors and not locations:
+            skipped += 1
+            continue
+
+        q = Q(is_active=True, created_at__date__gte=one_week_ago)
+        q &= ~Q(deadline_status='expired')
+
+        match_q = Q()
+        if sectors:
+            match_q |= Q(em_focus_area__in=sectors) | Q(secondary_em_focus_area__in=sectors)
+        if locations:
+            loc_q = Q()
+            for loc in locations:
+                loc_q |= Q(location__icontains=loc.strip())
+            match_q |= loc_q
+
+        listings = list(
+            Listing.objects.filter(q & match_q)
+            .order_by('-created_at')[:20]
+        )
+
+        if not listings:
+            skipped += 1
+            continue
+
+        # Build email body
+        lines = [
+            f'Merhaba {student.first_name or "Öğrenci"},\n',
+            f'Son 7 günde tercihlerine uyan {len(listings)} yeni ilan bulundu:\n',
+        ]
+        for i, l in enumerate(listings, 1):
+            area = focus_labels.get(l.em_focus_area, l.em_focus_area)
+            lines.append(
+                f'{i}. {l.title} — {l.company_name}\n'
+                f'   📍 {l.location} | 🏷️ {area}\n'
+                f'   {settings.FRONTEND_URL}/listings/{l.id}\n'
+            )
+        lines.append(
+            f'\nTüm ilanları görüntüle: {settings.FRONTEND_URL}/listings\n'
+            f'Bildirim ayarlarını değiştirmek için: {settings.FRONTEND_URL}/dashboard\n'
+        )
+
+        try:
+            send_mail(
+                subject=f'IUC Staj — Haftalık Özet ({len(listings)} yeni ilan)',
+                message='\n'.join(lines),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[student.iuc_email],
+                fail_silently=True,
+            )
+            sent += 1
+        except Exception as exc:
+            logger.error(f'DIGEST_EMAIL_FAIL [{student.iuc_email}]: {exc}')
+
+    logger.info(f'WEEKLY_DIGEST sent={sent} skipped={skipped}')
+    return {'sent': sent, 'skipped': skipped}
