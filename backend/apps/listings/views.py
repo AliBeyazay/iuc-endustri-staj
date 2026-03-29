@@ -63,6 +63,10 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
         'network engineer', 'ağ uzmanı',
         'database administrator',
         'game developer', 'oyun geliştirici',
+        'yazılım geliştirme', 'yazılım test', 'yazılım mühendis',
+        'yazılım stajyer', 'test stajyer',
+        'bilgisayar mühendis', 'elektronik mühendis',
+        'sistem yönetici', 'system admin',
     ]
 
     def get_serializer_class(self):
