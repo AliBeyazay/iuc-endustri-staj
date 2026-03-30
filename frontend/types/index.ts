@@ -113,6 +113,7 @@ export interface UserProfile {
   cv_url: string | null
   avatar_url: string | null
   is_verified: boolean
+  is_staff: boolean
   completion_percentage: number
   missing_fields: string[]
   notification_preferences: NotificationPreferences
@@ -183,6 +184,24 @@ export interface ScraperHealthReport {
     error_rate_percent: number
   }
   spiders: ScraperHealthSpiderRow[]
+}
+
+export type ModerationStatus = 'approved' | 'rejected' | 'pending'
+
+export interface AdminListingItem {
+  id: string
+  title: string
+  company_name: string
+  source_platform: string
+  location: string
+  application_deadline: string | null
+  deadline_status: string
+  is_active: boolean
+  moderation_status: ModerationStatus
+  moderation_note: string
+  moderated_at: string | null
+  created_at: string
+  updated_at: string
 }
 
 export type ApplicationStatus = 'basvurdum' | 'mulakat' | 'kabul' | 'ret'

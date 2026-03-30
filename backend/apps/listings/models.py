@@ -105,6 +105,12 @@ PROGRAM_TYPE_CHOICES = [
     ('akademi_bootcamp', 'Akademi / Bootcamp'),
 ]
 
+MODERATION_STATUS_CHOICES = [
+    ('approved', 'Onaylandi'),
+    ('rejected', 'Reddedildi'),
+    ('pending', 'Beklemede'),
+]
+
 
 class Listing(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -128,6 +134,14 @@ class Listing(models.Model):
     is_talent_program = models.BooleanField(default=False, db_index=True)
     program_type = models.CharField(max_length=20, choices=PROGRAM_TYPE_CHOICES, null=True, blank=True)
     duration_weeks = models.IntegerField(null=True, blank=True)
+    moderation_status = models.CharField(
+        max_length=10,
+        choices=MODERATION_STATUS_CHOICES,
+        default='approved',
+        db_index=True,
+    )
+    moderation_note = models.TextField(blank=True, default='')
+    moderated_at = models.DateTimeField(null=True, blank=True)
     canonical_listing = models.ForeignKey(
         'self',
         null=True,

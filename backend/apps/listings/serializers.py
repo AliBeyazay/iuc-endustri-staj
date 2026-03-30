@@ -201,6 +201,7 @@ class ListingSerializer(serializers.ModelSerializer):
             'location', 'description', 'requirements',
             'application_deadline', 'deadline_status',
             'is_active', 'is_talent_program', 'program_type', 'duration_weeks',
+            'moderation_status', 'moderation_note', 'moderated_at',
             'created_at', 'updated_at',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
@@ -226,6 +227,7 @@ class ListingListSerializer(serializers.ModelSerializer):
             'company_origin', 'location',
             'application_deadline', 'deadline_status',
             'is_active', 'is_talent_program', 'program_type', 'duration_weeks',
+            'moderation_status',
             'created_at',
         ]
 
@@ -432,12 +434,12 @@ class StudentProfileSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'full_name', 'iuc_email', 'student_no',
             'department_year', 'linkedin_url', 'cv_url',
-            'avatar_url', 'is_verified',
+            'avatar_url', 'is_verified', 'is_staff',
             'completion_percentage', 'missing_fields',
             'notification_preferences',
         ]
         read_only_fields = [
-            'id', 'iuc_email', 'is_verified',
+            'id', 'iuc_email', 'is_verified', 'is_staff',
             'completion_percentage', 'missing_fields',
         ]
 
@@ -506,7 +508,46 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             'iuc_email': self.user.iuc_email,
             'student_no': self.user.student_no,
             'is_verified': self.user.is_verified,
+            'is_staff': self.user.is_staff,
             'department_year': self.user.department_year,
             'avatar_url': self.user.avatar_url,
         }
         return data
+
+
+class AdminListingListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Listing
+        fields = [
+            'id',
+            'title',
+            'company_name',
+            'source_platform',
+            'location',
+            'application_deadline',
+            'deadline_status',
+            'is_active',
+            'moderation_status',
+            'moderation_note',
+            'moderated_at',
+            'created_at',
+            'updated_at',
+        ]
+
+
+class AdminListingUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Listing
+        fields = [
+            'title',
+            'company_name',
+            'location',
+            'description',
+            'requirements',
+            'application_deadline',
+            'application_url',
+            'source_url',
+            'is_active',
+            'moderation_status',
+            'moderation_note',
+        ]

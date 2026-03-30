@@ -23,6 +23,8 @@ from rest_framework.views import APIView
 from .filters import ListingFilter
 from .models import Application, Bookmark, InternshipJournal, JournalComment, Listing, Review, ScraperLog, Student
 from .serializers import (
+    AdminListingListSerializer,
+    AdminListingUpdateSerializer,
     ApplicationListSerializer,
     ApplicationWriteSerializer,
     BookmarkSerializer,
@@ -663,6 +665,93 @@ class ScraperHealthReportView(APIView):
             'spiders': sorted(spider_rows, key=lambda row: row['spider_name']),
         }
         return Response(payload)
+
+
+class AdminListingModerationListView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def get(self, request):
+        queryset = Listing.objects.all().order_by('-created_at')
+        search = (request.query_params.get('search') or '').strip()
+        moderation_status = (request.query_params.get('moderation_status') or '').strip()
+
+        if search:
+            queryset = queryset.filter(
+                Q(title__icontains=search)
+                | Q(company_name__icontains=search)
+                | Q(location__icontains=search)
+            )
+
+        if moderation_status in {'approved', 'rejected', 'pending'}:
+            queryset = queryset.filter(moderation_status=moderation_status)
+
+        limit_raw = request.query_params.get('limit', '200')
+        try:
+            limit = max(1, min(int(limit_raw), 500))
+        except ValueError:
+            limit = 200
+
+        rows = queryset[:limit]
+        serializer = AdminListingListSerializer(rows, many=True)
+        return Response({'results': serializer.data, 'count': queryset.count()})
+
+
+class AdminListingModerationDetailView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def patch(self, request, listing_id):
+        listing = Listing.objects.filter(id=listing_id).first()
+        if not listing:
+            return Response({'error': 'İlan bulunamadı.'}, status=404)
+
+        action = (request.data.get('action') or '').strip().lower()
+        moderation_note = (request.data.get('moderation_note') or '').strip()
+
+        if action == 'approve':
+            listing.moderation_status = 'approved'
+            listing.is_active = True
+            if moderation_note:
+                listing.moderation_note = moderation_note
+            listing.moderated_at = now()
+            listing.save(update_fields=['moderation_status', 'is_active', 'moderation_note', 'moderated_at', 'updated_at'])
+            return Response(AdminListingListSerializer(listing).data)
+
+        if action == 'reject':
+            listing.moderation_status = 'rejected'
+            listing.is_active = False
+            if moderation_note:
+                listing.moderation_note = moderation_note
+            listing.moderated_at = now()
+            listing.save(update_fields=['moderation_status', 'is_active', 'moderation_note', 'moderated_at', 'updated_at'])
+            return Response(AdminListingListSerializer(listing).data)
+
+        serializer = AdminListingUpdateSerializer(listing, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        updated = serializer.save()
+        if 'moderation_status' in serializer.validated_data:
+            updated.moderated_at = now()
+            updated.save(update_fields=['moderated_at'])
+        return Response(AdminListingListSerializer(updated).data)
+
+    def delete(self, request, listing_id):
+        listing = Listing.objects.filter(id=listing_id).first()
+        if not listing:
+            return Response({'error': 'İlan bulunamadı.'}, status=404)
+        listing.delete()
+        return Response(status=204)
+
+
+class AdminListingBulkDeleteView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def post(self, request):
+        ids = request.data.get('ids', [])
+        if not isinstance(ids, list) or not ids:
+            return Response({'error': 'Silinecek ilan ID listesi gerekli.'}, status=400)
+
+        deleted_count = Listing.objects.filter(id__in=ids).count()
+        Listing.objects.filter(id__in=ids).delete()
+        return Response({'deleted_count': deleted_count})
 
 
 class CheckEmailView(APIView):

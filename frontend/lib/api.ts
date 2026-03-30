@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { getSession } from 'next-auth/react'
 import {
-  Application, ApplicationStatus, InternshipJournal, JournalComment, Listing, Review, UserProfile, DashboardStats, EncodingQualityReport, ScraperHealthReport,
+  Application, ApplicationStatus, InternshipJournal, JournalComment, Listing, Review, UserProfile, DashboardStats, EncodingQualityReport, ScraperHealthReport, AdminListingItem, ModerationStatus,
   BookmarkedListing, FilterState, NotificationPreferences, PaginatedResponse,
 } from '@/types'
 import { buildQueryString } from './helpers'
@@ -233,6 +233,46 @@ export async function fetchEncodingQualityReport(): Promise<EncodingQualityRepor
 
 export async function fetchScraperHealthReport(): Promise<ScraperHealthReport> {
   const { data } = await api.get<ScraperHealthReport>('/dashboard/scraper-health/')
+  return data
+}
+
+export async function fetchAdminListings(params?: {
+  search?: string
+  moderation_status?: ModerationStatus | ''
+  limit?: number
+}): Promise<{ results: AdminListingItem[]; count: number }> {
+  const query = new URLSearchParams()
+  if (params?.search) query.set('search', params.search)
+  if (params?.moderation_status) query.set('moderation_status', params.moderation_status)
+  if (params?.limit) query.set('limit', String(params.limit))
+  const qs = query.toString()
+  const { data } = await api.get<{ results: AdminListingItem[]; count: number }>(
+    `/dashboard/admin/listings/${qs ? `?${qs}` : ''}`
+  )
+  return data
+}
+
+export async function moderateAdminListing(
+  id: string,
+  payload: Partial<Pick<AdminListingItem, 'title' | 'company_name' | 'location' | 'is_active' | 'moderation_status' | 'moderation_note'>> & {
+    description?: string
+    requirements?: string
+    application_deadline?: string | null
+    application_url?: string | null
+    source_url?: string
+    action?: 'approve' | 'reject'
+  }
+): Promise<AdminListingItem> {
+  const { data } = await api.patch<AdminListingItem>(`/dashboard/admin/listings/${id}/`, payload)
+  return data
+}
+
+export async function deleteAdminListing(id: string): Promise<void> {
+  await api.delete(`/dashboard/admin/listings/${id}/`)
+}
+
+export async function bulkDeleteAdminListings(ids: string[]): Promise<{ deleted_count: number }> {
+  const { data } = await api.post<{ deleted_count: number }>('/dashboard/admin/listings/bulk-delete/', { ids })
   return data
 }
 

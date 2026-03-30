@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     ListingViewSet, ReviewViewSet, BookmarkViewSet, ApplicationViewSet, InternshipJournalViewSet, JournalCommentViewSet,
     ProfileView, CVUploadView, DashboardStatsView, EncodingQualityReportView, ScraperHealthReportView,
+    AdminListingModerationListView, AdminListingModerationDetailView, AdminListingBulkDeleteView,
     NotificationPreferencesView,
     CheckEmailView, AccountStatusView, RegisterView, VerifyOTPView,
     ResendOTPView, ForgotPasswordView, ResetPasswordView,
@@ -28,6 +29,9 @@ urlpatterns = [
     path('dashboard/stats/', DashboardStatsView.as_view()),
     path('dashboard/encoding-quality/', EncodingQualityReportView.as_view()),
     path('dashboard/scraper-health/', ScraperHealthReportView.as_view()),
+    path('dashboard/admin/listings/', AdminListingModerationListView.as_view()),
+    path('dashboard/admin/listings/bulk-delete/', AdminListingBulkDeleteView.as_view()),
+    path('dashboard/admin/listings/<uuid:listing_id>/', AdminListingModerationDetailView.as_view()),
 
     # Auth
     path('auth/check-email/',       CheckEmailView.as_view()),
