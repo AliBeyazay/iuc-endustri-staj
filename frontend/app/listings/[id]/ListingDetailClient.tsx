@@ -17,8 +17,8 @@ import {
   getInitials,
   timeAgoTurkish,
 } from '@/lib/helpers'
-import { createInternshipJournal, createReview, fetchSimilarListings, SimilarListing } from '@/lib/api'
-import { useBookmarks, useInternshipJournals, useRecentlyViewed, useReviews } from '@/hooks'
+import { createReview, fetchSimilarListings, SimilarListing } from '@/lib/api'
+import { useBookmarks, useRecentlyViewed, useReviews } from '@/hooks'
 import ProfileDropdown from '@/components/ProfileDropdown'
 import ThemeToggle from '@/components/ThemeToggle'
 import UniversityLogo from '@/components/UniversityLogo'
@@ -93,11 +93,6 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
   const { bookmarks, toggle } = useBookmarks()
   const { addView } = useRecentlyViewed()
   const { reviews, isLoading: reviewsLoading, mutate: mutateReviews } = useReviews(listing.id)
-  const {
-    journals,
-    isLoading: journalsLoading,
-    mutate: mutateJournals,
-  } = useInternshipJournals(listing.id)
 
   useEffect(() => {
     addView({ id: listing.id, title: listing.title, company_name: listing.company_name })
@@ -114,13 +109,6 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
   const [reviewSubmitting, setReviewSubmitting] = useState(false)
   const [reviewError, setReviewError] = useState('')
   const [reviewSuccess, setReviewSuccess] = useState('')
-  const [journalTitle, setJournalTitle] = useState('')
-  const [journalContent, setJournalContent] = useState('')
-  const [journalYear, setJournalYear] = useState(new Date().getFullYear())
-  const [journalAnonymous, setJournalAnonymous] = useState(true)
-  const [journalSubmitting, setJournalSubmitting] = useState(false)
-  const [journalError, setJournalError] = useState('')
-  const [journalSuccess, setJournalSuccess] = useState('')
 
   const { data: similar } = useSWR<SimilarListing[]>(
     `similar-${listing.id}`,
@@ -214,53 +202,6 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
       setReviewError(message)
     } finally {
       setReviewSubmitting(false)
-    }
-  }
-
-  async function handleJournalSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setJournalError('')
-    setJournalSuccess('')
-
-    if (!isAuthenticated) {
-      setJournalError('Staj gunlugu paylasmak icin once giris yapmalisin.')
-      return
-    }
-
-    if (journalTitle.trim().length < 8) {
-      setJournalError('Baslik en az 8 karakter olmali.')
-      return
-    }
-
-    if (journalContent.trim().length < 120) {
-      setJournalError('Gunluk icerigi en az 120 karakter olmali.')
-      return
-    }
-
-    try {
-      setJournalSubmitting(true)
-      await createInternshipJournal({
-        listing_id: listing.id,
-        title: journalTitle.trim(),
-        content: journalContent.trim(),
-        internship_year: journalYear,
-        is_anonymous: journalAnonymous,
-      })
-      setJournalSuccess('Staj gunlugun paylasildi.')
-      setJournalTitle('')
-      setJournalContent('')
-      setJournalYear(new Date().getFullYear())
-      setJournalAnonymous(true)
-      await mutateJournals()
-    } catch (error: any) {
-      const message =
-        error?.response?.data?.detail ||
-        error?.response?.data?.non_field_errors?.[0] ||
-        error?.response?.data?.content?.[0] ||
-        'Staj gunlugu eklenemedi. Lutfen tekrar dene.'
-      setJournalError(message)
-    } finally {
-      setJournalSubmitting(false)
     }
   }
 
@@ -544,156 +485,6 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
                     Giriş yapan kullanıcı olarak yorumun hesabına bağlı kaydedilir.
                   </p>
                 )}
-              </form>
-            </div>
-          </section>
-
-          <section className="campus-card rounded-[28px] p-5 sm:p-6">
-            <div className="flex flex-col gap-2 border-b border-dashed border-[#d8ad43]/28 pb-5">
-              <h2 className="text-xs font-medium uppercase tracking-[0.22em] text-[#8f670b]/80 dark:text-[#f0cf7a]/70">
-                Staj Gunlugu ve Deneyim Paylasimi
-              </h2>
-              <p className="text-sm text-[#173156]/68 dark:text-[#e7edf4]/55">
-                Uzun format deneyimini paylas, diger ogrencilere yol goster.
-              </p>
-            </div>
-
-            <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
-              <div className="space-y-3">
-                {journalsLoading ? (
-                  <div className="rounded-2xl border border-[#d8ad43]/14 bg-white/45 px-4 py-4 text-sm text-[#173156]/60 dark:bg-white/5 dark:text-[#e7edf4]/50">
-                    Staj gunlukleri yukleniyor...
-                  </div>
-                ) : journals.length === 0 ? (
-                  <div className="rounded-2xl border border-[#d8ad43]/14 bg-white/45 px-4 py-4 text-sm text-[#173156]/60 dark:bg-white/5 dark:text-[#e7edf4]/50">
-                    Henuz staj gunlugu yok. Ilk paylasimi sen yapabilirsin.
-                  </div>
-                ) : (
-                  journals.map((journal) => (
-                    <article
-                      key={journal.id}
-                      className="rounded-2xl border border-[#d8ad43]/14 bg-white/55 px-4 py-4 dark:bg-white/5"
-                    >
-                      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                        <div>
-                          <h3 className="text-sm font-semibold text-[#132843] dark:text-[#e7edf4]">
-                            {journal.title}
-                          </h3>
-                          <p className="mt-1 text-xs text-[#173156]/58 dark:text-[#e7edf4]/45">
-                            {journal.student_display_name} - {journal.internship_year}
-                          </p>
-                        </div>
-                        <span className="text-xs text-[#173156]/52 dark:text-[#e7edf4]/40">
-                          {formatDateTurkish(journal.created_at)}
-                        </span>
-                      </div>
-
-                      <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-[#173156]/82 dark:text-[#e7edf4]/70">
-                        {journal.content}
-                      </p>
-                    </article>
-                  ))
-                )}
-              </div>
-
-              <form
-                onSubmit={handleJournalSubmit}
-                className="rounded-[24px] border border-[#d8ad43]/16 bg-white/65 p-4 dark:bg-white/5"
-              >
-                <h3 className="text-sm font-semibold text-[#132843] dark:text-[#e7edf4]">
-                  Staj Gunlugu Yaz
-                </h3>
-                <p className="mt-1 text-xs leading-6 text-[#173156]/62 dark:text-[#e7edf4]/50">
-                  Surec, ekip, mulakat, teknik ogrenimler ve tavsiyelerini detayli yaz.
-                </p>
-
-                <div className="mt-4">
-                  <label
-                    htmlFor="journal-title"
-                    className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8f670b]/80 dark:text-[#f0cf7a]/70"
-                  >
-                    Baslik
-                  </label>
-                  <input
-                    id="journal-title"
-                    value={journalTitle}
-                    onChange={(event) => setJournalTitle(event.target.value)}
-                    maxLength={160}
-                    placeholder="Ornek: Uretim planlama stajinda ilk 30 gun"
-                    className="mt-2 w-full rounded-2xl border border-[#d8ad43]/18 bg-white px-4 py-3 text-sm text-[#132843] outline-none transition-colors placeholder:text-[#173156]/38 focus:border-[#d8ad43]/40 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:placeholder:text-[#e7edf4]/30"
-                  />
-                </div>
-
-                <div className="mt-4">
-                  <label
-                    htmlFor="journal-year"
-                    className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8f670b]/80 dark:text-[#f0cf7a]/70"
-                  >
-                    Staj Yili
-                  </label>
-                  <input
-                    id="journal-year"
-                    type="number"
-                    value={journalYear}
-                    onChange={(event) => setJournalYear(Number(event.target.value))}
-                    min={2000}
-                    max={2100}
-                    className="mt-2 w-full rounded-2xl border border-[#d8ad43]/18 bg-white px-4 py-3 text-sm text-[#132843] outline-none transition-colors focus:border-[#d8ad43]/40 dark:bg-[#0e1e33] dark:text-[#e7edf4]"
-                  />
-                </div>
-
-                <div className="mt-4">
-                  <label
-                    htmlFor="journal-content"
-                    className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8f670b]/80 dark:text-[#f0cf7a]/70"
-                  >
-                    Gunluk Icerigi
-                  </label>
-                  <textarea
-                    id="journal-content"
-                    value={journalContent}
-                    onChange={(event) => setJournalContent(event.target.value)}
-                    rows={8}
-                    placeholder="Staj deneyimini adim adim paylas. Ogrendigini, zorlandigin yerleri ve onerilerini yaz."
-                    className="mt-2 w-full rounded-2xl border border-[#d8ad43]/18 bg-white px-4 py-3 text-sm leading-7 text-[#132843] outline-none transition-colors placeholder:text-[#173156]/38 focus:border-[#d8ad43]/40 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:placeholder:text-[#e7edf4]/30"
-                  />
-                </div>
-
-                <label className="mt-4 flex items-center gap-2 text-sm text-[#173156]/70 dark:text-[#e7edf4]/60">
-                  <input
-                    type="checkbox"
-                    checked={journalAnonymous}
-                    onChange={(event) => setJournalAnonymous(event.target.checked)}
-                    className="h-4 w-4 rounded border-[#d8ad43]/30 text-[#1E3A5F] focus:ring-[#d8ad43]/30"
-                  />
-                  Anonim paylas
-                </label>
-
-                {!isAuthenticated && (
-                  <p className="mt-4 rounded-2xl border border-[#d8ad43]/16 bg-[#fff8e8] px-4 py-3 text-xs leading-6 text-[#173156]/70 dark:bg-[#d8ad43]/10 dark:text-[#e7edf4]/60">
-                    Staj gunlugu yazmak icin once giris yapman gerekiyor.
-                  </p>
-                )}
-
-                {journalError && (
-                  <p className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                    {journalError}
-                  </p>
-                )}
-
-                {journalSuccess && (
-                  <p className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-                    {journalSuccess}
-                  </p>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={journalSubmitting}
-                  className="mt-5 w-full rounded-2xl bg-[#1E3A5F] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#173156] disabled:cursor-not-allowed disabled:opacity-60 dark:bg-[#d8ad43] dark:text-[#10223b] dark:hover:bg-[#e4c05c]"
-                >
-                  {journalSubmitting ? 'Paylasiliyor...' : 'Staj Gunlugunu Paylas'}
-                </button>
               </form>
             </div>
           </section>
