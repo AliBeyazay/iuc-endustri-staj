@@ -95,6 +95,9 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
+        if self.action in ['list', 'similar']:
+            qs = qs.filter(canonical_listing__isnull=True)
+
         exclude_id = self.request.query_params.get('exclude')
         if exclude_id:
             qs = qs.exclude(id=exclude_id)

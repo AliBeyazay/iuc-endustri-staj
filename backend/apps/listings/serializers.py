@@ -195,6 +195,7 @@ class ListingSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'company_name', 'company_logo_url',
             'source_url', 'application_url', 'source_platform',
+            'canonical_listing',
             'em_focus_area', 'secondary_em_focus_area', 'em_focus_confidence',
             'internship_type', 'company_origin',
             'location', 'description', 'requirements',
@@ -220,7 +221,7 @@ class ListingListSerializer(serializers.ModelSerializer):
         model = Listing
         fields = [
             'id', 'title', 'company_name', 'company_logo_url',
-            'source_url', 'application_url', 'source_platform', 'em_focus_area',
+            'source_url', 'application_url', 'source_platform', 'canonical_listing', 'em_focus_area',
             'secondary_em_focus_area', 'em_focus_confidence', 'internship_type',
             'company_origin', 'location',
             'application_deadline', 'deadline_status',

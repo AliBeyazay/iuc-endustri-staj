@@ -17,9 +17,9 @@ class StudentAdmin(admin.ModelAdmin):
 @admin.register(Listing)
 class ListingAdmin(admin.ModelAdmin):
     list_display  = ['title', 'company_name', 'em_focus_area', 'source_platform',
-                     'deadline_status', 'is_active', 'is_talent_program', 'created_at']
+                     'deadline_status', 'is_active', 'canonical_listing', 'is_talent_program', 'created_at']
     list_filter   = ['is_active', 'is_talent_program', 'em_focus_area',
-                     'source_platform', 'internship_type', 'company_origin', 'deadline_status']
+                     'source_platform', 'internship_type', 'company_origin', 'deadline_status', 'canonical_listing']
     search_fields = ['title', 'company_name', 'location']
     readonly_fields = ['id', 'created_at', 'updated_at']
     ordering      = ['-created_at']

@@ -128,6 +128,14 @@ class Listing(models.Model):
     is_talent_program = models.BooleanField(default=False, db_index=True)
     program_type = models.CharField(max_length=20, choices=PROGRAM_TYPE_CHOICES, null=True, blank=True)
     duration_weeks = models.IntegerField(null=True, blank=True)
+    canonical_listing = models.ForeignKey(
+        'self',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='duplicate_listings',
+        db_index=True,
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

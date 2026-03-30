@@ -405,35 +405,16 @@ class DjangoORMPipeline:
             'duration_weeks': adapter.get('duration_weeks'),
         }
 
-        duplicate = self.find_cross_platform_duplicate(
-            Listing=Listing,
-            source_url=url,
-            source_platform=defaults['source_platform'],
-            title=defaults['title'],
-            company_name=defaults['company_name'],
-        )
-        if duplicate:
-            duplicate_priority = self.SOURCE_PRIORITY.get(duplicate.source_platform, 0)
-            current_priority = self.SOURCE_PRIORITY.get(defaults['source_platform'], 0)
-            if duplicate_priority >= current_priority:
-                spider.logger.info(
-                    'SKIPPED_DUPLICATE: %s | kept=%s | skipped=%s',
-                    defaults['title'],
-                    duplicate.source_platform,
-                    defaults['source_platform'],
-                )
-                return item
-            duplicate.delete()
-            spider.logger.info(
-                'REMOVED_DUPLICATE: %s | replaced=%s -> kept=%s',
-                defaults['title'],
-                duplicate.source_platform,
-                defaults['source_platform'],
-            )
-
-        _, created = Listing.objects.update_or_create(
+        listing, created = Listing.objects.update_or_create(
             source_url=url,
             defaults=defaults,
+        )
+        self.link_duplicate_group(
+            Listing=Listing,
+            listing=listing,
+            source_url=url,
+            source_platform=defaults['source_platform'],
+            spider=spider,
         )
         spider.logger.info(f'{"NEW" if created else "UPDATED"}: {adapter["title"]}')
         return item
@@ -456,37 +437,106 @@ class DjangoORMPipeline:
         value = re.sub(r'[^a-z0-9]+', ' ', value)
         return ' '.join(value.split())
 
-    def find_cross_platform_duplicate(
-        self,
-        Listing,
-        source_url: str,
-        source_platform: str,
-        title: str,
-        company_name: str,
-    ):
-        normalized_title = self.normalize_dedupe_text(title)
-        normalized_company = self.normalize_dedupe_text(company_name)
-        if not normalized_title:
-            return None
+    def get_source_priority(self, source_platform: str) -> int:
+        return self.SOURCE_PRIORITY.get(source_platform or '', 0)
 
-        candidates = Listing.objects.filter(is_active=True).exclude(source_url=source_url)
-        if normalized_company:
-            company_matches = []
-            for candidate in candidates:
-                candidate_company = self.normalize_dedupe_text(candidate.company_name)
-                if not candidate_company or candidate_company == normalized_company:
-                    company_matches.append(candidate)
-            candidates = company_matches
-        else:
-            candidates = list(candidates)
+    def pick_canonical(self, a, b):
+        a_priority = self.get_source_priority(a.source_platform)
+        b_priority = self.get_source_priority(b.source_platform)
+        if a_priority == b_priority:
+            return a if a.created_at <= b.created_at else b
+        return a if a_priority > b_priority else b
 
+    def score_duplicate_candidate(self, listing, candidate) -> float:
+        listing_title = self.normalize_dedupe_text(listing.title)
+        candidate_title = self.normalize_dedupe_text(candidate.title)
+        if not listing_title or not candidate_title:
+            return 0.0
+
+        title_score = SequenceMatcher(None, listing_title, candidate_title).ratio()
+        listing_company = self.normalize_dedupe_text(listing.company_name)
+        candidate_company = self.normalize_dedupe_text(candidate.company_name)
+        company_score = SequenceMatcher(None, listing_company, candidate_company).ratio()
+        listing_location = self.normalize_dedupe_text(listing.location)
+        candidate_location = self.normalize_dedupe_text(candidate.location)
+        location_score = SequenceMatcher(None, listing_location, candidate_location).ratio()
+
+        # Title carries most weight. Company and location strengthen confidence.
+        weighted_score = (title_score * 0.60) + (company_score * 0.30) + (location_score * 0.10)
+
+        company_missing = not listing_company or not candidate_company
+        company_is_match = company_score >= 0.70
+        location_is_match = location_score >= 0.60
+        title_is_strong = title_score >= 0.78
+
+        if not title_is_strong:
+            return 0.0
+        if company_is_match:
+            return weighted_score
+        if company_missing and title_score >= 0.88 and location_is_match:
+            return weighted_score
+        return 0.0
+
+    def find_best_duplicate_candidate(self, Listing, listing, source_url: str, source_platform: str):
+        candidates = (
+            Listing.objects.filter(is_active=True, canonical_listing__isnull=True)
+            .exclude(id=listing.id)
+            .exclude(source_url=source_url)
+            .exclude(source_platform=source_platform)
+        )
+
+        best_candidate = None
+        best_score = 0.0
         for candidate in candidates:
-            if candidate.source_platform == source_platform:
-                continue
-            candidate_title = self.normalize_dedupe_text(candidate.title)
-            if not candidate_title:
-                continue
-            similarity = SequenceMatcher(None, normalized_title, candidate_title).ratio()
-            if similarity >= 0.78:
-                return candidate
-        return None
+            score = self.score_duplicate_candidate(listing, candidate)
+            if score > best_score:
+                best_candidate = candidate
+                best_score = score
+
+        if best_candidate and best_score >= 0.80:
+            return best_candidate, best_score
+        return None, 0.0
+
+    def link_duplicate_group(self, Listing, listing, source_url: str, source_platform: str, spider):
+        candidate, score = self.find_best_duplicate_candidate(
+            Listing=Listing,
+            listing=listing,
+            source_url=source_url,
+            source_platform=source_platform,
+        )
+
+        if not candidate:
+            if listing.canonical_listing_id:
+                previous = listing.canonical_listing_id
+                listing.canonical_listing = None
+                listing.save(update_fields=['canonical_listing'])
+                spider.logger.info('UNLINKED_DUPLICATE: %s | previous_canonical=%s', listing.source_url, previous)
+            return
+
+        canonical = self.pick_canonical(candidate, listing)
+        if canonical.id == listing.id:
+            if candidate.canonical_listing_id != listing.id:
+                candidate.canonical_listing = listing
+                candidate.save(update_fields=['canonical_listing'])
+            Listing.objects.filter(canonical_listing=candidate).exclude(id=listing.id).update(canonical_listing=listing)
+            if listing.canonical_listing_id:
+                listing.canonical_listing = None
+                listing.save(update_fields=['canonical_listing'])
+            spider.logger.info(
+                'DUPLICATE_LINKED: %s -> %s | score=%.2f',
+                candidate.source_url,
+                listing.source_url,
+                score,
+            )
+            return
+
+        Listing.objects.filter(canonical_listing=listing).update(canonical_listing=canonical)
+        if listing.canonical_listing_id != canonical.id:
+            listing.canonical_listing = canonical
+            listing.save(update_fields=['canonical_listing'])
+        spider.logger.info(
+            'DUPLICATE_LINKED: %s -> %s | score=%.2f',
+            listing.source_url,
+            canonical.source_url,
+            score,
+        )
