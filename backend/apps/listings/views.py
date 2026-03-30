@@ -9,7 +9,8 @@ from time import time
 from django.conf import settings
 from django.core.cache import cache
 from django.core.mail import send_mail
-from django.db.models import Avg, Case, IntegerField, Q, Value, When
+from django.db.models import Avg, Case, Count, FloatField, IntegerField, Q, Value, When
+from django.db.models.functions import Coalesce
 from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, permissions, status, viewsets
@@ -44,7 +45,14 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = ListingFilter
     search_fields = ['title', 'company_name', 'description', 'location']
-    ordering_fields = ['created_at', 'application_deadline', 'company_name', 'em_focus_confidence']
+    ordering_fields = [
+        'created_at',
+        'application_deadline',
+        'company_name',
+        'em_focus_confidence',
+        'bookmark_count',
+        'average_rating',
+    ]
     ordering = ['-created_at']
 
     # Endüstri mühendisliğiyle ilgisiz ilanları filtrele
@@ -104,7 +112,10 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
         # Bozuk encoding'li ilanları gizle (? içeren title/company_name)
         qs = qs.exclude(title__contains='?').exclude(company_name__contains='?')
 
-        return qs
+        return qs.annotate(
+            bookmark_count=Count('bookmarked_by', distinct=True),
+            average_rating=Coalesce(Avg('reviews__rating'), Value(0.0), output_field=FloatField()),
+        )
 
     def list(self, request, *args, **kwargs):
         try:

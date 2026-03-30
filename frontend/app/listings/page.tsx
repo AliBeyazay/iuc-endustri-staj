@@ -51,7 +51,7 @@ type Listing = {
   created_at: string | null
 }
 
-type SortOption = 'newest'
+type SortOption = 'newest' | 'deadline' | 'company' | 'popular' | 'top_rated'
 
 const RECENT_SEARCHES_KEY = 'iuc_listings_recent_searches'
 const ITEMS_PER_PAGE = 20
@@ -104,6 +104,14 @@ const DURATION_OPTIONS = [
   { value: '8_weeks', label: '8 hafta' },
   { value: '12_plus_weeks', label: '12+ hafta' },
 ] as const
+
+const SORT_OPTIONS: Array<{ value: SortOption; label: string }> = [
+  { value: 'newest', label: 'En yeni' },
+  { value: 'deadline', label: 'Deadline yakindan uzağa' },
+  { value: 'company', label: 'Sirket A-Z' },
+  { value: 'popular', label: 'Populerlik (kaydetme)' },
+  { value: 'top_rated', label: 'En yuksek puan' },
+]
 
 const DISPLAY_SECTOR_LABELS: Record<string, string> = {
   imalat_metal_makine: 'İmalat, Metal ve Makine',
@@ -499,7 +507,19 @@ function getWorkModelLabel(item: Listing) {
 }
 
 function getOrderingValue(sortBy: SortOption) {
-  return '-created_at'
+  switch (sortBy) {
+    case 'deadline':
+      return 'application_deadline'
+    case 'company':
+      return 'company_name'
+    case 'popular':
+      return '-bookmark_count'
+    case 'top_rated':
+      return '-average_rating'
+    case 'newest':
+    default:
+      return '-created_at'
+  }
 }
 
 function buildListingsApiQuery(params: {
@@ -1251,6 +1271,23 @@ export default function ListingsPage() {
                   )}
                 </div>
               )}
+            </div>
+
+            <div className="w-full lg:w-[280px]">
+              <label className="mb-1 block text-[11px] font-medium uppercase tracking-[0.18em] text-[#8f670b]/70 dark:text-[#f0cf7a]/60">
+                Siralama
+              </label>
+              <select
+                value={sortBy}
+                onChange={(event) => setSortBy(event.target.value as SortOption)}
+                className="w-full rounded-[20px] border border-[#d8ad43]/20 bg-white px-4 py-3 text-sm text-[#173156] outline-none transition focus:border-[#d8ad43]/45 dark:border-[#d8ad43]/24 dark:bg-[#0e1e33] dark:text-[#e7edf4]"
+              >
+                {SORT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
           </div>
