@@ -63,6 +63,7 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
     # Endüstri mühendisliğiyle ilgisiz ilanları filtrele
     NEGATIVE_KEYWORDS = [
         'avukat', 'hukuk', 'savcı', 'noter', 'icra',
+        'legal intern', 'certified legal intern', 'legal internship',
         'eczacı', 'eczane', 'eczacılık',
         'diş hekimi', 'dişçi', 'diş kliniği',
         'veteriner',
