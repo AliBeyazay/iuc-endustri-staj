@@ -44,11 +44,11 @@ export default function PaylasimlarPage() {
       return
     }
     if (title.trim().length < 8) {
-      setError('Baslik en az 8 karakter olmali.')
+      setError('Başlık en az 8 karakter olmalı.')
       return
     }
     if (content.trim().length < 120) {
-      setError('Paylasim metni en az 120 karakter olmali.')
+      setError('Paylaşım metni en az 120 karakter olmalı.')
       return
     }
 
@@ -88,7 +88,7 @@ export default function PaylasimlarPage() {
       return
     }
     if (contentValue.length < 2) {
-      setCommentError((prev) => ({ ...prev, [journalId]: 'Yorum en az 2 karakter olmali.' }))
+      setCommentError((prev) => ({ ...prev, [journalId]: 'Yorum en az 2 karakter olmalı.' }))
       return
     }
 
@@ -198,7 +198,7 @@ export default function PaylasimlarPage() {
             </div>
           ) : journals.length === 0 ? (
             <div className="campus-card rounded-2xl p-5 text-sm text-[#173156]/70 dark:text-[#e7edf4]/60">
-              Henuz paylasim yok. Ilk staj gunlugunu sen paylasabilirsin.
+              Henüz paylaşım yok. İlk staj günlüğünü sen paylaşabilirsin.
             </div>
           ) : (
             journals.map((journal) => {
@@ -222,7 +222,7 @@ export default function PaylasimlarPage() {
                       </div>
                       <p className="mt-1 text-xs text-[#173156]/58 dark:text-[#e7edf4]/48">
                         Staj yili: {journal.internship_year}
-                        {journal.listing_title ? ` - Ilan: ${journal.listing_title}` : ''}
+                        {journal.listing_title ? ` - İlan: ${journal.listing_title}` : ''}
                       </p>
                       <h2 className="mt-3 text-sm font-semibold text-[#132843] dark:text-[#e7edf4]">
                         {journal.title}
@@ -254,7 +254,7 @@ export default function PaylasimlarPage() {
                         </div>
                       ))
                     ) : (
-                      <p className="text-xs text-[#173156]/58 dark:text-[#e7edf4]/48">Henuz yorum yok.</p>
+                      <p className="text-xs text-[#173156]/58 dark:text-[#e7edf4]/48">Henüz yorum yok.</p>
                     )}
 
                     <form onSubmit={(event) => handleCommentSubmit(event, journal.id)} className="rounded-xl border border-[#d8ad43]/16 bg-white/50 p-2 dark:bg-white/5">

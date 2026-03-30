@@ -9,16 +9,16 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { fetchAccountStatus, normalizeIucEmail, resendOTP, verifyOTP } from '@/lib/api'
 
 const schema = z.object({
-  email: z.string().email('Gecerli bir e-posta girin.'),
-  password: z.string().min(6, 'Sifre en az 6 karakter olmali.'),
+  email: z.string().email('Geçerli bir e-posta girin.'),
+  password: z.string().min(6, 'Şifre en az 6 karakter olmalı.'),
 })
 
 type Form = z.infer<typeof schema>
 
 const ERROR_MAP: Record<string, string> = {
-  CredentialsSignin: 'E-posta veya sifre hatali',
+  CredentialsSignin: 'E-posta veya şifre hatalı',
   NotIUCEmail: 'Sadece @ogr.iuc.edu.tr veya @iuc.edu.tr adresleri kabul edilir',
-  OAuthAccountNotLinked: 'Bu e-posta baska bir yontemle kayitli',
+  OAuthAccountNotLinked: 'Bu e-posta başka bir yöntemle kayıtlı',
 }
 
 function LoginPageContent() {
@@ -63,16 +63,16 @@ function LoginPageContent() {
       })
 
       if (response?.error) {
-        setServerError(ERROR_MAP[response.error] ?? 'Bir hata olustu, tekrar deneyin')
+        setServerError(ERROR_MAP[response.error] ?? 'Bir hata oluştu, tekrar deneyin')
         return false
       }
 
       if (!response?.ok) {
-        setServerError('Giris tamamlanamadi. Bilgilerini kontrol edip tekrar dene.')
+        setServerError('Giriş tamamlanamadı. Bilgilerini kontrol edip tekrar dene.')
         return false
       }
 
-      setStatusMessage('Giris basarili. Yonlendiriliyorsun...')
+      setStatusMessage('Giriş başarılı. Yönlendiriliyorsun...')
 
       const session = await getSession()
       if (session?.access_token) {
@@ -82,7 +82,7 @@ function LoginPageContent() {
       window.location.assign(response?.url ?? callbackUrl)
       return true
     } catch {
-      setServerError('Giris istegi basarisiz oldu. Lutfen biraz sonra tekrar dene.')
+      setServerError('Giriş isteği başarısız oldu. Lütfen biraz sonra tekrar dene.')
       return false
     }
   }
@@ -92,7 +92,7 @@ function LoginPageContent() {
     setVerificationCode('')
     setVerificationMessage('')
     setOnscreenOtp('')
-    setVerificationMessage('Dogrulama kodu olusturuluyor...')
+    setVerificationMessage('Doğrulama kodu oluşturuluyor...')
   }
 
   async function loadVisibleOtp(email: string) {
@@ -102,10 +102,10 @@ function LoginPageContent() {
         throw new Error('OTP code missing')
       }
       setOnscreenOtp(result.debug_otp)
-      setVerificationMessage('Ekranda gorunen 6 haneli kodu ayni sekilde gir.')
+      setVerificationMessage('Ekranda görünen 6 haneli kodu aynı şekilde gir.')
       return true
     } catch {
-      setVerificationMessage('Dogrulama kodu olusturulamadi. Lutfen tekrar dene.')
+      setVerificationMessage('Doğrulama kodu oluşturulamadı. Lütfen tekrar dene.')
       return false
     }
   }
@@ -121,24 +121,24 @@ function LoginPageContent() {
       if (!accountStatus.exists) {
         setPendingVerification(null)
         setStatusMessage('')
-        setServerError('Bu e-posta ile kayitli bir hesap bulunamadi')
+        setServerError('Bu e-posta ile kayıtlı bir hesap bulunamadı')
         return
       }
 
       if (!accountStatus.is_verified) {
         setStatusMessage('')
-        setServerError('Hesabin kayitli ama e-posta dogrulaman tamamlanmamis. Asagidaki kodla girisi tamamlayabilirsin.')
+        setServerError('Hesabın kayıtlı ama e-posta doğrulaman tamamlanmamış. Aşağıdaki kodla girişi tamamlayabilirsin.')
         await startVerificationFlow(normalizedEmail, data.password)
         if (accountStatus.debug_otp) {
           setOnscreenOtp(accountStatus.debug_otp)
-          setVerificationMessage('Ekranda gorunen 6 haneli kodu ayni sekilde gir.')
+          setVerificationMessage('Ekranda görünen 6 haneli kodu aynı şekilde gir.')
         } else {
           await loadVisibleOtp(normalizedEmail)
         }
         return
       }
     } catch {
-      setStatusMessage('Hesap durumu kontrol edilemedi, dogrudan giris deneniyor...')
+      setStatusMessage('Hesap durumu kontrol edilemedi, doğrudan giriş deneniyor...')
     }
 
     setPendingVerification(null)
@@ -154,14 +154,14 @@ function LoginPageContent() {
 
     try {
       await verifyOTP(pendingVerification.email, verificationCode)
-      setVerificationMessage('E-posta dogrulandi. Giris yapiliyor...')
+      setVerificationMessage('E-posta doğrulandı. Giriş yapılıyor...')
       const loggedIn = await completeLogin(pendingVerification.email, pendingVerification.password)
       if (!loggedIn) {
         setVerificationMessage('')
-        setServerError('E-posta dogrulandi ama giris tamamlanamadi. Sifreni tekrar kontrol et.')
+        setServerError('E-posta doğrulandı ama giriş tamamlanamadı. Şifreni tekrar kontrol et.')
       }
     } catch {
-      setServerError('Dogrulama kodu hatali veya suresi dolmus.')
+      setServerError('Doğrulama kodu hatalı veya süresi dolmuş.')
     } finally {
       setIsVerifyingCode(false)
     }
@@ -177,12 +177,12 @@ function LoginPageContent() {
 
   return (
     <div className="w-full max-w-sm">
-      <h1 className="mb-1 text-xl font-medium text-gray-900 dark:text-[#e7edf4]">Giris Yap</h1>
-      <p className="mb-5 text-sm text-gray-500 dark:text-[#e7edf4]/50">IUC ogrenci hesabinla devam et</p>
+      <h1 className="mb-1 text-xl font-medium text-gray-900 dark:text-[#e7edf4]">Giriş Yap</h1>
+      <p className="mb-5 text-sm text-gray-500 dark:text-[#e7edf4]/50">IUC öğrenci hesabınla devam et</p>
 
       {registered ? (
         <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-xs text-emerald-800">
-          Kaydiniz basariyla olusturuldu.
+          Kaydınız başarıyla oluşturuldu.
         </div>
       ) : null}
 
@@ -200,14 +200,14 @@ function LoginPageContent() {
 
       {pendingVerification ? (
         <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-3 text-xs text-amber-900">
-          <p className="font-medium">Dogrulama gerekli</p>
+          <p className="font-medium">Doğrulama gerekli</p>
           <p className="mt-1 leading-5">
-            <span className="font-medium">{pendingVerification.email}</span> icin olusturulan 6 haneli kodu ayni sekilde gir.
+            <span className="font-medium">{pendingVerification.email}</span> için oluşturulan 6 haneli kodu aynı şekilde gir.
           </p>
           {onscreenOtp ? (
             <div className="mt-3 rounded-lg border border-amber-300 bg-white px-3 py-3 text-center">
               <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-amber-700">
-                Ekranda gorunen kod
+                Ekranda görünen kod
               </p>
               <p className="mt-2 text-xl font-semibold tracking-[0.34em] text-amber-950">
                 {onscreenOtp}
@@ -256,7 +256,7 @@ function LoginPageContent() {
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-[#e7edf4]/60">Sifre</label>
+          <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-[#e7edf4]/60">Şifre</label>
           <div className="relative">
             <input
               {...register('password')}
@@ -268,7 +268,7 @@ function LoginPageContent() {
               onClick={() => setShowPassword((value) => !value)}
               className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-gray-400"
             >
-              {showPassword ? 'Gizle' : 'Goster'}
+              {showPassword ? 'Gizle' : 'Göster'}
             </button>
           </div>
           {errors.password ? (
@@ -282,7 +282,7 @@ function LoginPageContent() {
             onClick={() => router.push('/forgot-password')}
             className="text-[10px] text-[#1E3A5F] hover:underline"
           >
-            Sifremi unuttum
+            Şifremi unuttum
           </button>
         </div>
 
@@ -291,17 +291,17 @@ function LoginPageContent() {
           disabled={isSubmitting}
           className="h-10 w-full rounded-lg bg-[#1E3A5F] text-sm font-medium text-white disabled:opacity-50 dark:bg-[#d8ad43] dark:text-[#10223b]"
         >
-          {isSubmitting ? 'Giris yapiliyor...' : 'Giris Yap'}
+          {isSubmitting ? 'Giriş yapılıyor...' : 'Giriş Yap'}
         </button>
       </form>
 
       <p className="mt-4 text-center text-xs text-gray-400 dark:text-[#e7edf4]/40">
-        Hesabin yok mu?{' '}
+        Hesabın yok mu?{' '}
         <button
           onClick={() => router.push('/register')}
           className="font-medium text-[#1E3A5F] hover:underline dark:text-[#d8ad43]"
         >
-          Kayit Ol
+          Kayıt Ol
         </button>
       </p>
     </div>

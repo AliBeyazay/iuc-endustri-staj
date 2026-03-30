@@ -253,7 +253,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     def validate_rating(self, value):
         if not 1 <= value <= 5:
-            raise serializers.ValidationError('Puan 1-5 arasinda olmali.')
+            raise serializers.ValidationError('Puan 1-5 arasında olmalı.')
         return value
 
     def create(self, validated_data):
@@ -291,7 +291,7 @@ class JournalCommentListSerializer(serializers.ModelSerializer):
 
     def get_student_display_name(self, obj):
         if obj.is_anonymous:
-            return 'Anonim Ogrenci'
+            return 'Anonim Öğrenci'
         full_name = f'{obj.student.first_name} {obj.student.last_name}'.strip()
         return full_name or obj.student.iuc_email
 
@@ -307,7 +307,7 @@ class JournalCommentWriteSerializer(serializers.ModelSerializer):
     def validate_content(self, value):
         clean = value.strip()
         if len(clean) < 2:
-            raise serializers.ValidationError('Yorum en az 2 karakter olmali.')
+            raise serializers.ValidationError('Yorum en az 2 karakter olmalı.')
         return clean
 
     def create(self, validated_data):
@@ -343,7 +343,7 @@ class InternshipJournalListSerializer(serializers.ModelSerializer):
 
     def get_student_display_name(self, obj):
         if obj.is_anonymous:
-            return 'Anonim Ogrenci'
+            return 'Anonim Öğrenci'
         full_name = f'{obj.student.first_name} {obj.student.last_name}'.strip()
         return full_name or obj.student.iuc_email
 
@@ -361,13 +361,13 @@ class InternshipJournalWriteSerializer(serializers.ModelSerializer):
 
     def validate_title(self, value):
         if len(value.strip()) < 8:
-            raise serializers.ValidationError('Baslik en az 8 karakter olmali.')
+            raise serializers.ValidationError('Başlık en az 8 karakter olmalı.')
         return value.strip()
 
     def validate_content(self, value):
         clean = value.strip()
         if len(clean) < 120:
-            raise serializers.ValidationError('Icerik en az 120 karakter olmali.')
+            raise serializers.ValidationError('İçerik en az 120 karakter olmalı.')
         return clean
 
     def create(self, validated_data):
@@ -473,13 +473,13 @@ class RegisterSerializer(serializers.Serializer):
             )
         existing_student = Student.objects.filter(iuc_email__iexact=value).first()
         if existing_student and existing_student.is_verified:
-            raise serializers.ValidationError('Bu e-posta zaten kayitli.')
+            raise serializers.ValidationError('Bu e-posta zaten kayıtlı.')
         return value
 
     def validate_student_no(self, value):
         existing_student = Student.objects.filter(student_no=value).first()
         if existing_student and existing_student.is_verified:
-            raise serializers.ValidationError('Bu ogrenci numarasi zaten kayitli.')
+            raise serializers.ValidationError('Bu öğrenci numarası zaten kayıtlı.')
         return value
 
 
@@ -499,7 +499,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         }
         data = super().validate(credentials)
         if not self.user.is_verified:
-            raise AuthenticationFailed('E-posta adresi henuz dogrulanmadi.')
+            raise AuthenticationFailed('E-posta adresi henüz doğrulanmadı.')
         data['user'] = {
             'id': str(self.user.id),
             'full_name': f'{self.user.first_name} {self.user.last_name}'.strip(),

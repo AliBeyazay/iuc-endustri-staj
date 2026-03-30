@@ -281,7 +281,7 @@ export default function DashboardPage() {
   })
   const visibleBookmarks = showAll ? sortedBookmarks : sortedBookmarks.slice(0, 5)
   const trackedListingIds = new Set(applications.map((item) => item.listing.id))
-  const firstName = profile?.full_name.split(' ')[0] ?? 'Ogrenci'
+  const firstName = profile?.full_name.split(' ')[0] ?? 'Öğrenci'
 
   async function handleRemove(id: string) {
     await removeBookmark(id)
@@ -304,7 +304,7 @@ export default function DashboardPage() {
   const missingHints: Record<string, string> = {
     cv: '+ CV ekle',
     linkedin: '+ LinkedIn ekle',
-    student_no: '+ Ogrenci no ekle',
+    student_no: '+ Öğrenci no ekle',
   }
 
   if (status === 'loading') {
@@ -470,7 +470,7 @@ export default function DashboardPage() {
 
           <div id="applications" className="campus-card scroll-mt-24 rounded-2xl p-4">
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-sm font-medium text-gray-800 dark:text-[#e7edf4]">Basvuru Takip Panosu</h2>
+              <h2 className="text-sm font-medium text-gray-800 dark:text-[#e7edf4]">Başvuru Takip Panosu</h2>
               <span className="text-[10px] text-gray-400 dark:text-[#e7edf4]/45">
                 {applications.length} kayit
               </span>
@@ -478,7 +478,7 @@ export default function DashboardPage() {
 
             {applications.length === 0 ? (
               <p className="rounded-lg bg-gray-50 px-3 py-2 text-xs text-gray-500 dark:bg-white/5 dark:text-[#e7edf4]/55">
-                Henuz takipte bir basvuru yok. Kaydedilen ilanlardan "Takibe Al" ile ekleyebilirsin.
+                Henüz takipte bir başvuru yok. Kaydedilen ilanlardan "Takibe Al" ile ekleyebilirsin.
               </p>
             ) : (
               <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-4">

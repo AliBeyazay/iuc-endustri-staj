@@ -16,12 +16,12 @@ import {
 } from '@/lib/api'
 
 const step1Schema = z.object({
-  full_name: z.string().min(3, 'Ad soyad en az 3 karakter olmali.'),
+  full_name: z.string().min(3, 'Ad soyad en az 3 karakter olmalı.'),
   email: z.string().email().refine(
     (value) => value.endsWith('@ogr.iuc.edu.tr') || value.endsWith('@iuc.edu.tr'),
-    'Sadece @ogr.iuc.edu.tr veya @iuc.edu.tr uzantili e-posta kabul edilir.'
+    'Sadece @ogr.iuc.edu.tr veya @iuc.edu.tr uzantılı e-posta kabul edilir.'
   ),
-  password: z.string().min(8, 'Sifre en az 8 karakter olmali.'),
+  password: z.string().min(8, 'Şifre en az 8 karakter olmalı.'),
   password_confirm: z.string(),
 }).refine((data) => data.password === data.password_confirm, {
   message: 'Şifreler eşleşmiyor.',
@@ -29,9 +29,9 @@ const step1Schema = z.object({
 })
 
 const step2Schema = z.object({
-  student_no: z.string().regex(/^\d{10}$/, 'Ogrenci numarasi 10 haneli olmali.'),
+  student_no: z.string().regex(/^\d{10}$/, 'Öğrenci numarası 10 haneli olmalı.'),
   department_year: z.number().min(1).max(4),
-  linkedin_url: z.string().url('Gecersiz LinkedIn adresi.').optional().or(z.literal('')),
+  linkedin_url: z.string().url('Geçersiz LinkedIn adresi.').optional().or(z.literal('')),
 })
 
 type Step1 = z.infer<typeof step1Schema>
@@ -109,16 +109,19 @@ function OTPInput({
 function extractRegisterConflictMessage(message: string, email: string) {
   const lowerMessage = message.toLowerCase()
 
-  if (lowerMessage.includes('e-posta') && lowerMessage.includes('zaten kayitli')) {
-    return `${email} adresi zaten kayitli. Giris ekranindan devam etmen gerekiyor.`
+  if (lowerMessage.includes('e-posta') && (lowerMessage.includes('zaten kayitli') || lowerMessage.includes('zaten kayıtlı'))) {
+    return `${email} adresi zaten kayıtlı. Giriş ekranından devam etmen gerekiyor.`
   }
 
-  if (lowerMessage.includes('ogrenci numarasi') && lowerMessage.includes('zaten kayitli')) {
-    return 'Bu ogrenci numarasi baska bir hesapta kayitli gorunuyor.'
+  if (
+    (lowerMessage.includes('ogrenci numarasi') || lowerMessage.includes('öğrenci numarası')) &&
+    (lowerMessage.includes('zaten kayitli') || lowerMessage.includes('zaten kayıtlı'))
+  ) {
+    return 'Bu öğrenci numarası başka bir hesapta kayıtlı görünüyor.'
   }
 
   if (lowerMessage.includes('request failed with status 400')) {
-    return `${email} icin kayit istegi reddedildi. Hesap zaten olusmus olabilir; giris ekranindan devam etmeyi dene.`
+    return `${email} için kayıt isteği reddedildi. Hesap zaten oluşmuş olabilir; giriş ekranından devam etmeyi dene.`
   }
 
   return message
@@ -160,22 +163,22 @@ export default function RegisterPage() {
       if (accountStatus.exists) {
         setStep1Status('')
         if (accountStatus.is_verified) {
-          form1.setError('email', { message: 'Bu e-posta zaten kayitli.' })
+          form1.setError('email', { message: 'Bu e-posta zaten kayıtlı.' })
         } else {
           setExistingUnverifiedEmail(data.email)
           form1.setError('email', {
-            message: 'Bu hesap kayitli ama e-posta dogrulamasi tamamlanmamis.',
+            message: 'Bu hesap kayıtlı ama e-posta doğrulaması tamamlanmamış.',
           })
-          setStep1Info('Giris ekranina gecip dogrulama kodunu yeniden olusturabilirsin.')
+          setStep1Info('Giriş ekranına geçip doğrulama kodunu yeniden oluşturabilirsin.')
         }
         return
       }
 
-      setStep1Status('Kayit icin e-posta uygunlugu kontrol ediliyor...')
+      setStep1Status('Kayıt için e-posta uygunluğu kontrol ediliyor...')
       const available = await checkEmailAvailable(data.email)
       if (!available) {
         setStep1Status('')
-        form1.setError('email', { message: 'Bu e-posta zaten kayitli.' })
+        form1.setError('email', { message: 'Bu e-posta zaten kayıtlı.' })
         return
       }
 
@@ -247,7 +250,7 @@ export default function RegisterPage() {
       setStep2Error(
         error instanceof Error && error.message
           ? extractRegisterConflictMessage(error.message, step1Data.email)
-          : 'Profil bilgileri kaydedilemedi. Alanlari kontrol edip tekrar dene.',
+          : 'Profil bilgileri kaydedilemedi. Alanları kontrol edip tekrar dene.',
       )
     }
   }
@@ -314,8 +317,8 @@ export default function RegisterPage() {
 
       {step === 1 && (
         <>
-          <h1 className="mb-1 text-xl font-medium text-gray-900 dark:text-[#e7edf4]">Hesap Olustur</h1>
-          <p className="mb-5 text-sm text-gray-500 dark:text-[#e7edf4]/50">Adim 1/3 - Temel bilgiler</p>
+          <h1 className="mb-1 text-xl font-medium text-gray-900 dark:text-[#e7edf4]">Hesap Oluştur</h1>
+          <p className="mb-5 text-sm text-gray-500 dark:text-[#e7edf4]/50">Adım 1/3 - Temel bilgiler</p>
 
           {step1Status ? (
             <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5 text-xs text-blue-800">
@@ -334,13 +337,13 @@ export default function RegisterPage() {
               { name: 'full_name' as const, label: 'Ad Soyad', type: 'text', placeholder: 'Ahmet Yilmaz' },
               {
                 name: 'email' as const,
-                label: 'IUC Ogrenci E-postasi',
+                label: 'IUC Öğrenci E-postası',
                 type: 'email',
                 placeholder: 'ahmet@ogr.iuc.edu.tr',
-                hint: '@ogr.iuc.edu.tr veya @iuc.edu.tr uzantili adres giriniz',
+                hint: '@ogr.iuc.edu.tr veya @iuc.edu.tr uzantılı adres giriniz',
               },
-              { name: 'password' as const, label: 'Sifre', type: 'password', placeholder: '' },
-              { name: 'password_confirm' as const, label: 'Sifre Tekrar', type: 'password', placeholder: '' },
+              { name: 'password' as const, label: 'Şifre', type: 'password', placeholder: '' },
+              { name: 'password_confirm' as const, label: 'Şifre Tekrar', type: 'password', placeholder: '' },
             ].map(({ hint, label, name, placeholder, type }) => (
               <div key={name}>
                 <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-[#e7edf4]/60">{label}</label>
@@ -377,19 +380,19 @@ export default function RegisterPage() {
                   onClick={() => router.push(`/login?email=${encodeURIComponent(existingUnverifiedEmail)}`)}
                   className="mt-2 font-medium text-[#1E3A5F] hover:underline"
                 >
-                  Giris ekranina git
+                  Giriş ekranına git
                 </button>
               ) : null}
             </div>
           ) : null}
 
           <p className="mt-4 text-center text-xs text-gray-400 dark:text-[#e7edf4]/40">
-            Zaten hesabin var mi?{' '}
+            Zaten hesabın var mı?{' '}
             <button
               onClick={() => router.push('/login')}
               className="font-medium text-[#1E3A5F] hover:underline dark:text-[#d8ad43]"
             >
-              Giris Yap
+              Giriş Yap
             </button>
           </p>
         </>
@@ -397,12 +400,12 @@ export default function RegisterPage() {
 
       {step === 2 && (
         <>
-          <h1 className="mb-1 text-xl font-medium text-gray-900 dark:text-[#e7edf4]">Ogrenci Bilgileri</h1>
-          <p className="mb-5 text-sm text-gray-500 dark:text-[#e7edf4]/50">Adim 2/3 - Profil kurulumu</p>
+          <h1 className="mb-1 text-xl font-medium text-gray-900 dark:text-[#e7edf4]">Öğrenci Bilgileri</h1>
+          <p className="mb-5 text-sm text-gray-500 dark:text-[#e7edf4]/50">Adım 2/3 - Profil kurulumu</p>
 
           <form onSubmit={form2.handleSubmit(onStep2)} className="space-y-4">
             <div>
-              <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-[#e7edf4]/60">Ogrenci Numarasi</label>
+              <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-[#e7edf4]/60">Öğrenci Numarası</label>
               <input
                 {...form2.register('student_no')}
                 type="text"
@@ -418,7 +421,7 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label className="mb-2 block text-xs font-medium text-gray-600 dark:text-[#e7edf4]/60">Sinif</label>
+              <label className="mb-2 block text-xs font-medium text-gray-600 dark:text-[#e7edf4]/60">Sınıf</label>
               <div className="grid grid-cols-4 gap-1">
                 {[1, 2, 3, 4].map((year) => (
                   <button
@@ -437,7 +440,7 @@ export default function RegisterPage() {
                         : 'border-gray-200 text-gray-500 hover:border-gray-300 dark:border-[#d8ad43]/18 dark:text-[#e7edf4]/50 dark:hover:border-[#d8ad43]/30'
                     }`}
                   >
-                    {year}. Sinif
+                    {year}. Sınıf
                   </button>
                 ))}
               </div>
@@ -469,7 +472,7 @@ export default function RegisterPage() {
                   onClick={() => router.push(`/login?email=${encodeURIComponent(step1Data?.email ?? '')}`)}
                   className="text-[11px] font-medium text-[#1E3A5F] hover:underline"
                 >
-                  Giris ekranina git
+                  Giriş ekranına git
                 </button>
               </div>
             ) : null}
@@ -496,21 +499,21 @@ export default function RegisterPage() {
 
       {step === 3 && (
         <>
-          <h1 className="mb-1 text-xl font-medium text-gray-900 dark:text-[#e7edf4]">Dogrulama Kodunu Gir</h1>
-          <p className="mb-5 text-sm text-gray-500 dark:text-[#e7edf4]/50">Adim 3/3 - Hesap aktivasyonu</p>
+          <h1 className="mb-1 text-xl font-medium text-gray-900 dark:text-[#e7edf4]">Doğrulama Kodunu Gir</h1>
+          <p className="mb-5 text-sm text-gray-500 dark:text-[#e7edf4]/50">Adım 3/3 - Hesap aktivasyonu</p>
 
           <div className="mb-4 rounded-xl border border-blue-200 bg-blue-50 p-4 text-center">
-            <p className="mb-1 text-sm font-medium text-blue-800">Kod Hazir</p>
+            <p className="mb-1 text-sm font-medium text-blue-800">Kod Hazır</p>
             <p className="text-xs leading-relaxed text-blue-600">
-              Asagidaki 6 haneli dogrulama kodunu kutulara dogru sekilde gir.
+              Aşağıdaki 6 haneli doğrulama kodunu kutulara doğru şekilde gir.
             </p>
           </div>
 
           {onscreenOtp ? (
             <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-center">
-              <p className="text-sm font-medium text-amber-900">Ekranda gorunen kod</p>
+              <p className="text-sm font-medium text-amber-900">Ekranda görünen kod</p>
               <p className="mt-1 text-xs leading-relaxed text-amber-800">
-                Ekranda gorunen 6 haneli kodu alttaki kutulara ayni sekilde yaz.
+                Ekranda görünen 6 haneli kodu alttaki kutulara aynı şekilde yaz.
               </p>
               <p className="mt-3 text-2xl font-semibold tracking-[0.35em] text-amber-950">
                 {onscreenOtp}
@@ -521,16 +524,16 @@ export default function RegisterPage() {
           <OTPInput onComplete={onOTPComplete} hasError={otpError} />
 
           {otpError ? (
-            <p className="mb-3 text-center text-xs text-red-500">Kod hatali veya suresi dolmus.</p>
+            <p className="mb-3 text-center text-xs text-red-500">Kod hatalı veya süresi dolmuş.</p>
           ) : null}
 
           <p className="mt-2 text-center text-xs text-gray-400 dark:text-[#e7edf4]/40">
             Yeni kod ister misin?{' '}
             {resendCountdown > 0 ? (
-              <span className="text-gray-400">{resendCountdown}s sonra tekrar olustur</span>
+              <span className="text-gray-400">{resendCountdown}s sonra tekrar oluştur</span>
             ) : (
               <button onClick={handleResend} className="font-medium text-[#1E3A5F] hover:underline">
-                Yeni Kod Olustur
+                Yeni Kod Oluştur
               </button>
             )}
           </p>
@@ -539,15 +542,15 @@ export default function RegisterPage() {
 
       {step === 4 && (
         <>
-          <h1 className="mb-1 text-xl font-medium text-gray-900 dark:text-[#e7edf4]">Kayit Tamamlandi</h1>
-          <p className="mb-5 text-sm text-gray-500 dark:text-[#e7edf4]/50">Hesabin basariyla olusturuldu.</p>
+          <h1 className="mb-1 text-xl font-medium text-gray-900 dark:text-[#e7edf4]">Kayıt Tamamlandı</h1>
+          <p className="mb-5 text-sm text-gray-500 dark:text-[#e7edf4]/50">Hesabın başarıyla oluşturuldu.</p>
 
           <div className="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-center">
             <p className="text-base font-semibold text-emerald-800">
-              Kaydiniz basariyla olusturuldu
+              Kaydınız başarıyla oluşturuldu
             </p>
             <p className="mt-2 text-sm leading-relaxed text-emerald-700">
-              Artik giris yaparak platformu kullanabilirsin.
+              Artık giriş yaparak platformu kullanabilirsin.
             </p>
           </div>
 
@@ -556,7 +559,7 @@ export default function RegisterPage() {
             onClick={() => router.push('/login?registered=1')}
             className="h-10 w-full rounded-lg bg-[#1E3A5F] text-sm font-medium text-white dark:bg-[#d8ad43] dark:text-[#10223b]"
           >
-            Giris Yap
+            Giriş Yap
           </button>
         </>
       )}

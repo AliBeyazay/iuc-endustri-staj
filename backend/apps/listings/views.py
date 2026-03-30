@@ -334,7 +334,7 @@ class InternshipJournalViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         journal = self.get_object()
         if journal.student != self.request.user:
-            raise PermissionDenied('Bu yaziyi sadece sahibi guncelleyebilir.')
+            raise PermissionDenied('Bu yazıyı sadece sahibi güncelleyebilir.')
         serializer.save()
 
     def destroy(self, request, *args, **kwargs):
@@ -366,7 +366,7 @@ class JournalCommentViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         comment = self.get_object()
         if comment.student != self.request.user:
-            raise PermissionDenied('Bu yorumu sadece sahibi guncelleyebilir.')
+            raise PermissionDenied('Bu yorumu sadece sahibi güncelleyebilir.')
         serializer.save()
 
     def destroy(self, request, *args, **kwargs):
@@ -500,10 +500,10 @@ class RegisterView(APIView):
         ).first()
 
         if conflicting_student_no and conflicting_student_no.is_verified:
-            return Response({'student_no': ['Bu ogrenci numarasi zaten kayitli.']}, status=400)
+            return Response({'student_no': ['Bu öğrenci numarası zaten kayıtlı.']}, status=400)
 
         if student and student.is_verified:
-            return Response({'email': ['Bu e-posta zaten kayitli.']}, status=400)
+            return Response({'email': ['Bu e-posta zaten kayıtlı.']}, status=400)
 
         if student is None:
             student = Student.objects.create_user(
@@ -532,7 +532,7 @@ class RegisterView(APIView):
 
         otp = _send_otp(student)
         response_data = {
-            'message': 'Kayit basarili. Dogrulama kodu olusturuldu.',
+            'message': 'Kayıt başarılı. Doğrulama kodu oluşturuldu.',
             'debug_otp': otp,
             'delivery_method': 'onscreen',
         }
@@ -598,10 +598,10 @@ class ResetPasswordView(APIView):
         password = request.data.get('password')
         student = _verify_reset_token(token)
         if not student:
-            return Response({'error': 'Gecersiz veya suresi dolmus link.'}, status=400)
+            return Response({'error': 'Geçersiz veya süresi dolmuş link.'}, status=400)
         student.set_password(password)
         student.save()
-        return Response({'message': 'Sifre guncellendi.'})
+        return Response({'message': 'Şifre güncellendi.'})
 
 
 def _send_otp(student: Student) -> str:
@@ -623,8 +623,8 @@ def _send_password_reset(student: Student):
     _cache_set(f'reset:{token}', str(student.id), timeout=900)
     reset_url = f'{settings.FRONTEND_URL}/reset-password?token={token}'
     send_mail(
-        subject='IUC Staj - Sifre Sifirlama',
-        message=f'Sifrenizi sifirlamak icin: {reset_url}\n\nLink 15 dakika gecerlidir.',
+        subject='IUC Staj - Şifre Sıfırlama',
+        message=f'Şifrenizi sıfırlamak için: {reset_url}\n\nLink 15 dakika geçerlidir.',
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[student.iuc_email],
     )

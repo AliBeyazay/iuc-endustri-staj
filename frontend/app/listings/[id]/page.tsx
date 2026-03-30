@@ -27,7 +27,7 @@ const getListingById = cache(async (id: string): Promise<Listing | null> => {
   }
 
   if (!response.ok) {
-    throw new Error(`Ilan fetch hatasi: ${response.status}`)
+    throw new Error(`İlan fetch hatası: ${response.status}`)
   }
 
   return (await response.json()) as Listing
@@ -38,7 +38,7 @@ function buildMetaDescription(listing: Listing): string {
   const shortened = raw.length > 180 ? `${raw.slice(0, 177)}...` : raw
   return (
     shortened ||
-    `${listing.company_name} staj ilaninin detaylari, basvuru bilgileri ve ogrenci degerlendirmeleri.`
+    `${listing.company_name} staj ilanının detayları, başvuru bilgileri ve öğrenci değerlendirmeleri.`
   )
 }
 
@@ -55,8 +55,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!listing) {
     return {
-      title: 'Ilan bulunamadi | IUC Staj',
-      description: 'Ilan detay sayfasi bulunamadi.',
+      title: 'İlan bulunamadı | IUC Staj',
+      description: 'İlan detay sayfası bulunamadı.',
       robots: { index: false, follow: false },
     }
   }
@@ -76,7 +76,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title,
       description,
       url: detailUrl,
-      siteName: 'IUC Endustri Muhendisligi Staj Platformu',
+      siteName: 'IUC Endüstri Mühendisliği Staj Platformu',
       type: 'article',
       locale: 'tr_TR',
       images: [

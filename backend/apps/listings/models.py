@@ -45,8 +45,8 @@ class Student(AbstractUser):
         return missing
 
     class Meta:
-        verbose_name = 'Ogrenci'
-        verbose_name_plural = 'Ogrenciler'
+        verbose_name = 'Öğrenci'
+        verbose_name_plural = 'Öğrenciler'
 
 
 EM_FOCUS_CHOICES = [
@@ -141,8 +141,8 @@ class Listing(models.Model):
 
     class Meta:
         ordering = ['-created_at']
-        verbose_name = 'Ilan'
-        verbose_name_plural = 'Ilanlar'
+        verbose_name = 'İlan'
+        verbose_name_plural = 'İlanlar'
 
     def __str__(self):
         return f'{self.title} - {self.company_name}'
@@ -177,8 +177,8 @@ class Bookmark(models.Model):
     class Meta:
         unique_together = [('student', 'listing')]
         ordering = ['-bookmarked_at']
-        verbose_name = 'Kaydedilen Ilan'
-        verbose_name_plural = 'Kaydedilen Ilanlar'
+        verbose_name = 'Kaydedilen İlan'
+        verbose_name_plural = 'Kaydedilen İlanlar'
 
 
 APPLICATION_STATUS_CHOICES = [
@@ -200,8 +200,8 @@ class Application(models.Model):
     class Meta:
         unique_together = [('student', 'listing')]
         ordering = ['-applied_at']
-        verbose_name = 'Basvuru'
-        verbose_name_plural = 'Basvurular'
+        verbose_name = 'Başvuru'
+        verbose_name_plural = 'Başvurular'
 
 
 class InternshipJournal(models.Model):
