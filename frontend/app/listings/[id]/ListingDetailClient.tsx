@@ -230,8 +230,8 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
 
       <div className="mx-auto grid max-w-6xl grid-cols-1 gap-4 px-3 py-4 sm:px-4 sm:py-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-5">
         <div className="space-y-4">
-          <section className="campus-card rounded-[28px] p-5 sm:p-6">
-            <p className="campus-heading text-[11px] text-[#8f670b] dark:text-[#f0cf7a]">İlan Özeti</p>
+          <section className="rounded-[28px] border border-[#d8ad43]/30 bg-[linear-gradient(115deg,#0f2744_0%,#12335b_58%,#0f2744_100%)] p-5 shadow-[0_18px_34px_rgba(7,20,36,0.26)] sm:p-6">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#d8ad43]/95">İLAN ÖZETİ</p>
 
             <div className="mt-4 flex items-start gap-4">
               {listing.company_logo_url && !detailLogoError ? (
@@ -240,21 +240,21 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
                   alt={listing.company_name}
                   referrerPolicy="no-referrer"
                   onError={() => setDetailLogoError(true)}
-                  className="h-14 w-14 rounded-2xl border border-[#d8ad43]/20 bg-white/80 object-contain p-1.5 dark:bg-white/10"
+                  className="h-16 w-16 rounded-2xl border border-[#e6d3ad]/40 bg-[#f2e9da] object-contain p-2"
                 />
               ) : (
-                <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-sm font-semibold ${avatarColor}`}>
+                <div className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-[#e6d3ad]/35 bg-[#f2e9da] text-base font-semibold ${avatarColor}`}>
                   {initials}
                 </div>
               )}
 
               <div className="min-w-0">
-                <h1 className="campus-heading text-2xl leading-tight text-[#132843] sm:text-3xl dark:text-[#e7edf4]">
+                <h1 className="campus-heading text-[32px] leading-[1.08] text-[#dbe6f4] sm:text-[46px]">
                   {listing.title}
                 </h1>
-                <p className="mt-2 text-sm text-[#173156]/70 dark:text-[#e7edf4]/60">
-                </p>
-                <p className="mt-2 text-xs text-[#173156]/55 dark:text-[#e7edf4]/45"> yayınlandı
+                <p className="mt-2 text-sm text-[#9ab0c8]">{listing.company_name}</p>
+                <p className="mt-2 text-xs font-medium text-[#8ba2bd]">
+                  {timeAgoTurkish(listing.created_at)} yayınlandı
                 </p>
               </div>
             </div>
