@@ -27,6 +27,7 @@ export type SourcePlatform =
 export type InternshipType = 'zorunlu' | 'gonullu' | 'belirsiz'
 export type CompanyOrigin = 'yerli' | 'yabanci' | 'belirsiz'
 export type DeadlineStatus = 'urgent' | 'normal' | 'unknown' | 'upcoming' | 'expired'
+export type DurationBucket = '4_weeks' | '8_weeks' | '12_plus_weeks'
 
 export type TalentProgramType =
   | 'yaz_staj_programi'
@@ -143,6 +144,7 @@ export interface FilterState {
   internship_type: InternshipType[]
   company_origin: CompanyOrigin[]
   source_platform: SourcePlatform[]
+  duration_bucket: DurationBucket[]
   is_talent_program?: boolean
   search: string
   ordering: string

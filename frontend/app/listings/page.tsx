@@ -99,6 +99,12 @@ const SECTOR_ORDER = [
   'Diğer',
 ]
 
+const DURATION_OPTIONS = [
+  { value: '4_weeks', label: '4 hafta' },
+  { value: '8_weeks', label: '8 hafta' },
+  { value: '12_plus_weeks', label: '12+ hafta' },
+] as const
+
 const DISPLAY_SECTOR_LABELS: Record<string, string> = {
   imalat_metal_makine: 'İmalat, Metal ve Makine',
   otomotiv_yan_sanayi: 'Otomotiv ve Yan Sanayi',
@@ -501,6 +507,7 @@ function buildListingsApiQuery(params: {
   query: string
   selectedSectors: string[]
   selectedPlatforms: string[]
+  selectedDurations: string[]
   talentOnly: boolean
   sortBy: SortOption
 }) {
@@ -549,6 +556,10 @@ function buildListingsApiQuery(params: {
 
   platformKeys.forEach((platformKey) => {
     searchParams.append('source_platform', platformKey)
+  })
+
+  params.selectedDurations.forEach((durationValue) => {
+    searchParams.append('duration_bucket', durationValue)
   })
 
   if (params.talentOnly) {
@@ -674,11 +685,14 @@ function getListingSearchScore(
 type FilterPanelProps = {
   sectors: string[]
   platforms: string[]
+  durations: ReadonlyArray<{ value: string; label: string }>
   selectedSectors: string[]
   selectedPlatforms: string[]
+  selectedDurations: string[]
   talentOnly: boolean
   onToggleSector: (value: string) => void
   onTogglePlatform: (value: string) => void
+  onToggleDuration: (value: string) => void
   onToggleTalent: () => void
   onClearAll: () => void
 }
@@ -686,11 +700,14 @@ type FilterPanelProps = {
 function FilterPanel({
   sectors,
   platforms,
+  durations,
   selectedSectors,
   selectedPlatforms,
+  selectedDurations,
   talentOnly,
   onToggleSector,
   onTogglePlatform,
+  onToggleDuration,
   onToggleTalent,
   onClearAll,
 }: FilterPanelProps) {
@@ -719,6 +736,30 @@ function FilterPanel({
             )
           })}
           </div>
+        </div>
+      </section>
+
+      <section>
+        <h3 className="mb-3 text-sm font-semibold text-[#132843] dark:text-[#e7edf4]">Sure</h3>
+        <div className="flex flex-col gap-2">
+          {durations.map((duration) => {
+            const active = selectedDurations.includes(duration.value)
+            return (
+              <button
+                key={duration.value}
+                type="button"
+                onClick={() => onToggleDuration(duration.value)}
+                className={classNames(
+                  'w-full rounded-full border px-3 py-2 text-left text-xs font-medium transition',
+                  active
+                    ? 'border-[rgba(216,173,67,0.18)] bg-[rgba(216,173,67,0.14)] text-[#8f670b] dark:text-[#f0cf7a]'
+                    : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10',
+                )}
+              >
+                {duration.label}
+              </button>
+            )
+          })}
         </div>
       </section>
 
@@ -761,6 +802,7 @@ export default function ListingsPage() {
   const [debouncedQuery, setDebouncedQuery] = useState('')
   const [selectedSectors, setSelectedSectors] = useState<string[]>([])
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([])
+  const [selectedDurations, setSelectedDurations] = useState<string[]>([])
   const [talentOnly, setTalentOnly] = useState(false)
   const [sortBy, setSortBy] = useState<SortOption>('newest')
   const [recentSearches, setRecentSearches] = useState<string[]>([])
@@ -795,6 +837,7 @@ export default function ListingsPage() {
           query: debouncedQuery,
           selectedSectors,
           selectedPlatforms,
+          selectedDurations,
           talentOnly,
           sortBy,
         })
@@ -819,7 +862,7 @@ export default function ListingsPage() {
     }
 
     void loadListings()
-  }, [currentPage, debouncedQuery, selectedPlatforms, selectedSectors, sortBy, talentOnly])
+  }, [currentPage, debouncedQuery, selectedPlatforms, selectedSectors, selectedDurations, sortBy, talentOnly])
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -915,7 +958,7 @@ export default function ListingsPage() {
 
   useEffect(() => {
     setCurrentPage(1)
-  }, [debouncedQuery, selectedPlatforms, selectedSectors, sortBy, talentOnly])
+  }, [debouncedQuery, selectedPlatforms, selectedSectors, selectedDurations, sortBy, talentOnly])
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -962,6 +1005,7 @@ export default function ListingsPage() {
     setDebouncedQuery('')
     setSelectedSectors([])
     setSelectedPlatforms([])
+    setSelectedDurations([])
     setTalentOnly(false)
     setSortBy('newest')
   }
@@ -987,7 +1031,7 @@ export default function ListingsPage() {
   }
 
   const activeFilterCount =
-    selectedSectors.length + selectedPlatforms.length + (talentOnly ? 1 : 0)
+    selectedSectors.length + selectedPlatforms.length + selectedDurations.length + (talentOnly ? 1 : 0)
 
   const summaryCards = [
     { label: 'Toplam sonuç', value: totalCount },
@@ -1211,7 +1255,7 @@ export default function ListingsPage() {
 
           </div>
 
-          {(selectedSectors.length > 0 || selectedPlatforms.length > 0 || talentOnly) && (
+          {(selectedSectors.length > 0 || selectedPlatforms.length > 0 || selectedDurations.length > 0 || talentOnly) && (
             <div className="mt-4 flex flex-wrap items-center gap-2">
               {selectedSectors.map((sector) => (
                 <button
@@ -1236,6 +1280,23 @@ export default function ListingsPage() {
                   {platform} ×
                 </button>
               ))}
+
+              {selectedDurations.map((durationValue) => {
+                const durationLabel =
+                  DURATION_OPTIONS.find((item) => item.value === durationValue)?.label ?? durationValue
+                return (
+                  <button
+                    key={durationValue}
+                    type="button"
+                    onClick={() =>
+                      setSelectedDurations(selectedDurations.filter((item) => item !== durationValue))
+                    }
+                    className="rounded-full border border-[rgba(216,173,67,0.18)] bg-[rgba(216,173,67,0.14)] px-3 py-1 text-xs font-medium text-[#8f670b]"
+                  >
+                    {durationLabel} Ã—
+                  </button>
+                )
+              })}
 
               {talentOnly && (
                 <button
@@ -1264,12 +1325,17 @@ export default function ListingsPage() {
               <FilterPanel
                 sectors={sectors}
                 platforms={platforms}
+                durations={DURATION_OPTIONS}
                 selectedSectors={selectedSectors}
                 selectedPlatforms={selectedPlatforms}
+                selectedDurations={selectedDurations}
                 talentOnly={talentOnly}
                 onToggleSector={(value) => toggleItem(value, selectedSectors, setSelectedSectors)}
                 onTogglePlatform={(value) =>
                   toggleItem(value, selectedPlatforms, setSelectedPlatforms)
+                }
+                onToggleDuration={(value) =>
+                  toggleItem(value, selectedDurations, setSelectedDurations)
                 }
                 onToggleTalent={() => setTalentOnly((prev) => !prev)}
                 onClearAll={clearAllFilters}
@@ -1467,12 +1533,17 @@ export default function ListingsPage() {
             <FilterPanel
               sectors={sectors}
               platforms={platforms}
+              durations={DURATION_OPTIONS}
               selectedSectors={selectedSectors}
               selectedPlatforms={selectedPlatforms}
+              selectedDurations={selectedDurations}
               talentOnly={talentOnly}
               onToggleSector={(value) => toggleItem(value, selectedSectors, setSelectedSectors)}
               onTogglePlatform={(value) =>
                 toggleItem(value, selectedPlatforms, setSelectedPlatforms)
+              }
+              onToggleDuration={(value) =>
+                toggleItem(value, selectedDurations, setSelectedDurations)
               }
               onToggleTalent={() => setTalentOnly((prev) => !prev)}
               onClearAll={clearAllFilters}
