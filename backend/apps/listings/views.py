@@ -88,6 +88,7 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
         'tasarım asistanı', 'stajyer tasarım asistanı',
         'design assistant', 'graphic designer', 'grafik tasarım',
         'insansız hava araçları alt sistemleri proje mühendisi',
+        'üretim operatörü', 'uretim operatoru',
         'cyber security', 'siber güvenlik',
         'network engineer', 'ağ uzmanı',
         'database administrator',
