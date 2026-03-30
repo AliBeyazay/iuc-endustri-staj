@@ -223,6 +223,23 @@ class InternshipJournal(models.Model):
         return self.title
 
 
+class JournalComment(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    journal = models.ForeignKey(InternshipJournal, on_delete=models.CASCADE, related_name='comments')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='journal_comments')
+    content = models.TextField()
+    is_anonymous = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+        verbose_name = 'Staj Gunlugu Yorumu'
+        verbose_name_plural = 'Staj Gunlugu Yorumlari'
+
+    def __str__(self):
+        return f'Yorum - {self.journal_id}'
+
+
 class ScraperLog(models.Model):
     spider_name = models.CharField(max_length=50)
     started_at = models.DateTimeField()

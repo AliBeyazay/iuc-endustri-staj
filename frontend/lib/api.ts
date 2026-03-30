@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { getSession } from 'next-auth/react'
 import {
-  Application, ApplicationStatus, InternshipJournal, Listing, Review, UserProfile, DashboardStats,
+  Application, ApplicationStatus, InternshipJournal, JournalComment, Listing, Review, UserProfile, DashboardStats,
   BookmarkedListing, FilterState, NotificationPreferences, PaginatedResponse,
 } from '@/types'
 import { buildQueryString } from './helpers'
@@ -161,6 +161,15 @@ export async function createInternshipJournal(payload: {
   is_anonymous: boolean
 }): Promise<InternshipJournal> {
   const { data } = await api.post<InternshipJournal>('/journals/', payload)
+  return data
+}
+
+export async function createJournalComment(payload: {
+  journal_id: string
+  content: string
+  is_anonymous: boolean
+}): Promise<JournalComment> {
+  const { data } = await api.post<JournalComment>('/journal-comments/', payload)
   return data
 }
 

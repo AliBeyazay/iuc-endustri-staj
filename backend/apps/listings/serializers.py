@@ -11,6 +11,7 @@ from .models import (
     Bookmark,
     EM_FOCUS_CHOICES,
     InternshipJournal,
+    JournalComment,
     Listing,
     Review,
     Student,
@@ -279,10 +280,52 @@ class BookmarkSerializer(serializers.ModelSerializer):
         )[0]
 
 
+class JournalCommentListSerializer(serializers.ModelSerializer):
+    student_display_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = JournalComment
+        fields = ['id', 'journal', 'content', 'is_anonymous', 'created_at', 'student_display_name']
+        read_only_fields = ['id', 'created_at', 'student_display_name']
+
+    def get_student_display_name(self, obj):
+        if obj.is_anonymous:
+            return 'Anonim Ogrenci'
+        full_name = f'{obj.student.first_name} {obj.student.last_name}'.strip()
+        return full_name or obj.student.iuc_email
+
+
+class JournalCommentWriteSerializer(serializers.ModelSerializer):
+    journal_id = serializers.UUIDField(write_only=True)
+
+    class Meta:
+        model = JournalComment
+        fields = ['id', 'journal_id', 'content', 'is_anonymous', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+    def validate_content(self, value):
+        clean = value.strip()
+        if len(clean) < 2:
+            raise serializers.ValidationError('Yorum en az 2 karakter olmali.')
+        return clean
+
+    def create(self, validated_data):
+        student = self.context['request'].user
+        journal_id = validated_data.pop('journal_id')
+        journal = InternshipJournal.objects.get(id=journal_id)
+        return JournalComment.objects.create(
+            student=student,
+            journal=journal,
+            **validated_data,
+        )
+
+
 class InternshipJournalListSerializer(serializers.ModelSerializer):
     student_display_name = serializers.SerializerMethodField()
     listing_title = serializers.CharField(source='listing.title', read_only=True)
     listing_id = serializers.UUIDField(source='listing.id', read_only=True)
+    comments = JournalCommentListSerializer(many=True, read_only=True)
+    comments_count = serializers.IntegerField(source='comments.count', read_only=True)
 
     class Meta:
         model = InternshipJournal
@@ -290,6 +333,7 @@ class InternshipJournalListSerializer(serializers.ModelSerializer):
             'id', 'title', 'content', 'internship_year', 'is_anonymous',
             'likes_count', 'created_at', 'updated_at',
             'student_display_name', 'listing_title', 'listing_id',
+            'comments_count', 'comments',
         ]
         read_only_fields = [
             'id', 'likes_count', 'created_at', 'updated_at',

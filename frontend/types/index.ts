@@ -83,6 +83,17 @@ export interface InternshipJournal {
   student_display_name: string
   listing_title: string | null
   listing_id: string | null
+  comments_count: number
+  comments: JournalComment[]
+}
+
+export interface JournalComment {
+  id: string
+  journal: string
+  content: string
+  is_anonymous: boolean
+  created_at: string
+  student_display_name: string
 }
 
 export interface NotificationPreferences {

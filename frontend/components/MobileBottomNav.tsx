@@ -122,6 +122,7 @@ export default function MobileBottomNav({ current, onFilterToggle, filterActive 
           <div className="mx-auto mt-3 max-w-5xl rounded-[28px] border border-[#d8ad43]/18 bg-[#10223b]/98 p-3 shadow-[0_24px_60px_rgba(7,16,28,0.34)] backdrop-blur">
             <div className="grid gap-2">
               <Item label="İlanlar" href="/listings" active={current === 'listings'} />
+              <Item label="Paylasimlar" href="/paylasimlar" />
               {onFilterToggle ? (
                 <Item label="Filtre" active={filterActive} onClick={handleFilterClick} />
               ) : null}

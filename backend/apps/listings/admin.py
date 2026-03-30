@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Application, InternshipJournal, Listing, Review, Bookmark, Student, ScraperLog
+from .models import Application, InternshipJournal, JournalComment, Listing, Review, Bookmark, Student, ScraperLog
 
 
 @admin.register(Student)
@@ -62,6 +62,13 @@ class InternshipJournalAdmin(admin.ModelAdmin):
     list_display = ['title', 'student', 'internship_year', 'is_anonymous', 'likes_count', 'created_at']
     list_filter = ['internship_year', 'is_anonymous']
     search_fields = ['title', 'content', 'student__iuc_email', 'listing__title']
+
+
+@admin.register(JournalComment)
+class JournalCommentAdmin(admin.ModelAdmin):
+    list_display = ['journal', 'student', 'is_anonymous', 'created_at']
+    list_filter = ['is_anonymous']
+    search_fields = ['journal__title', 'student__iuc_email', 'content']
 
 
 @admin.register(ScraperLog)
