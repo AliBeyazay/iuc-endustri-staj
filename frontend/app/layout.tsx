@@ -5,6 +5,7 @@ import { SessionProvider } from 'next-auth/react'
 import ThemeProvider from '@/components/ThemeProvider'
 import SiteFooter from '@/components/SiteFooter'
 import ScrollToTopButton from '@/components/ScrollToTopButton'
+import PWARegister from '@/components/PWARegister'
 
 const headingFont = Oswald({
   subsets: ['latin'],
@@ -22,6 +23,13 @@ export const metadata: Metadata = {
   title: '\u0130stanbul \u00dcniversitesi Cerrahpa\u015fa End\u00fcstri M\u00fchendisli\u011fi Staj Platformu',
   description:
     '\u0130stanbul \u00dcniversitesi Cerrahpa\u015fa End\u00fcstri M\u00fchendisli\u011fi Staj Platformu',
+  manifest: '/manifest.webmanifest',
+  themeColor: '#132843',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'IUC Staj',
+  },
 }
 
 export default function RootLayout({
@@ -38,6 +46,7 @@ export default function RootLayout({
               <main className="flex-1">{children}</main>
               <SiteFooter />
               <ScrollToTopButton />
+              <PWARegister />
             </div>
           </ThemeProvider>
         </SessionProvider>
