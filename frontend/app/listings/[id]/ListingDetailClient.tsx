@@ -567,7 +567,7 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
                 href={targetUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="campus-button-primary flex w-full items-center justify-center rounded-2xl px-4 py-3 text-sm font-semibold"
+                className="campus-button-primary hidden w-full items-center justify-center rounded-2xl px-4 py-3 text-sm font-semibold lg:flex"
               >
                 Kaynağa Git
               </a>
@@ -606,6 +606,17 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
           </section>
 
         </aside>
+      </div>
+
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#d8ad43]/20 bg-[#10223b]/95 px-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-10px_28px_rgba(7,16,28,0.24)] backdrop-blur lg:hidden">
+        <a
+          href={targetUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="campus-button-primary flex w-full items-center justify-center rounded-2xl px-4 py-3 text-sm font-semibold"
+        >
+          Basvur
+        </a>
       </div>
 
 
