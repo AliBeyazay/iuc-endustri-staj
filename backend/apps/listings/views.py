@@ -75,6 +75,8 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
         'psikolog', 'pedagog',
         'sosyal hizmet',
         'gazetecilik', 'muhabir',
+        'iletişim fakültesi', 'iletisim fakultesi',
+        'halkla ilişkiler', 'public relations',
         # Yazılım/IT pozisyonları (endüstri müh. değil)
         'backend developer', 'frontend developer', 'front-end developer',
         'front end developer', 'react developer', 'next.js developer',
