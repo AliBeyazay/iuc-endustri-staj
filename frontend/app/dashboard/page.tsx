@@ -682,6 +682,24 @@ export default function DashboardPage() {
           </div>
 
           {/* Bildirim Ayarları */}
+          <div className="campus-card rounded-2xl p-4">
+            <h3 className="text-sm font-medium text-gray-800 dark:text-[#e7edf4]">Sistem İzleme</h3>
+            <div className="mt-3 grid grid-cols-1 gap-2">
+              <button
+                onClick={() => router.push('/dashboard/scraper-health')}
+                className="rounded-lg border border-[#1E3A5F]/20 px-3 py-2 text-left text-xs font-medium text-[#1E3A5F] hover:bg-[#1E3A5F]/5 dark:border-[#d8ad43]/30 dark:text-[#d8ad43]"
+              >
+                Scraper Health Dashboard
+              </button>
+              <button
+                onClick={() => router.push('/dashboard/encoding-quality')}
+                className="rounded-lg border border-[#1E3A5F]/20 px-3 py-2 text-left text-xs font-medium text-[#1E3A5F] hover:bg-[#1E3A5F]/5 dark:border-[#d8ad43]/30 dark:text-[#d8ad43]"
+              >
+                Encoding Kalitesi Monitoring
+              </button>
+            </div>
+          </div>
+
           <div id="notifications" className="campus-card scroll-mt-24 rounded-2xl p-4">
             <button
               onClick={() => setNotifOpen(!notifOpen)}

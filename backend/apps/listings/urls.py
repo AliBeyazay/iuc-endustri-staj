@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
     ListingViewSet, ReviewViewSet, BookmarkViewSet, ApplicationViewSet, InternshipJournalViewSet, JournalCommentViewSet,
-    ProfileView, CVUploadView, DashboardStatsView, EncodingQualityReportView,
+    ProfileView, CVUploadView, DashboardStatsView, EncodingQualityReportView, ScraperHealthReportView,
     NotificationPreferencesView,
     CheckEmailView, AccountStatusView, RegisterView, VerifyOTPView,
     ResendOTPView, ForgotPasswordView, ResetPasswordView,
@@ -27,6 +27,7 @@ urlpatterns = [
     # Dashboard
     path('dashboard/stats/', DashboardStatsView.as_view()),
     path('dashboard/encoding-quality/', EncodingQualityReportView.as_view()),
+    path('dashboard/scraper-health/', ScraperHealthReportView.as_view()),
 
     # Auth
     path('auth/check-email/',       CheckEmailView.as_view()),

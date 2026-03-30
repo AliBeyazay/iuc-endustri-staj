@@ -149,6 +149,42 @@ export interface EncodingQualityReport {
   }>
 }
 
+export interface ScraperHealthSpiderRow {
+  spider_name: string
+  last_started_at: string | null
+  last_finished_at: string | null
+  last_duration_seconds: number | null
+  last_run: {
+    new_count: number
+    updated_count: number
+    skipped_count: number
+    error_count: number
+  }
+  window: {
+    run_count: number
+    new_count: number
+    updated_count: number
+    skipped_count: number
+    error_count: number
+    error_rate_percent: number
+  }
+}
+
+export interface ScraperHealthReport {
+  generated_at: string
+  totals: {
+    spider_count: number
+    window_hours: number
+    runs_in_window: number
+    new_count: number
+    updated_count: number
+    skipped_count: number
+    error_count: number
+    error_rate_percent: number
+  }
+  spiders: ScraperHealthSpiderRow[]
+}
+
 export type ApplicationStatus = 'basvurdum' | 'mulakat' | 'kabul' | 'ret'
 
 export interface Application {

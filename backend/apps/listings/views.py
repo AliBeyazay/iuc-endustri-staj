@@ -21,7 +21,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .filters import ListingFilter
-from .models import Application, Bookmark, InternshipJournal, JournalComment, Listing, Review, Student
+from .models import Application, Bookmark, InternshipJournal, JournalComment, Listing, Review, ScraperLog, Student
 from .serializers import (
     ApplicationListSerializer,
     ApplicationWriteSerializer,
@@ -552,6 +552,116 @@ class EncodingQualityReportView(APIView):
         except Exception:
             pass
 
+        return Response(payload)
+
+
+class ScraperHealthReportView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        window_hours = 24
+        window_start = now() - timedelta(hours=window_hours)
+
+        recent_logs = list(
+            ScraperLog.objects.filter(started_at__gte=window_start)
+            .order_by('-started_at')
+            .values(
+                'spider_name',
+                'started_at',
+                'finished_at',
+                'new_count',
+                'updated_count',
+                'skipped_count',
+                'error_count',
+            )
+        )
+
+        latest_by_spider = {}
+        all_spider_names = set(
+            ScraperLog.objects.values_list('spider_name', flat=True).distinct()
+        )
+        all_spider_names.update(log['spider_name'] for log in recent_logs)
+
+        for spider_name in sorted(all_spider_names):
+            last_log = (
+                ScraperLog.objects.filter(spider_name=spider_name)
+                .order_by('-started_at')
+                .values(
+                    'spider_name',
+                    'started_at',
+                    'finished_at',
+                    'new_count',
+                    'updated_count',
+                    'skipped_count',
+                    'error_count',
+                )
+                .first()
+            )
+            if last_log is None:
+                continue
+            latest_by_spider[spider_name] = last_log
+
+        spider_rows = []
+        totals = {
+            'spider_count': len(latest_by_spider),
+            'window_hours': window_hours,
+            'runs_in_window': len(recent_logs),
+            'new_count': 0,
+            'updated_count': 0,
+            'skipped_count': 0,
+            'error_count': 0,
+            'error_rate_percent': 0.0,
+        }
+
+        for spider_name, latest in latest_by_spider.items():
+            spider_logs = [log for log in recent_logs if log['spider_name'] == spider_name]
+            run_count = len(spider_logs)
+            new_count = sum(log.get('new_count', 0) for log in spider_logs)
+            updated_count = sum(log.get('updated_count', 0) for log in spider_logs)
+            skipped_count = sum(log.get('skipped_count', 0) for log in spider_logs)
+            error_count = sum(log.get('error_count', 0) for log in spider_logs)
+            processed = new_count + updated_count + skipped_count
+            error_rate = round((error_count / processed) * 100, 2) if processed else 0.0
+
+            totals['new_count'] += new_count
+            totals['updated_count'] += updated_count
+            totals['skipped_count'] += skipped_count
+            totals['error_count'] += error_count
+
+            last_duration_seconds = None
+            if latest.get('finished_at') and latest.get('started_at'):
+                duration = latest['finished_at'] - latest['started_at']
+                last_duration_seconds = max(int(duration.total_seconds()), 0)
+
+            spider_rows.append({
+                'spider_name': spider_name,
+                'last_started_at': latest.get('started_at'),
+                'last_finished_at': latest.get('finished_at'),
+                'last_duration_seconds': last_duration_seconds,
+                'last_run': {
+                    'new_count': latest.get('new_count', 0),
+                    'updated_count': latest.get('updated_count', 0),
+                    'skipped_count': latest.get('skipped_count', 0),
+                    'error_count': latest.get('error_count', 0),
+                },
+                'window': {
+                    'run_count': run_count,
+                    'new_count': new_count,
+                    'updated_count': updated_count,
+                    'skipped_count': skipped_count,
+                    'error_count': error_count,
+                    'error_rate_percent': error_rate,
+                },
+            })
+
+        processed_total = totals['new_count'] + totals['updated_count'] + totals['skipped_count']
+        totals['error_rate_percent'] = round((totals['error_count'] / processed_total) * 100, 2) if processed_total else 0.0
+
+        payload = {
+            'generated_at': now().isoformat(),
+            'totals': totals,
+            'spiders': sorted(spider_rows, key=lambda row: row['spider_name']),
+        }
         return Response(payload)
 
 
