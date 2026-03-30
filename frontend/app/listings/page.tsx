@@ -829,10 +829,6 @@ export default function ListingsPage() {
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
-  const [pullDistance, setPullDistance] = useState(0)
-  const [isPulling, setIsPulling] = useState(false)
-  const [isRefreshing, setIsRefreshing] = useState(false)
-  const [refreshNonce, setRefreshNonce] = useState(0)
 
   const searchBoxRef = useRef<HTMLDivElement>(null)
   const { recentItems, clearAll: clearRecentlyViewed } = useRecentlyViewed()
@@ -882,12 +878,11 @@ export default function ListingsPage() {
         setError(loadError instanceof Error ? loadError.message : 'Beklenmeyen hata oluştu.')
       } finally {
         setLoading(false)
-        setIsRefreshing(false)
       }
     }
 
     void loadListings()
-  }, [currentPage, debouncedQuery, selectedPlatforms, selectedSectors, selectedDurations, sortBy, talentOnly, refreshNonce])
+  }, [currentPage, debouncedQuery, selectedPlatforms, selectedSectors, selectedDurations, sortBy, talentOnly])
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -899,60 +894,6 @@ export default function ListingsPage() {
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    let startY = 0
-    let activePull = false
-    let currentDistance = 0
-
-    const onTouchStart = (event: TouchEvent) => {
-      if (window.innerWidth >= 1024) return
-      if (window.scrollY > 0) return
-      if (mobileFiltersOpen || isRefreshing) return
-      startY = event.touches[0]?.clientY ?? 0
-      activePull = true
-    }
-
-    const onTouchMove = (event: TouchEvent) => {
-      if (!activePull) return
-      const currentY = event.touches[0]?.clientY ?? 0
-      const delta = currentY - startY
-      if (delta <= 0) return
-
-      currentDistance = Math.min(delta * 0.55, 96)
-      setIsPulling(true)
-      setPullDistance(currentDistance)
-      event.preventDefault()
-    }
-
-    const onTouchEnd = () => {
-      if (!activePull) return
-      activePull = false
-      const shouldRefresh = currentDistance >= 72
-      currentDistance = 0
-      setIsPulling(false)
-      setPullDistance(0)
-
-      if (shouldRefresh && !isRefreshing) {
-        setIsRefreshing(true)
-        setRefreshNonce((prev) => prev + 1)
-      }
-    }
-
-    window.addEventListener('touchstart', onTouchStart, { passive: true })
-    window.addEventListener('touchmove', onTouchMove, { passive: false })
-    window.addEventListener('touchend', onTouchEnd)
-    window.addEventListener('touchcancel', onTouchEnd)
-
-    return () => {
-      window.removeEventListener('touchstart', onTouchStart)
-      window.removeEventListener('touchmove', onTouchMove)
-      window.removeEventListener('touchend', onTouchEnd)
-      window.removeEventListener('touchcancel', onTouchEnd)
-    }
-  }, [isRefreshing, mobileFiltersOpen])
 
   const sectors = useMemo(() => SECTOR_ORDER, [])
 
@@ -1140,15 +1081,6 @@ export default function ListingsPage() {
           </div>
         </div>
       </nav>
-
-      <div
-        className="pointer-events-none fixed left-1/2 z-[70] -translate-x-1/2 lg:hidden"
-        style={{ top: '76px', transform: `translate(-50%, ${Math.max(pullDistance - 48, -72)}px)` }}
-      >
-        <div className="rounded-full border border-[#d8ad43]/28 bg-white/90 px-4 py-2 text-xs font-semibold text-[#8f670b] shadow-sm dark:bg-[#132843]/95 dark:text-[#f0cf7a]">
-          {isRefreshing ? 'Yenileniyor...' : isPulling && pullDistance >= 72 ? 'Birak ve yenile' : 'Yenilemek icin asagi cek'}
-        </div>
-      </div>
 
       <div className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
         <div className="relative z-40 isolate mb-6 overflow-visible rounded-[32px] border border-[#d8ad43]/16 bg-white/72 p-5 shadow-[0_24px_60px_rgba(18,40,67,0.08)] backdrop-blur dark:bg-[#0e1e33]/80 dark:border-[#d8ad43]/20">
