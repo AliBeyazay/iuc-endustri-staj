@@ -572,15 +572,15 @@ export default function DashboardPage() {
                       await updateNotificationPreferences(updated)
                       mutateNotifPrefs(updated, false)
                     }}
-                    className={`relative h-5 w-9 rounded-full transition-colors ${
+                    className={`relative flex h-5 w-9 shrink-0 items-center overflow-hidden rounded-full p-0.5 transition-colors ${
                       notifPrefs?.enabled
                         ? 'bg-[#1E3A5F] dark:bg-[#d8ad43]'
                         : 'bg-gray-200 dark:bg-white/10'
                     }`}
                   >
                     <span
-                      className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${
-                        notifPrefs?.enabled ? 'translate-x-4' : 'translate-x-0.5'
+                      className={`h-4 w-4 rounded-full bg-white shadow transition-transform ${
+                        notifPrefs?.enabled ? 'translate-x-4' : 'translate-x-0'
                       }`}
                     />
                   </button>
@@ -589,7 +589,7 @@ export default function DashboardPage() {
                 {/* Sektör tercihleri */}
                 <div>
                   <p className="mb-1.5 text-[11px] font-medium text-gray-500 dark:text-[#e7edf4]/50">Sektörler</p>
-                  <div className="flex flex-wrap gap-1">
+                  <div className="space-y-1">
                     {Object.entries(FOCUS_AREA_LABELS).map(([key, label]) => {
                       const selected = notifPrefs?.sectors?.includes(key as EMFocusArea) ?? false
                       return (
@@ -604,7 +604,7 @@ export default function DashboardPage() {
                             await updateNotificationPreferences(updated)
                             mutateNotifPrefs(updated, false)
                           }}
-                          className={`rounded-full px-2 py-0.5 text-[9px] transition-colors ${
+                          className={`w-full rounded-lg px-2 py-1 text-left text-[10px] transition-colors ${
                             selected
                               ? 'bg-[#1E3A5F] text-white dark:bg-[#d8ad43] dark:text-[#10223b]'
                               : 'bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-white/5 dark:text-[#e7edf4]/50 dark:hover:bg-white/10'
@@ -617,7 +617,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                {/* Konum tercihleri */}
+                {false && (
                 <div>
                   <p className="mb-1.5 text-[11px] font-medium text-gray-500 dark:text-[#e7edf4]/50">Konumlar</p>
                   {(notifPrefs?.locations?.length ?? 0) > 0 && (
@@ -687,6 +687,7 @@ export default function DashboardPage() {
                     </button>
                   </div>
                 </div>
+                )}
               </div>
             )}
           </div>
