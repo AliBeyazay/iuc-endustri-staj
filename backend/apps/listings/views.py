@@ -3,6 +3,7 @@ import os
 import random
 import re
 import traceback
+from collections import Counter
 from datetime import date, timedelta
 from time import time
 
@@ -39,6 +40,7 @@ from .serializers import (
 
 _volatile_cache_store: dict[str, tuple[str, float]] = {}
 LISTING_LIST_CACHE_TTL_SECONDS = 30
+ENCODING_QUALITY_CACHE_TTL_SECONDS = 300
 
 
 class ListingViewSet(viewsets.ReadOnlyModelViewSet):
@@ -450,6 +452,107 @@ class DashboardStatsView(APIView):
                 application_deadline__gte=today,
             ).count(),
         })
+
+
+class EncodingQualityReportView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    TEXT_FIELDS = ['title', 'company_name', 'location', 'description', 'requirements']
+    SUSPECT_TOKENS = ['Ã', 'Å', 'Ä', '\ufffd', '�']
+    QUESTION_MARK_RE = re.compile(r'[A-Za-zÇĞİÖŞÜçğıöşü]\?[A-Za-zÇĞİÖŞÜçğıöşü]')
+
+    def get(self, request):
+        cache_key = 'encoding-quality-report:v1'
+        try:
+            cached_payload = cache.get(cache_key)
+        except Exception:
+            cached_payload = None
+        if cached_payload is not None:
+            return Response(cached_payload)
+
+        queryset = Listing.objects.filter(is_active=True).values(
+            'id',
+            'source_platform',
+            'title',
+            'company_name',
+            'location',
+            'description',
+            'requirements',
+        )
+
+        total = 0
+        corrupted_total = 0
+        field_issue_counts: Counter[str] = Counter()
+        token_counts: Counter[str] = Counter()
+        platform_issue_counts: Counter[str] = Counter()
+        samples = []
+
+        for record in queryset.iterator(chunk_size=500):
+            total += 1
+            broken_fields = []
+            token_hits = set()
+
+            for field in self.TEXT_FIELDS:
+                value = (record.get(field) or '').strip()
+                if not value:
+                    continue
+
+                suspicious = False
+                for token in self.SUSPECT_TOKENS:
+                    if token in value:
+                        suspicious = True
+                        token_hits.add(token)
+                if self.QUESTION_MARK_RE.search(value):
+                    suspicious = True
+                    token_hits.add('?')
+
+                if suspicious:
+                    broken_fields.append(field)
+                    field_issue_counts[field] += 1
+
+            if not broken_fields:
+                continue
+
+            corrupted_total += 1
+            platform = record.get('source_platform') or 'unknown'
+            platform_issue_counts[platform] += 1
+            for token in token_hits:
+                token_counts[token] += 1
+
+            if len(samples) < 20:
+                samples.append({
+                    'id': str(record['id']),
+                    'source_platform': platform,
+                    'title': (record.get('title') or '')[:140],
+                    'company_name': (record.get('company_name') or '')[:120],
+                    'problem_fields': broken_fields,
+                })
+
+        corruption_rate = round((corrupted_total / total) * 100, 2) if total else 0.0
+        payload = {
+            'generated_at': now().isoformat(),
+            'totals': {
+                'total_listings_scanned': total,
+                'corrupted_listings': corrupted_total,
+                'clean_listings': max(total - corrupted_total, 0),
+                'corruption_rate_percent': corruption_rate,
+            },
+            'field_issue_counts': dict(field_issue_counts),
+            'token_issue_counts': dict(token_counts),
+            'platform_issue_counts': dict(platform_issue_counts),
+            'top_problem_platforms': [
+                {'source_platform': platform, 'count': count}
+                for platform, count in platform_issue_counts.most_common(8)
+            ],
+            'samples': samples,
+        }
+
+        try:
+            cache.set(cache_key, payload, timeout=ENCODING_QUALITY_CACHE_TTL_SECONDS)
+        except Exception:
+            pass
+
+        return Response(payload)
 
 
 class CheckEmailView(APIView):

@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { getSession } from 'next-auth/react'
 import {
-  Application, ApplicationStatus, InternshipJournal, JournalComment, Listing, Review, UserProfile, DashboardStats,
+  Application, ApplicationStatus, InternshipJournal, JournalComment, Listing, Review, UserProfile, DashboardStats, EncodingQualityReport,
   BookmarkedListing, FilterState, NotificationPreferences, PaginatedResponse,
 } from '@/types'
 import { buildQueryString } from './helpers'
@@ -223,6 +223,11 @@ export async function updateApplication(
 
 export async function fetchDashboardStats(): Promise<DashboardStats> {
   const { data } = await api.get<DashboardStats>('/dashboard/stats/')
+  return data
+}
+
+export async function fetchEncodingQualityReport(): Promise<EncodingQualityReport> {
+  const { data } = await api.get<EncodingQualityReport>('/dashboard/encoding-quality/')
   return data
 }
 

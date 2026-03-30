@@ -125,6 +125,30 @@ export interface DashboardStats {
   listings_expiring_soon: number
 }
 
+export interface EncodingQualityReport {
+  generated_at: string
+  totals: {
+    total_listings_scanned: number
+    corrupted_listings: number
+    clean_listings: number
+    corruption_rate_percent: number
+  }
+  field_issue_counts: Record<string, number>
+  token_issue_counts: Record<string, number>
+  platform_issue_counts: Record<string, number>
+  top_problem_platforms: Array<{
+    source_platform: string
+    count: number
+  }>
+  samples: Array<{
+    id: string
+    source_platform: string
+    title: string
+    company_name: string
+    problem_fields: string[]
+  }>
+}
+
 export type ApplicationStatus = 'basvurdum' | 'mulakat' | 'kabul' | 'ret'
 
 export interface Application {
