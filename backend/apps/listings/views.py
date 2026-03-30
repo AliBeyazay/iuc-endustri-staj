@@ -85,6 +85,8 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
         'devops engineer', 'cloud engineer', 'site reliability',
         'qa engineer', 'test engineer',
         'ui developer', 'ux designer',
+        'tasarım asistanı', 'stajyer tasarım asistanı',
+        'design assistant', 'graphic designer', 'grafik tasarım',
         'cyber security', 'siber güvenlik',
         'network engineer', 'ağ uzmanı',
         'database administrator',
