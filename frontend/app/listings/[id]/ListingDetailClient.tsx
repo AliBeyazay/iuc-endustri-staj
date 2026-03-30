@@ -99,6 +99,8 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
   }, [listing.id, listing.title, listing.company_name, addView])
   const [expandDesc, setExpandDesc] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [showQrCode, setShowQrCode] = useState(false)
+  const [currentUrl, setCurrentUrl] = useState('')
   const [detailLogoError, setDetailLogoError] = useState(false)
   const [rating, setRating] = useState(0)
   const [comment, setComment] = useState('')
@@ -129,6 +131,17 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
     return total / reviews.length
   }, [reviews])
   const isAuthenticated = status === 'authenticated'
+  const shareUrl = currentUrl || targetUrl
+  const qrCodeUrl = useMemo(() => {
+    const encodedUrl = encodeURIComponent(shareUrl)
+    return `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodedUrl}`
+  }, [shareUrl])
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setCurrentUrl(window.location.href)
+    }
+  }, [])
 
   const deadlineBadgeClass =
     deadline.color === 'red'
@@ -140,7 +153,7 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
           : 'bg-slate-100 text-slate-600'
 
   async function handleShare() {
-    await navigator.clipboard.writeText(window.location.href)
+    await navigator.clipboard.writeText(shareUrl)
     setCopied(true)
     setTimeout(() => setCopied(false), 1800)
   }
@@ -544,6 +557,12 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
             <p className="campus-heading text-[11px] text-[#8f670b] dark:text-[#f0cf7a]">Başvuru</p>
 
             <div className="mt-4 space-y-3">
+              <button
+                onClick={() => setShowQrCode((prev) => !prev)}
+                className="w-full rounded-2xl border border-[#d8ad43]/35 bg-[#fff8e8] px-4 py-3 text-sm font-semibold text-[#8f670b] transition-colors hover:bg-[#fff1ce] dark:bg-[#d8ad43]/12 dark:text-[#f0cf7a] dark:hover:bg-[#d8ad43]/18"
+              >
+                {showQrCode ? 'QR Kodunu Kapat' : 'QR Kodunu Goster'}
+              </button>
               <a
                 href={targetUrl}
                 target="_blank"
@@ -567,6 +586,23 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
                 {copied ? 'Bağlantı Kopyalandı' : 'Bağlantıyı Kopyala'}
               </button>
             </div>
+
+            {showQrCode && (
+              <div className="mt-4 rounded-2xl border border-[#d8ad43]/25 bg-white/60 p-3 dark:bg-white/5">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8f670b]/80 dark:text-[#f0cf7a]/70">
+                  QR Paylasim
+                </p>
+                <p className="mt-2 text-xs leading-5 text-[#173156]/65 dark:text-[#e7edf4]/55">
+                  Bu kodu telefondan okutunca ilan detay sayfasi acilir.
+                </p>
+                <img
+                  src={qrCodeUrl}
+                  alt="Ilan paylasim QR kodu"
+                  loading="lazy"
+                  className="mx-auto mt-3 h-44 w-44 rounded-xl border border-[#173156]/12 bg-white p-2 dark:border-[#e7edf4]/12 dark:bg-white"
+                />
+              </div>
+            )}
           </section>
 
         </aside>
