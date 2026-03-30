@@ -38,6 +38,7 @@ from .serializers import (
 )
 
 _volatile_cache_store: dict[str, tuple[str, float]] = {}
+LISTING_LIST_CACHE_TTL_SECONDS = 30
 
 
 class ListingViewSet(viewsets.ReadOnlyModelViewSet):
@@ -119,7 +120,22 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
 
     def list(self, request, *args, **kwargs):
         try:
-            return super().list(request, *args, **kwargs)
+            cache_key = self._get_list_cache_key(request)
+            try:
+                cached_payload = cache.get(cache_key)
+            except Exception:
+                cached_payload = None
+
+            if cached_payload is not None:
+                return Response(cached_payload)
+
+            response = super().list(request, *args, **kwargs)
+            if response.status_code == status.HTTP_200_OK:
+                try:
+                    cache.set(cache_key, response.data, timeout=LISTING_LIST_CACHE_TTL_SECONDS)
+                except Exception:
+                    pass
+            return response
         except Exception as exc:
             return Response(
                 {
@@ -129,6 +145,11 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+    def _get_list_cache_key(self, request) -> str:
+        fingerprint = request.get_full_path()
+        digest = hashlib.md5(fingerprint.encode('utf-8')).hexdigest()
+        return f'listing-list:v1:{digest}'
 
     def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)
