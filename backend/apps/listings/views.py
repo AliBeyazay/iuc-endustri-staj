@@ -18,8 +18,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .filters import ListingFilter
-from .models import Bookmark, Listing, Review, Student
+from .models import Application, Bookmark, Listing, Review, Student
 from .serializers import (
+    ApplicationListSerializer,
+    ApplicationWriteSerializer,
     BookmarkSerializer,
     ListingListSerializer,
     ListingSerializer,
@@ -255,6 +257,18 @@ class BookmarkViewSet(viewsets.ModelViewSet):
         listing_id = kwargs.get('pk')
         Bookmark.objects.filter(student=request.user, listing_id=listing_id).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ApplicationViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Application.objects.filter(student=self.request.user).select_related('listing')
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return ApplicationListSerializer
+        return ApplicationWriteSerializer
 
 
 class ProfileView(APIView):

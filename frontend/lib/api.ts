@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { getSession } from 'next-auth/react'
 import {
-  Listing, Review, UserProfile, DashboardStats,
+  Application, ApplicationStatus, Listing, Review, UserProfile, DashboardStats,
   BookmarkedListing, FilterState, NotificationPreferences, PaginatedResponse,
 } from '@/types'
 import { buildQueryString } from './helpers'
@@ -168,6 +168,29 @@ export async function addBookmark(listingId: string): Promise<void> {
 
 export async function removeBookmark(listingId: string): Promise<void> {
   await api.delete(`/bookmarks/${listingId}/`)
+}
+
+// Applications
+export async function fetchApplications(): Promise<Application[]> {
+  const { data } = await api.get<PaginatedResponse<Application>>('/applications/')
+  return data.results
+}
+
+export async function createApplication(payload: {
+  listing_id: string
+  status?: ApplicationStatus
+  notes?: string
+}): Promise<Application> {
+  const { data } = await api.post<Application>('/applications/', payload)
+  return data
+}
+
+export async function updateApplication(
+  id: string,
+  payload: { status?: ApplicationStatus; notes?: string }
+): Promise<Application> {
+  const { data } = await api.patch<Application>(`/applications/${id}/`, payload)
+  return data
 }
 
 // ─── Dashboard ───────────────────────────────────────────────────────────────

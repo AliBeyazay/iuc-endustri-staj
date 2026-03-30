@@ -5,7 +5,15 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.exceptions import AuthenticationFailed
 
-from .models import Bookmark, EM_FOCUS_CHOICES, Listing, Review, Student
+from .models import (
+    APPLICATION_STATUS_CHOICES,
+    Application,
+    Bookmark,
+    EM_FOCUS_CHOICES,
+    Listing,
+    Review,
+    Student,
+)
 
 
 # Well-known company domain mappings
@@ -268,6 +276,45 @@ class BookmarkSerializer(serializers.ModelSerializer):
             student=validated_data['student'],
             listing=listing,
         )[0]
+
+
+class ApplicationListSerializer(serializers.ModelSerializer):
+    listing = ListingListSerializer(read_only=True)
+
+    class Meta:
+        model = Application
+        fields = ['id', 'listing', 'status', 'applied_at', 'notes']
+        read_only_fields = ['id', 'applied_at']
+
+
+class ApplicationWriteSerializer(serializers.ModelSerializer):
+    listing_id = serializers.UUIDField(write_only=True, required=False)
+    status = serializers.ChoiceField(choices=[c[0] for c in APPLICATION_STATUS_CHOICES], required=False)
+
+    class Meta:
+        model = Application
+        fields = ['id', 'listing_id', 'status', 'notes', 'applied_at']
+        read_only_fields = ['id', 'applied_at']
+
+    def validate(self, attrs):
+        if self.instance is None and not attrs.get('listing_id'):
+            raise serializers.ValidationError({'listing_id': 'Bu alan zorunlu.'})
+        return attrs
+
+    def create(self, validated_data):
+        student = self.context['request'].user
+        listing_id = validated_data.pop('listing_id')
+        listing = Listing.objects.get(id=listing_id)
+        defaults = {
+            'status': validated_data.get('status', 'basvurdum'),
+            'notes': validated_data.get('notes', ''),
+        }
+        application, _ = Application.objects.update_or_create(
+            student=student,
+            listing=listing,
+            defaults=defaults,
+        )
+        return application
 
 
 class StudentProfileSerializer(serializers.ModelSerializer):

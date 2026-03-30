@@ -99,6 +99,16 @@ export interface DashboardStats {
   listings_expiring_soon: number
 }
 
+export type ApplicationStatus = 'basvurdum' | 'mulakat' | 'kabul' | 'ret'
+
+export interface Application {
+  id: string
+  listing: Listing
+  status: ApplicationStatus
+  applied_at: string
+  notes: string
+}
+
 export interface BookmarkedListing extends Listing {
   bookmarked_at: string
 }

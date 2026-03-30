@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Listing, Review, Bookmark, Student, ScraperLog
+from .models import Application, Listing, Review, Bookmark, Student, ScraperLog
 
 
 @admin.register(Student)
@@ -48,6 +48,13 @@ class ReviewAdmin(admin.ModelAdmin):
 class BookmarkAdmin(admin.ModelAdmin):
     list_display  = ['student', 'listing', 'bookmarked_at']
     search_fields = ['student__iuc_email', 'listing__title']
+
+
+@admin.register(Application)
+class ApplicationAdmin(admin.ModelAdmin):
+    list_display = ['student', 'listing', 'status', 'applied_at']
+    list_filter = ['status']
+    search_fields = ['student__iuc_email', 'listing__title', 'listing__company_name']
 
 
 @admin.register(ScraperLog)
