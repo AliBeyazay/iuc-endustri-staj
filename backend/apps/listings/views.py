@@ -90,6 +90,8 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
         'insansız hava araçları alt sistemleri proje mühendisi',
         'üretim operatörü', 'uretim operatoru',
         'satış uzmanı', 'satis uzmani', 'satış operasyonları uzmanı',
+        'halkla ilişkiler stajeri', 'halkla iliskiler stajeri',
+        'pazarlama ve halkla ilişkiler stajyeri', 'public relations intern',
         'supervisor', 'country operations', 'operations manager',
         'minimum 5 years', 'minimum 6 years', 'minimum 7 years',
         'at least 5 years', 'at least 6 years', 'at least 7 years',
