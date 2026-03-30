@@ -76,6 +76,9 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
         'gazetecilik', 'muhabir',
         # Yazılım/IT pozisyonları (endüstri müh. değil)
         'backend developer', 'frontend developer', 'front-end developer',
+        'front end developer', 'react developer', 'next.js developer',
+        'nextjs developer', 'react/next.js developer', 'react nextjs developer',
+        'javascript developer', 'node.js developer', 'nodejs developer',
         'full stack developer', 'full-stack developer',
         'fullstack developer', 'software developer', 'software engineer',
         'web developer', 'mobile developer', 'ios developer', 'android developer',
