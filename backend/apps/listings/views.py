@@ -14,15 +14,18 @@ from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .filters import ListingFilter
-from .models import Application, Bookmark, Listing, Review, Student
+from .models import Application, Bookmark, InternshipJournal, Listing, Review, Student
 from .serializers import (
     ApplicationListSerializer,
     ApplicationWriteSerializer,
     BookmarkSerializer,
+    InternshipJournalListSerializer,
+    InternshipJournalWriteSerializer,
     ListingListSerializer,
     ListingSerializer,
     NotificationPreferencesSerializer,
@@ -269,6 +272,39 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         if self.action in ['list', 'retrieve']:
             return ApplicationListSerializer
         return ApplicationWriteSerializer
+
+
+class InternshipJournalViewSet(viewsets.ModelViewSet):
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['listing']
+    search_fields = ['title', 'content']
+    ordering_fields = ['created_at', 'updated_at', 'likes_count']
+    ordering = ['-created_at']
+
+    def get_queryset(self):
+        return InternshipJournal.objects.select_related('student', 'listing')
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return InternshipJournalListSerializer
+        return InternshipJournalWriteSerializer
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [permissions.IsAuthenticated()]
+        return [permissions.AllowAny()]
+
+    def perform_update(self, serializer):
+        journal = self.get_object()
+        if journal.student != self.request.user:
+            raise PermissionDenied('Bu yaziyi sadece sahibi guncelleyebilir.')
+        serializer.save()
+
+    def destroy(self, request, *args, **kwargs):
+        journal = self.get_object()
+        if journal.student != request.user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        return super().destroy(request, *args, **kwargs)
 
 
 class ProfileView(APIView):

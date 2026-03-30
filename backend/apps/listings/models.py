@@ -196,6 +196,33 @@ class Application(models.Model):
         verbose_name_plural = 'Basvurular'
 
 
+class InternshipJournal(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='internship_journals')
+    listing = models.ForeignKey(
+        Listing,
+        on_delete=models.SET_NULL,
+        related_name='internship_journals',
+        null=True,
+        blank=True,
+    )
+    title = models.CharField(max_length=160)
+    content = models.TextField()
+    internship_year = models.IntegerField()
+    is_anonymous = models.BooleanField(default=True)
+    likes_count = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Staj Gunlugu'
+        verbose_name_plural = 'Staj Gunlukleri'
+
+    def __str__(self):
+        return self.title
+
+
 class ScraperLog(models.Model):
     spider_name = models.CharField(max_length=50)
     started_at = models.DateTimeField()

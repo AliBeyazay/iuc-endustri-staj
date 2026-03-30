@@ -2,7 +2,7 @@ import useSWR from 'swr'
 import useSWRInfinite from 'swr/infinite'
 import { useCallback, useEffect, useState } from 'react'
 import { FilterState, Listing, PaginatedResponse } from '@/types'
-import { fetchListings, fetchReviews, fetchUserProfile } from '@/lib/api'
+import { fetchInternshipJournals, fetchListings, fetchReviews, fetchUserProfile } from '@/lib/api'
 import { buildQueryString } from '@/lib/helpers'
 
 // ─── useDebounce ─────────────────────────────────────────────────────────────
@@ -59,6 +59,14 @@ export function useReviews(listingId: string) {
     () => fetchReviews(listingId)
   )
   return { reviews: data ?? [], isLoading, error, mutate }
+}
+
+export function useInternshipJournals(listingId: string) {
+  const { data, error, mutate, isLoading } = useSWR(
+    listingId ? `/journals/?listing=${listingId}` : null,
+    () => fetchInternshipJournals(listingId)
+  )
+  return { journals: data ?? [], isLoading, error, mutate }
 }
 
 // ─── useProfile ──────────────────────────────────────────────────────────────

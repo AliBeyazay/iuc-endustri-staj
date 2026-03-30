@@ -71,6 +71,20 @@ export interface Review {
   created_at: string
 }
 
+export interface InternshipJournal {
+  id: string
+  title: string
+  content: string
+  internship_year: number
+  is_anonymous: boolean
+  likes_count: number
+  created_at: string
+  updated_at: string
+  student_display_name: string
+  listing_title: string | null
+  listing_id: string | null
+}
+
 export interface NotificationPreferences {
   enabled: boolean
   sectors: EMFocusArea[]

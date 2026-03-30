@@ -10,6 +10,7 @@ from .models import (
     Application,
     Bookmark,
     EM_FOCUS_CHOICES,
+    InternshipJournal,
     Listing,
     Review,
     Student,
@@ -276,6 +277,65 @@ class BookmarkSerializer(serializers.ModelSerializer):
             student=validated_data['student'],
             listing=listing,
         )[0]
+
+
+class InternshipJournalListSerializer(serializers.ModelSerializer):
+    student_display_name = serializers.SerializerMethodField()
+    listing_title = serializers.CharField(source='listing.title', read_only=True)
+    listing_id = serializers.UUIDField(source='listing.id', read_only=True)
+
+    class Meta:
+        model = InternshipJournal
+        fields = [
+            'id', 'title', 'content', 'internship_year', 'is_anonymous',
+            'likes_count', 'created_at', 'updated_at',
+            'student_display_name', 'listing_title', 'listing_id',
+        ]
+        read_only_fields = [
+            'id', 'likes_count', 'created_at', 'updated_at',
+            'student_display_name', 'listing_title', 'listing_id',
+        ]
+
+    def get_student_display_name(self, obj):
+        if obj.is_anonymous:
+            return 'Anonim Ogrenci'
+        full_name = f'{obj.student.first_name} {obj.student.last_name}'.strip()
+        return full_name or obj.student.iuc_email
+
+
+class InternshipJournalWriteSerializer(serializers.ModelSerializer):
+    listing_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
+
+    class Meta:
+        model = InternshipJournal
+        fields = [
+            'id', 'listing_id', 'title', 'content',
+            'internship_year', 'is_anonymous', 'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def validate_title(self, value):
+        if len(value.strip()) < 8:
+            raise serializers.ValidationError('Baslik en az 8 karakter olmali.')
+        return value.strip()
+
+    def validate_content(self, value):
+        clean = value.strip()
+        if len(clean) < 120:
+            raise serializers.ValidationError('Icerik en az 120 karakter olmali.')
+        return clean
+
+    def create(self, validated_data):
+        student = self.context['request'].user
+        listing_id = validated_data.pop('listing_id', None)
+        listing = None
+        if listing_id:
+            listing = Listing.objects.filter(id=listing_id).first()
+        return InternshipJournal.objects.create(
+            student=student,
+            listing=listing,
+            **validated_data,
+        )
 
 
 class ApplicationListSerializer(serializers.ModelSerializer):
