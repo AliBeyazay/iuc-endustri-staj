@@ -8,7 +8,7 @@ export default function SiteFooter() {
             <p>
               <span className="font-semibold text-[#f3ead1]">{'Adres: '}</span>
               {
-                '\u0130stanbul \u00dcniversitesi - Cerrahpa\u015fa M\u00fchendislik Fak\u00fcltesi End\u00fcstri M\u00fchendisli\u011fi B\u00f6l\u00fcm\u00fc, \u00dcniversite Mahallesi \u00dcniversite Caddesi No:7, 34320 Avc\u0131lar/\u0130stanbul'
+                '\u0130stanbul \u00dcniversitesi-Cerrahpa\u015fa M\u00fchendislik Fak\u00fcltesi End\u00fcstri M\u00fchendisli\u011fi B\u00f6l\u00fcm\u00fc, \u00dcniversite Mahallesi \u00dcniversite Caddesi No:7, 34320 Avc\u0131lar/\u0130stanbul'
               }
             </p>
             <p>
@@ -41,7 +41,7 @@ export default function SiteFooter() {
 
       <div className="border-t border-white/10 px-6 py-3 text-center text-[13px] tracking-wide text-[#d8ad43]/80 md:px-8">
         {
-          '\u00a9 2026 Her hakk\u0131 \u0130stanbul \u00dcniversitesi - Cerrahpa\u015fa End\u00fcstri M\u00fchendisli\u011fine aittir.'
+          '\u00a9 2026 Her hakk\u0131 \u0130stanbul \u00dcniversitesi-Cerrahpa\u015fa End\u00fcstri M\u00fchendisli\u011fine aittir.'
         }
       </div>
     </footer>
