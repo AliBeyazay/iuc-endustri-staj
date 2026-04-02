@@ -11,7 +11,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <Link href="/listings" className="flex items-center gap-4">
             <UniversityLogo className="h-16 w-16 shrink-0" />
             <div className="campus-brand text-3xl leading-none">
-              {'\u0130stanbul \u00dcniversitesi Cerrahpa\u015fa'}
+              {'\u0130stanbul \u00dcniversitesi - Cerrahpa\u015fa'}
             </div>
           </Link>
           <p className="mt-2 text-[11px] uppercase tracking-[0.28em] text-[#f4e3b3]/78">

@@ -326,7 +326,7 @@ export default function DashboardPage() {
           <UniversityLogo className="h-11 w-11 shrink-0 sm:h-12 sm:w-12" />
           <div className="min-w-0">
             <span className="campus-brand block text-[11px] leading-tight xs:text-xs sm:text-2xl sm:leading-none whitespace-nowrap">
-              {'\u0130stanbul \u00dcniversitesi Cerrahpa\u015fa'}
+              {'\u0130stanbul \u00dcniversitesi - Cerrahpa\u015fa'}
             </span>
             <p className="text-[7px] uppercase tracking-[0.12em] text-[#f4e3b3]/80 xs:text-[8px] sm:text-[10px] sm:tracking-[0.28em] whitespace-nowrap">
               {'End\u00fcstri M\u00fchendisli\u011fi Staj Platformu'}

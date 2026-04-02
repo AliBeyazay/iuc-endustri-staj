@@ -19,9 +19,9 @@ const bodyFont = Source_Sans_3({
 })
 
 export const metadata: Metadata = {
-  title: '\u0130stanbul \u00dcniversitesi Cerrahpa\u015fa End\u00fcstri M\u00fchendisli\u011fi Staj Platformu',
+  title: '\u0130stanbul \u00dcniversitesi - Cerrahpa\u015fa End\u00fcstri M\u00fchendisli\u011fi Staj Platformu',
   description:
-    '\u0130stanbul \u00dcniversitesi Cerrahpa\u015fa End\u00fcstri M\u00fchendisli\u011fi Staj Platformu',
+    '\u0130stanbul \u00dcniversitesi - Cerrahpa\u015fa End\u00fcstri M\u00fchendisli\u011fi Staj Platformu',
 }
 
 export default function RootLayout({

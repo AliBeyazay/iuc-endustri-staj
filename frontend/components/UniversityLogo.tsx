@@ -12,7 +12,7 @@ export default function UniversityLogo({
   return (
     <Image
       src="/logo.png"
-      alt={'\u0130stanbul \u00dcniversitesi Cerrahpa\u015fa End\u00fcstri M\u00fchendisli\u011fi logosu'}
+      alt={'\u0130stanbul \u00dcniversitesi - Cerrahpa\u015fa End\u00fcstri M\u00fchendisli\u011fi logosu'}
       width={size}
       height={size}
       className={className}
