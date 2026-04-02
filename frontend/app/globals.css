@@ -41,6 +41,7 @@ html {
 body {
   font-family: var(--font-body), sans-serif;
   color: #e7edf4;
+  line-height: 1.6;
   background:
     radial-gradient(circle at 12% 12%, rgba(216, 173, 67, 0.16), transparent 22%),
     radial-gradient(circle at 88% 8%, rgba(216, 173, 67, 0.1), transparent 18%),
@@ -58,7 +59,11 @@ body {
 
 h1,
 h2,
-h3,
+h3 {
+  font-family: var(--font-heading), sans-serif;
+  letter-spacing: 0.01em;
+}
+
 .campus-heading {
   font-family: var(--font-heading), sans-serif;
   letter-spacing: 0.02em;
@@ -82,14 +87,6 @@ h3,
   color: #e7edf4;
 }
 
-.campus-nav {
-  background:
-    linear-gradient(90deg, rgba(9, 23, 40, 0.94) 0%, rgba(20, 42, 69, 0.92) 50%, rgba(19, 40, 67, 0.96) 100%);
-  border-bottom: 1px solid rgba(216, 173, 67, 0.18);
-  box-shadow: 0 18px 40px rgba(7, 17, 29, 0.2);
-  backdrop-filter: blur(14px);
-}
-
 .campus-brand {
   font-family: var(--font-heading), sans-serif;
   text-transform: uppercase;
@@ -105,6 +102,7 @@ h3,
   border: 1px solid var(--campus-border);
   box-shadow: var(--campus-shadow);
   backdrop-filter: blur(14px);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
 
 .dark .campus-card {
@@ -129,6 +127,7 @@ h3,
   border: 1px solid rgba(19, 40, 67, 0.1);
   color: #132843;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .dark .campus-input {
@@ -141,7 +140,7 @@ h3,
 .campus-input:focus {
   outline: none;
   border-color: rgba(216, 173, 67, 0.65);
-  box-shadow: 0 0 0 4px rgba(216, 173, 67, 0.1);
+  box-shadow: 0 0 0 4px rgba(216, 173, 67, 0.1), 0 0 20px rgba(216, 173, 67, 0.06);
 }
 
 .campus-button-primary {
@@ -149,17 +148,34 @@ h3,
   color: #10223b;
   border: 1px solid rgba(140, 101, 13, 0.2);
   box-shadow: 0 10px 24px rgba(199, 152, 40, 0.22);
+  transition: filter 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .campus-button-primary:hover {
-  filter: brightness(1.03);
+  filter: brightness(1.06);
   transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(199, 152, 40, 0.28);
+}
+
+.campus-button-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 16px rgba(199, 152, 40, 0.18);
 }
 
 .campus-button-secondary {
   background: rgba(255, 255, 255, 0.56);
   color: #173156;
   border: 1px solid rgba(19, 40, 67, 0.1);
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.campus-button-secondary:hover {
+  background: rgba(255, 255, 255, 0.78);
+  border-color: rgba(216, 173, 67, 0.3);
+}
+
+.campus-button-secondary:active {
+  transform: translateY(0);
 }
 
 .dark .campus-button-secondary {
@@ -196,6 +212,55 @@ h3,
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(12px);
+}
+
+/* Interactive utilities */
+.campus-hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.campus-hover-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 20px 44px rgba(10, 21, 35, 0.14);
+}
+
+.campus-card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.campus-card-hover:hover {
+  transform: translateY(-3px);
+  border-color: rgba(216, 173, 67, 0.35);
+  box-shadow: 0 22px 50px rgba(10, 21, 35, 0.16);
+}
+.dark .campus-card-hover:hover {
+  border-color: rgba(216, 173, 67, 0.30);
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.34);
+}
+
+.campus-nav {
+  background:
+    linear-gradient(90deg, rgba(9, 23, 40, 0.94) 0%, rgba(20, 42, 69, 0.92) 50%, rgba(19, 40, 67, 0.96) 100%);
+  border-bottom: 1px solid rgba(216, 173, 67, 0.18);
+  box-shadow: 0 18px 40px rgba(7, 17, 29, 0.2);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+/* Shimmer skeleton */
+.campus-shimmer {
+  background: linear-gradient(90deg, transparent 0%, rgba(216, 173, 67, 0.06) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+.dark .campus-shimmer {
+  background: linear-gradient(90deg, transparent 0%, rgba(216, 173, 67, 0.04) 50%, transparent 100%);
+  background-size: 200% 100%;
+}
+
+/* Pill transition */
+.campus-pill,
+.campus-pill-gold {
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 /* Scrollbar */

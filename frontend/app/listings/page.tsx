@@ -1188,7 +1188,7 @@ export default function ListingsPage() {
                   <Link
                     key={item.id}
                     href={`/listings/${item.id}`}
-                    className="group flex min-w-[180px] max-w-[220px] shrink-0 items-center gap-2.5 rounded-2xl border border-[#d8ad43]/16 bg-[#fffaf0] px-3 py-2.5 transition-colors hover:border-[#d8ad43]/35 hover:bg-white dark:bg-white/5 dark:hover:bg-white/10"
+                    className="group flex min-w-[180px] max-w-[220px] shrink-0 items-center gap-2.5 rounded-2xl border border-[#d8ad43]/16 bg-[#fffaf0] px-3 py-2.5 transition-all duration-200 hover:border-[#d8ad43]/35 hover:bg-white hover:-translate-y-0.5 hover:shadow-campus-sm dark:bg-white/5 dark:hover:bg-white/10"
                   >
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-xs font-semibold text-[#132843] group-hover:text-[#1E3A5F] dark:text-[#e7edf4] dark:group-hover:text-[#d8ad43]">
@@ -1206,8 +1206,8 @@ export default function ListingsPage() {
 
           <div className="relative z-[90] mt-5 flex flex-col gap-3 lg:flex-row">
             <div className="relative z-[90] flex-1" ref={searchBoxRef}>
-              <div className="relative z-[95] flex items-center rounded-[24px] border border-[#d8ad43]/18 bg-white px-4 py-3 shadow-sm ring-0 transition focus-within:border-[#d8ad43]/40 focus-within:ring-2 focus-within:ring-[#f1d27e]/30 dark:bg-[#0e1e33] dark:border-[#d8ad43]/22">
-                <span className="mr-3 text-[#173156]/45">⌕</span>
+              <div className="relative z-[95] flex items-center rounded-[24px] border border-[#d8ad43]/18 bg-white px-4 py-3.5 shadow-sm ring-0 transition-all duration-200 focus-within:border-[#d8ad43]/50 focus-within:ring-2 focus-within:ring-[#f1d27e]/30 focus-within:shadow-[0_0_24px_rgba(216,173,67,0.08)] dark:bg-[#0e1e33] dark:border-[#d8ad43]/22">
+                <span className="mr-3 text-[#173156]/45 transition-colors duration-200 group-focus-within:text-[#d8ad43]">⌕</span>
                 <input
                   value={query}
                   onChange={(event) => {
@@ -1222,12 +1222,12 @@ export default function ListingsPage() {
                     }
                   }}
                   placeholder="Şirket, pozisyon veya anahtar kelime ara"
-                  className="w-full bg-transparent text-sm text-[#132843] outline-none placeholder:text-[#173156]/40 dark:text-[#e7edf4] dark:placeholder:text-[#e7edf4]/35"
+                  className="w-full bg-transparent text-[15px] text-[#132843] outline-none placeholder:text-[#173156]/40 dark:text-[#e7edf4] dark:placeholder:text-[#e7edf4]/35"
                 />
               </div>
 
               {showSuggestions && (
-                <div className="absolute left-0 top-full z-[94] mt-2 max-h-[320px] w-full overflow-y-auto rounded-[24px] border border-[#d8ad43]/18 bg-white p-2 shadow-[0_24px_60px_rgba(18,40,67,0.18)] sm:max-w-[40rem] dark:bg-[#132843] dark:border-[#d8ad43]/22">
+                <div className="absolute left-0 top-full z-[94] mt-2 max-h-[320px] w-full overflow-y-auto rounded-[24px] border border-[#d8ad43]/18 bg-white p-2 shadow-[0_24px_60px_rgba(18,40,67,0.18)] animate-scale-in sm:max-w-[40rem] dark:bg-[#132843] dark:border-[#d8ad43]/22">
                   {autocompleteSuggestions.length > 0 && (
                     <div className="mb-2">
                       <p className="px-2 py-1 text-xs font-semibold uppercase tracking-wide text-[#173156]/35 dark:text-[#e7edf4]/35">
@@ -1280,7 +1280,7 @@ export default function ListingsPage() {
               <select
                 value={sortBy}
                 onChange={(event) => setSortBy(event.target.value as SortOption)}
-                className="w-full rounded-[20px] border border-[#d8ad43]/20 bg-white px-4 py-3 text-sm text-[#173156] outline-none transition focus:border-[#d8ad43]/45 dark:border-[#d8ad43]/24 dark:bg-[#0e1e33] dark:text-[#e7edf4]"
+                className="w-full cursor-pointer rounded-[20px] border border-[#d8ad43]/20 bg-white px-4 py-3.5 text-sm text-[#173156] outline-none transition-all duration-200 focus:border-[#d8ad43]/50 focus:ring-2 focus:ring-[#f1d27e]/25 hover:border-[#d8ad43]/35 dark:border-[#d8ad43]/24 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:hover:border-[#d8ad43]/35"
               >
                 {SORT_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -1358,7 +1358,7 @@ export default function ListingsPage() {
 
         <div className="relative z-0 grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
           <aside className="hidden lg:block">
-            <div className="sticky top-6 rounded-[32px] border border-[#d8ad43]/16 bg-white/72 p-5 shadow-[0_24px_60px_rgba(18,40,67,0.08)] backdrop-blur dark:bg-[#0e1e33]/80 dark:border-[#d8ad43]/20">
+            <div className="sticky top-6 rounded-[32px] border border-[#d8ad43]/16 bg-white/72 p-5 shadow-campus-sm backdrop-blur dark:bg-[#0e1e33]/80 dark:border-[#d8ad43]/20">
               <FilterPanel
                 sectors={sectors}
                 platforms={platforms}
@@ -1386,7 +1386,7 @@ export default function ListingsPage() {
                 {Array.from({ length: 9 }).map((_, index) => (
                   <div
                     key={index}
-                    className="h-64 animate-pulse rounded-[32px] border border-[#d8ad43]/16 bg-white/70 dark:bg-white/5"
+                    className="h-64 rounded-[32px] border border-[#d8ad43]/16 bg-white/70 campus-shimmer dark:bg-white/5"
                   />
                 ))}
               </div>
@@ -1404,6 +1404,11 @@ export default function ListingsPage() {
               </div>
             ) : listings.length === 0 ? (
               <div className="rounded-[32px] border border-[#d8ad43]/16 bg-white/72 p-10 text-center shadow-sm dark:bg-[#0e1e33]/80">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#d8ad43]/10">
+                  <svg className="h-8 w-8 text-[#d8ad43]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                  </svg>
+                </div>
                 <p className="text-lg font-semibold text-[#132843] dark:text-[#e7edf4]">Sonuç bulunamadı</p>
                 <p className="mt-2 text-sm text-[#173156]/72 dark:text-[#e7edf4]/55">
                   Seçtiğin filtre kombinasyonu fazla dar olabilir. Bazı filtreleri kaldır.
@@ -1441,7 +1446,7 @@ export default function ListingsPage() {
                           router.push(`/listings/${item.id}`)
                         }
                       }}
-                      className="group cursor-pointer rounded-[28px] border border-[#e9edf5] bg-white px-4 py-4 shadow-[0_14px_34px_rgba(15,23,42,0.06)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_22px_46px_rgba(15,23,42,0.1)] dark:bg-[#0e1e33] dark:border-[#d8ad43]/15"
+                      className="group cursor-pointer rounded-[28px] border border-[#e9edf5] bg-white px-4 py-4 shadow-campus-sm transition-all duration-200 hover:-translate-y-1 hover:border-[#d8ad43]/30 hover:shadow-campus-md dark:bg-[#0e1e33] dark:border-[#d8ad43]/15 dark:hover:border-[#d8ad43]/35"
                     >
                       <div className="flex items-center gap-3">
                         <div className="flex h-[78px] w-[78px] shrink-0 items-center justify-center rounded-[22px] border border-[#dde4f0] bg-white shadow-[0_8px_22px_rgba(15,23,42,0.05)] dark:bg-[#132843] dark:border-[#d8ad43]/15">
@@ -1479,7 +1484,7 @@ export default function ListingsPage() {
 
                         <div className="min-w-0 flex-1">
                           <p className="text-[13px] font-medium text-[#173156]/58 dark:text-[#e7edf4]/55">{item.company_name}</p>
-                          <h2 className="mt-1 text-[0.98rem] font-semibold leading-[1.14] tracking-[-0.015em] text-[#132843] sm:text-[1.05rem] dark:text-[#e7edf4]">
+                          <h2 className="mt-1 text-[0.98rem] font-semibold leading-[1.14] tracking-[-0.015em] text-[#132843] group-hover:text-[#1E3A5F] transition-colors duration-200 sm:text-[1.05rem] dark:text-[#e7edf4] dark:group-hover:text-[#d8ad43]">
                             {item.title}
                           </h2>
                         </div>
@@ -1516,9 +1521,9 @@ export default function ListingsPage() {
                       type="button"
                       onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
                       disabled={currentPage === 1}
-                      className="rounded-2xl border border-[#d8ad43]/20 bg-white px-4 py-2 text-sm font-medium text-[#173156] disabled:cursor-not-allowed disabled:opacity-45 dark:bg-white/5 dark:text-[#e7edf4]"
+                      className="rounded-2xl border border-[#d8ad43]/20 bg-white px-4 py-2.5 text-sm font-medium text-[#173156] transition-all duration-150 hover:border-[#d8ad43]/35 hover:bg-[#fff8e8] disabled:cursor-not-allowed disabled:opacity-45 dark:bg-white/5 dark:text-[#e7edf4] dark:hover:bg-white/10"
                     >
-                      Önceki
+                      ← Önceki
                     </button>
 
                     {pageWindow.map((page) => (
@@ -1527,10 +1532,10 @@ export default function ListingsPage() {
                         type="button"
                         onClick={() => setCurrentPage(page)}
                         className={classNames(
-                          'rounded-2xl px-4 py-2 text-sm font-medium transition',
+                          'rounded-2xl px-4 py-2.5 text-sm font-medium transition-all duration-150',
                           currentPage === page
-                            ? 'bg-[#132843] text-white dark:bg-[#d8ad43] dark:text-[#10223b]'
-                            : 'border border-[#d8ad43]/20 bg-white text-[#173156] dark:bg-white/5 dark:text-[#e7edf4]',
+                            ? 'bg-gradient-to-br from-[#d8ad43] to-[#c79828] text-[#10223b] shadow-[0_6px_18px_rgba(199,152,40,0.25)]'
+                            : 'border border-[#d8ad43]/20 bg-white text-[#173156] hover:border-[#d8ad43]/35 hover:bg-[#fff8e8] dark:bg-white/5 dark:text-[#e7edf4] dark:hover:bg-white/10',
                         )}
                       >
                         {page}
@@ -1541,9 +1546,9 @@ export default function ListingsPage() {
                       type="button"
                       onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
                       disabled={currentPage === totalPages}
-                      className="rounded-2xl border border-[#d8ad43]/20 bg-white px-4 py-2 text-sm font-medium text-[#173156] disabled:cursor-not-allowed disabled:opacity-45 dark:bg-white/5 dark:text-[#e7edf4]"
+                      className="rounded-2xl border border-[#d8ad43]/20 bg-white px-4 py-2.5 text-sm font-medium text-[#173156] transition-all duration-150 hover:border-[#d8ad43]/35 hover:bg-[#fff8e8] disabled:cursor-not-allowed disabled:opacity-45 dark:bg-white/5 dark:text-[#e7edf4] dark:hover:bg-white/10"
                     >
-                      Sonraki
+                      Sonraki →
                     </button>
                   </div>
                 )}

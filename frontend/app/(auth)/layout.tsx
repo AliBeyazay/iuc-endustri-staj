@@ -17,7 +17,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <p className="mt-2 text-[11px] uppercase tracking-[0.28em] text-[#f4e3b3]/78">
             {'End\u00fcstri M\u00fchendisli\u011fi Staj Platformu'}
           </p>
-          <h1 className="mt-12 campus-heading text-6xl leading-[0.92] text-[#d8ad43]">
+          <h1 className="mt-12 campus-heading text-6xl leading-[0.92] text-[#d8ad43] drop-shadow-[0_2px_12px_rgba(216,173,67,0.15)]">
             {'End\u00fcstri'}
             <br />
             {'M\u00fchendisli\u011fi'}
@@ -33,8 +33,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             'B\u00f6l\u00fcme uygun filtreleme ve h\u0131zl\u0131 arama',
             'Kaynak sayfaya tek t\u0131kla ge\u00e7i\u015f',
           ].map((feat) => (
-            <div key={feat} className="flex items-start gap-3">
-              <div className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full border border-[#d8ad43]/35 bg-[#d8ad43]/14 text-[10px] text-[#f4e3b3]">
+            <div key={feat} className="flex items-start gap-3 transition-transform duration-200 hover:translate-x-1">
+              <div className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full border border-[#d8ad43]/35 bg-[#d8ad43]/14 text-[10px] text-[#f4e3b3] transition-colors duration-200 group-hover:bg-[#d8ad43]/25">
                 +
               </div>
               <p className="text-sm text-[#f7ecd0]/72">{feat}</p>

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowUpRight, Bookmark, BookmarkCheck, MapPin, Share2, Sparkles } from 'lucide-react'
+import { ArrowUpRight, Bookmark, BookmarkCheck, Clock, MapPin, Share2, Sparkles } from 'lucide-react'
 import { Listing } from '@/types'
 import {
   FOCUS_AREA_LABELS, FOCUS_AREA_COLORS, PLATFORM_LABELS,
@@ -55,7 +55,7 @@ export default function ListingCard({ listing, isBookmarked, onBookmark }: Props
   return (
     <article
       onClick={() => router.push(`/listings/${listing.id}`)}
-      className="campus-card group cursor-pointer overflow-hidden rounded-[26px] border p-4 transition-all duration-200 hover:-translate-y-1 hover:border-[#d8ad43]/45 hover:shadow-[0_28px_60px_rgba(10,21,35,0.16)] dark:hover:border-[#d8ad43]/40"
+      className="campus-card campus-card-hover group cursor-pointer overflow-hidden rounded-[26px] border p-4"
     >
       <div className="mb-3 flex items-center justify-between gap-3">
         <span className="campus-pill inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold">
@@ -68,7 +68,7 @@ export default function ListingCard({ listing, isBookmarked, onBookmark }: Props
             e.stopPropagation()
             onBookmark(listing.id)
           }}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#173156]/10 bg-white/70 text-[#173156]/60 transition-colors hover:text-[#173156] dark:border-white/10 dark:bg-white/8 dark:text-white/50 dark:hover:text-white"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#173156]/10 bg-white/70 text-[#173156]/60 transition-all duration-200 hover:scale-110 hover:text-[#173156] hover:border-[#d8ad43]/30 dark:border-white/10 dark:bg-white/8 dark:text-white/50 dark:hover:text-white dark:hover:border-[#d8ad43]/30"
           aria-label={isBookmarked ? 'Kayd\u0131 kald\u0131r' : 'Kaydet'}
         >
           {isBookmarked ? (
@@ -89,16 +89,16 @@ export default function ListingCard({ listing, isBookmarked, onBookmark }: Props
             loading="lazy"
             referrerPolicy="no-referrer"
             onError={() => setLogoError(true)}
-            className="h-12 w-12 min-w-[48px] rounded-2xl border border-[#d8ad43]/20 bg-white/80 object-contain p-1.5 dark:bg-white/10"
+            className="h-12 w-12 min-w-[48px] rounded-2xl border border-[#d8ad43]/20 bg-white/80 object-contain p-1.5 ring-2 ring-[#d8ad43]/10 group-hover:ring-[#d8ad43]/25 transition-all duration-200 dark:bg-white/10"
           />
         ) : (
-          <div className={`flex h-12 w-12 min-w-[48px] items-center justify-center rounded-2xl border border-[#d8ad43]/20 text-[11px] font-semibold ${avatarColor}`}>
+          <div className={`flex h-12 w-12 min-w-[48px] items-center justify-center rounded-2xl border border-[#d8ad43]/20 ring-2 ring-[#d8ad43]/10 group-hover:ring-[#d8ad43]/25 transition-all duration-200 text-[11px] font-semibold ${avatarColor}`}>
             {initials}
           </div>
         )}
 
         <div className="min-w-0 flex-1">
-          <p className="campus-heading line-clamp-2 text-[1.05rem] leading-[1.15] text-[#132843] dark:text-[#e7edf4]">
+          <p className="line-clamp-2 text-[1.05rem] font-semibold leading-[1.18] text-[#132843] group-hover:text-[#1E3A5F] transition-colors duration-200 dark:text-[#e7edf4] dark:group-hover:text-[#d8ad43]">
             {listing.title}
           </p>
           <p className="mt-1 truncate text-[12px] font-medium text-[#173156]/72 dark:text-[#e7edf4]/65">
@@ -116,24 +116,25 @@ export default function ListingCard({ listing, isBookmarked, onBookmark }: Props
 
       <div className="mb-4 flex flex-wrap gap-1.5">
         {listing.is_talent_program && (
-          <span className="campus-pill-gold rounded-full px-2.5 py-1 text-[9px] font-semibold">
+          <span className="campus-pill-gold rounded-full px-2.5 py-[3px] text-[10px] font-semibold">
             {'Yetenek Program\u0131'}
           </span>
         )}
-        <span className={`rounded-full px-2.5 py-1 text-[9px] font-semibold ${FOCUS_AREA_COLORS[listing.em_focus_area]}`}>
+        <span className={`rounded-full px-2.5 py-[3px] text-[10px] font-semibold ${FOCUS_AREA_COLORS[listing.em_focus_area]}`}>
           {FOCUS_AREA_LABELS[listing.em_focus_area]}
         </span>
-        <span className={`rounded-full px-2.5 py-1 text-[9px] font-semibold ${ORIGIN_BADGE[listing.company_origin]}`}>
+        <span className={`rounded-full px-2.5 py-[3px] text-[10px] font-semibold ${ORIGIN_BADGE[listing.company_origin]}`}>
           {ORIGIN_LABEL[listing.company_origin]}
         </span>
-        <span className={`rounded-full px-2.5 py-1 text-[9px] font-semibold ${INTERNSHIP_BADGE[listing.internship_type]}`}>
+        <span className={`rounded-full px-2.5 py-[3px] text-[10px] font-semibold ${INTERNSHIP_BADGE[listing.internship_type]}`}>
           {INTERNSHIP_LABEL[listing.internship_type]}
         </span>
       </div>
 
       <div className="flex items-center justify-between border-t border-[#d8ad43]/12 pt-3">
         {deadline.label ? (
-          <span className={`rounded-full px-2.5 py-1 text-[9px] font-semibold ${deadlineClass}`}>
+          <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold ${deadlineClass}`}>
+            <Clock size={11} />
             {deadline.label}
           </span>
         ) : <span />}
@@ -157,7 +158,7 @@ export default function ListingCard({ listing, isBookmarked, onBookmark }: Props
             className="campus-button-primary inline-flex items-center gap-1 rounded-full px-3.5 py-1.5 text-[10px] font-semibold"
           >
             {listing.is_talent_program ? 'Programa Bak' : 'Detay\u0131 G\u00f6r'}
-            <ArrowUpRight size={12} />
+            <ArrowUpRight size={12} className="transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </button>
         </div>
       </div>

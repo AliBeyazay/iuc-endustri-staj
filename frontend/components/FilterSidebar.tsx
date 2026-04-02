@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, ChevronUp, Sparkles } from 'lucide-react'
+import { ChevronDown, Sparkles } from 'lucide-react'
 import { FilterState, SourcePlatform } from '@/types'
 import { FOCUS_AREA_LIST, PLATFORM_LABELS } from '@/lib/helpers'
 
@@ -20,12 +20,14 @@ function Section({
     <div className="mb-5">
       <button
         onClick={() => setOpen(!open)}
-        className="campus-heading mb-2 flex w-full items-center justify-between text-[11px] text-[#8f670b] dark:text-[#f0cf7a]"
+        className="campus-heading mb-2 flex w-full items-center justify-between border-l-2 border-[#d8ad43]/40 pl-2.5 text-[11px] text-[#8f670b] transition-colors hover:text-[#6d4f06] dark:text-[#f0cf7a] dark:hover:text-[#f8e0a0]"
       >
         {title}
-        {open ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+        <span className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`}>
+          <ChevronDown size={12} />
+        </span>
       </button>
-      {open && <div className="space-y-1.5">{children}</div>}
+      <div className={`space-y-1.5 overflow-hidden transition-all duration-200 ${open ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}>{children}</div>
     </div>
   )
 }
@@ -34,18 +36,18 @@ function CheckItem({
   label, checked, count, onChange,
 }: { label: string; checked: boolean; count?: number; onChange: () => void }) {
   return (
-    <label className="group flex cursor-pointer items-center gap-2 rounded-2xl border border-transparent bg-white/35 px-2.5 py-2 transition-colors hover:border-[#d8ad43]/20 hover:bg-white/70 dark:bg-white/5 dark:hover:bg-white/10">
+    <label className="group flex cursor-pointer items-center gap-2 rounded-2xl border border-transparent bg-white/35 px-2.5 py-2 transition-all duration-150 hover:border-[#d8ad43]/20 hover:bg-white/70 dark:bg-white/5 dark:hover:bg-white/10">
       <input
         type="checkbox"
         checked={checked}
         onChange={onChange}
-        className="h-3.5 w-3.5 accent-[#b6891d]"
+        className="h-3.5 w-3.5 rounded accent-[#d8ad43] transition-all"
       />
       <span className="flex-1 text-[11px] leading-tight text-[#173156]/74 group-hover:text-[#132843] dark:text-[#e7edf4]/65 dark:group-hover:text-[#e7edf4]">
         {label}
       </span>
       {count !== undefined && (
-        <span className="rounded-full bg-[#173156]/6 px-2 py-0.5 text-[10px] text-[#173156]/46 dark:bg-white/8 dark:text-white/40">
+        <span className="rounded-full bg-[#d8ad43]/10 px-2 py-0.5 text-[10px] font-medium text-[#8f670b] dark:bg-[#d8ad43]/12 dark:text-[#f0cf7a]/80">
           {count}
         </span>
       )}

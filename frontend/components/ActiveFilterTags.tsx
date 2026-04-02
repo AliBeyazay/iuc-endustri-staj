@@ -11,10 +11,10 @@ interface Props {
 
 function Pill({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)] px-2.5 py-1 text-[10px] font-semibold dark:text-[#f0cf7a] dark:bg-[rgba(216,173,67,0.12)]">
+    <span className="inline-flex items-center gap-1 rounded-full bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)] px-2.5 py-1 text-[10px] font-semibold transition-all duration-150 hover:bg-[rgba(216,173,67,0.22)] dark:text-[#f0cf7a] dark:bg-[rgba(216,173,67,0.12)] dark:hover:bg-[rgba(216,173,67,0.20)]">
       {label}
-      <button onClick={onRemove} className="leading-none hover:opacity-70">
-        x
+      <button onClick={onRemove} className="leading-none text-[#8f670b]/60 transition-colors hover:text-red-600 dark:text-[#f0cf7a]/60 dark:hover:text-red-400">
+        ×
       </button>
     </span>
   )
@@ -47,8 +47,8 @@ export default function ActiveFilterTags({ filters, onRemove, onClearAll }: Prop
         </span>
       )}
 
-      <button onClick={onClearAll} className="ml-1 text-[10px] text-[#8f670b] hover:underline dark:text-[#f0cf7a]">
-        Tumunu temizle
+      <button onClick={onClearAll} className="ml-1 rounded-full border border-transparent px-2 py-0.5 text-[10px] font-medium text-[#8f670b] transition-all duration-150 hover:border-red-200 hover:bg-red-50 hover:text-red-600 dark:text-[#f0cf7a] dark:hover:border-red-500/20 dark:hover:bg-red-500/10 dark:hover:text-red-400">
+        Tümünü temizle
       </button>
     </div>
   )

@@ -74,8 +74,8 @@ function ReviewStars({
             key={starValue}
             type="button"
             onClick={() => onChange?.(starValue)}
-            className={`text-xl transition-transform hover:scale-110 ${
-              active ? 'text-[#d8ad43]' : 'text-[#d4d8e3]'
+            className={`text-xl transition-all duration-150 hover:scale-125 ${
+              active ? 'text-[#d8ad43] drop-shadow-[0_0_4px_rgba(216,173,67,0.3)]' : 'text-[#d4d8e3] hover:text-[#d8ad43]/50'
             }`}
             aria-label={`${starValue} puan ver`}
           >
@@ -240,19 +240,19 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
                   alt={listing.company_name}
                   referrerPolicy="no-referrer"
                   onError={() => setDetailLogoError(true)}
-                  className="h-16 w-16 rounded-2xl border border-[#e6d3ad]/40 bg-[#f2e9da] object-contain p-2"
+                  className="h-16 w-16 rounded-2xl border border-[#e6d3ad]/40 bg-[#f2e9da] object-contain p-2 ring-2 ring-[#d8ad43]/20 shadow-[0_8px_20px_rgba(0,0,0,0.15)]"
                 />
               ) : (
-                <div className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-[#e6d3ad]/35 bg-[#f2e9da] text-base font-semibold ${avatarColor}`}>
+                <div className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-[#e6d3ad]/35 bg-[#f2e9da] ring-2 ring-[#d8ad43]/20 shadow-[0_8px_20px_rgba(0,0,0,0.15)] text-base font-semibold ${avatarColor}`}>
                   {initials}
                 </div>
               )}
 
               <div className="min-w-0">
-                <h1 className="campus-heading text-[32px] leading-[1.08] text-[#dbe6f4] sm:text-[46px]">
+                <h1 className="text-[28px] font-bold leading-[1.1] text-[#dbe6f4] sm:text-[40px]">
                   {listing.title}
                 </h1>
-                <p className="mt-2 text-sm text-[#9ab0c8]">{listing.company_name}</p>
+                <p className="mt-2 text-sm font-medium text-[#9ab0c8]">{listing.company_name}</p>
                 <p className="mt-2 text-xs font-medium text-[#8ba2bd]">
                   {timeAgoTurkish(listing.created_at)} yayınlandı
                 </p>
@@ -322,9 +322,9 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
             {descriptionBlocksWithoutIntro.length > 4 && (
               <button
                 onClick={() => setExpandDesc((prev) => !prev)}
-                className="mt-4 text-xs font-semibold text-[#1E3A5F] hover:underline"
+                className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-[#1E3A5F] transition-colors hover:text-[#d8ad43] dark:text-[#d8ad43] dark:hover:text-[#f0cf7a]"
               >
-                {expandDesc ? 'Daha az göster' : 'Devamını gör'}
+                {expandDesc ? '↑ Daha az göster' : 'Devamını gör ↓'}
               </button>
             )}
           </section>
@@ -366,7 +366,7 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
                   reviews.map((review) => (
                     <article
                       key={review.id}
-                      className="rounded-2xl border border-[#d8ad43]/14 bg-white/55 px-4 py-4 dark:bg-white/5"
+                      className="rounded-2xl border border-[#d8ad43]/14 bg-white/55 px-4 py-4 transition-all duration-200 hover:border-[#d8ad43]/25 hover:shadow-campus-sm dark:bg-white/5 dark:hover:border-[#d8ad43]/22"
                     >
                       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                         <div>
@@ -500,8 +500,8 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
                   .map((item) => item.trim())
                   .filter(Boolean)
                   .map((item, index) => (
-                    <li key={`${item}-${index}`} className="flex items-start gap-2 text-sm text-[#173156]/82 dark:text-[#e7edf4]/70">
-                      <span className="mt-0.5 text-[#8f670b] dark:text-[#f0cf7a]">•</span>
+                    <li key={`${item}-${index}`} className="flex items-start gap-2.5 text-sm text-[#173156]/82 dark:text-[#e7edf4]/70">
+                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#d8ad43]/60"></span>
                       <span>{item}</span>
                     </li>
                   ))}
@@ -521,7 +521,7 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
                     <Link
                       key={item.id}
                       href={`/listings/${item.id}`}
-                      className="group rounded-2xl border border-[#d8ad43]/16 bg-white/55 px-4 py-4 transition-colors hover:border-[#d8ad43]/35 hover:bg-white/80 dark:bg-white/5 dark:hover:bg-white/10"
+                      className="group rounded-2xl border border-[#d8ad43]/16 bg-white/55 px-4 py-4 transition-all duration-200 hover:border-[#d8ad43]/35 hover:bg-white/80 hover:-translate-y-0.5 hover:shadow-campus-sm dark:bg-white/5 dark:hover:bg-white/10"
                     >
                       <p className="text-sm font-semibold text-[#132843] group-hover:text-[#8f670b] dark:text-[#e7edf4] dark:group-hover:text-[#d8ad43] transition-colors">{item.title}</p>
                       <p className="mt-1 text-xs text-[#173156]/62 dark:text-[#e7edf4]/50">{item.company_name}</p>
@@ -559,7 +559,7 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
             <div className="mt-4 space-y-3">
               <button
                 onClick={() => setShowQrCode((prev) => !prev)}
-                className="w-full rounded-2xl border border-[#d8ad43]/35 bg-[#fff8e8] px-4 py-3 text-sm font-semibold text-[#8f670b] transition-colors hover:bg-[#fff1ce] dark:bg-[#d8ad43]/12 dark:text-[#f0cf7a] dark:hover:bg-[#d8ad43]/18"
+                className="w-full rounded-2xl border border-[#d8ad43]/35 bg-[#fff8e8] px-4 py-3.5 text-sm font-semibold text-[#8f670b] transition-all duration-200 hover:bg-[#fff1ce] hover:shadow-campus-sm dark:bg-[#d8ad43]/12 dark:text-[#f0cf7a] dark:hover:bg-[#d8ad43]/18"
               >
                 {showQrCode ? 'QR Kodunu Kapat' : 'QR Kodunu Goster'}
               </button>
@@ -567,21 +567,21 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
                 href={targetUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="campus-button-primary hidden w-full items-center justify-center rounded-2xl px-4 py-3 text-sm font-semibold lg:flex"
+                className="campus-button-primary hidden w-full items-center justify-center rounded-2xl px-4 py-3.5 text-sm font-semibold lg:flex"
               >
                 Kaynağa Git
               </a>
 
               <button
                 onClick={() => toggle(listing.id)}
-                className="campus-button-secondary w-full rounded-2xl px-4 py-3 text-sm font-semibold"
+                className="campus-button-secondary w-full rounded-2xl px-4 py-3.5 text-sm font-semibold"
               >
                 {isBookmarked ? 'Kaydı Kaldır' : 'Kaydet'}
               </button>
 
               <button
                 onClick={handleShare}
-                className="w-full rounded-2xl border border-[#173156]/12 bg-white/55 px-4 py-3 text-sm font-semibold text-[#173156] transition-colors hover:bg-white/80 dark:border-[#e7edf4]/12 dark:bg-white/5 dark:text-[#e7edf4] dark:hover:bg-white/10"
+                className="w-full rounded-2xl border border-[#173156]/12 bg-white/55 px-4 py-3.5 text-sm font-semibold text-[#173156] transition-all duration-200 hover:bg-white/80 hover:border-[#d8ad43]/25 dark:border-[#e7edf4]/12 dark:bg-white/5 dark:text-[#e7edf4] dark:hover:bg-white/10"
               >
                 {copied ? 'Bağlantı Kopyalandı' : 'Bağlantıyı Kopyala'}
               </button>

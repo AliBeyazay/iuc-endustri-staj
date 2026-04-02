@@ -22,10 +22,10 @@ function Item({
   onClick?: () => void
 }) {
   const className = [
-    'flex min-w-0 w-full items-center justify-center rounded-2xl px-4 py-3 text-sm font-semibold transition-colors',
+    'flex min-w-0 w-full items-center justify-center rounded-2xl px-4 py-3 text-sm font-semibold transition-all duration-200',
     active
-      ? 'bg-[#f1d27e] text-[#10223b]'
-      : 'border border-white/10 bg-white/[0.04] text-[#f7ecd0]/86 hover:bg-white/[0.08] hover:text-white',
+      ? 'bg-[#f1d27e] text-[#10223b] shadow-[0_2px_12px_rgba(216,173,67,0.25)]'
+      : 'border border-white/10 bg-white/[0.04] text-[#f7ecd0]/86 hover:bg-white/[0.08] hover:text-white active:scale-[0.97]',
   ].join(' ')
 
   if (href) {
@@ -110,7 +110,7 @@ export default function MobileBottomNav({ current, onFilterToggle, filterActive 
                 onClick={() => setMenuOpen((value) => !value)}
                 aria-expanded={menuOpen}
                 aria-label={menuOpen ? 'Menuyu kapat' : 'Menuyu ac'}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-[#f7ecd0] transition-colors hover:bg-white/[0.08]"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-[#f7ecd0] transition-all duration-200 hover:bg-white/[0.08] active:scale-95"
               >
                 {menuOpen ? <X size={20} strokeWidth={2.2} /> : <Menu size={20} strokeWidth={2.2} />}
               </button>
@@ -119,7 +119,7 @@ export default function MobileBottomNav({ current, onFilterToggle, filterActive 
         </div>
 
         {menuOpen ? (
-          <div className="mx-auto mt-3 max-w-5xl rounded-[28px] border border-[#d8ad43]/18 bg-[#10223b]/98 p-3 shadow-[0_24px_60px_rgba(7,16,28,0.34)] backdrop-blur">
+          <div className="mx-auto mt-3 max-w-5xl rounded-[28px] border border-[#d8ad43]/18 bg-[#10223b]/98 p-3 shadow-[0_24px_60px_rgba(7,16,28,0.34)] backdrop-blur animate-scale-in origin-bottom">
             <div className="grid gap-2">
               <Item label="İlanlar" href="/listings" active={current === 'listings'} />
               <Item label="Paylasimlar" href="/paylasimlar" />

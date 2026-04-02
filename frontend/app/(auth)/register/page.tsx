@@ -97,8 +97,8 @@ function OTPInput({
           onKeyDown={(event) => handleKeyDown(index, event)}
           onPaste={handlePaste}
           maxLength={1}
-          className={`h-12 w-10 rounded-lg border text-center text-lg font-medium transition-colors focus:outline-none ${
-            digit ? 'border-[#1E3A5F] bg-blue-50 text-[#0C447C]' : 'border-gray-200 bg-gray-50'
+          className={`h-12 w-10 rounded-lg border text-center text-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 dark:focus:ring-[#d8ad43]/20 ${
+            digit ? 'border-[#1E3A5F] bg-blue-50 text-[#0C447C] dark:border-[#d8ad43] dark:bg-[#d8ad43]/10 dark:text-[#d8ad43]' : 'border-gray-200 bg-gray-50 dark:border-[#d8ad43]/18 dark:bg-[#0e1e33]'
           } ${hasError ? 'border-red-400 bg-red-50 animate-pulse' : ''}`}
         />
       ))}
@@ -365,7 +365,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={form1.formState.isSubmitting}
-              className="h-10 w-full rounded-lg bg-[#1E3A5F] text-sm font-medium text-white disabled:opacity-50 dark:bg-[#d8ad43] dark:text-[#10223b]"
+              className="h-10 w-full rounded-lg bg-[#1E3A5F] text-sm font-medium text-white transition-all duration-200 hover:bg-[#15304f] hover:shadow-campus-sm disabled:opacity-50 dark:bg-[#d8ad43] dark:text-[#10223b] dark:hover:bg-[#e4c05c]"
             >
               {form1.formState.isSubmitting ? 'Kontrol ediliyor...' : 'Devam Et ->'}
             </button>
@@ -411,7 +411,7 @@ export default function RegisterPage() {
                 type="text"
                 placeholder="0401210045"
                 maxLength={10}
-                className="h-9 w-full rounded-lg border border-gray-200 px-3 text-sm focus:border-[#1E3A5F] focus:outline-none dark:border-[#d8ad43]/18 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:focus:border-[#d8ad43]/40"
+                className="h-9 w-full rounded-lg border border-gray-200 px-3 text-sm transition-all duration-200 focus:border-[#1E3A5F] focus:shadow-[0_0_16px_rgba(30,58,95,0.08)] focus:outline-none dark:border-[#d8ad43]/18 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:focus:border-[#d8ad43]/40 dark:focus:shadow-[0_0_16px_rgba(216,173,67,0.06)]"
               />
               {form2.formState.errors.student_no ? (
                 <p className="mt-1 text-[10px] text-red-500">
@@ -455,7 +455,7 @@ export default function RegisterPage() {
                 {...form2.register('linkedin_url')}
                 type="url"
                 placeholder="https://linkedin.com/in/..."
-                className="h-9 w-full rounded-lg border border-gray-200 px-3 text-sm focus:border-[#1E3A5F] focus:outline-none dark:border-[#d8ad43]/18 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:focus:border-[#d8ad43]/40"
+                className="h-9 w-full rounded-lg border border-gray-200 px-3 text-sm transition-all duration-200 focus:border-[#1E3A5F] focus:shadow-[0_0_16px_rgba(30,58,95,0.08)] focus:outline-none dark:border-[#d8ad43]/18 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:focus:border-[#d8ad43]/40 dark:focus:shadow-[0_0_16px_rgba(216,173,67,0.06)]"
               />
               {form2.formState.errors.linkedin_url ? (
                 <p className="mt-1 text-[10px] text-red-500">
@@ -488,7 +488,7 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 disabled={form2.formState.isSubmitting}
-                className="h-9 flex-[2] rounded-lg bg-[#1E3A5F] text-sm font-medium text-white disabled:opacity-50 dark:bg-[#d8ad43] dark:text-[#10223b]"
+                className="h-9 flex-[2] rounded-lg bg-[#1E3A5F] text-sm font-medium text-white transition-all duration-200 hover:bg-[#15304f] hover:shadow-campus-sm disabled:opacity-50 dark:bg-[#d8ad43] dark:text-[#10223b] dark:hover:bg-[#e4c05c]"
               >
                 {form2.formState.isSubmitting ? 'Kaydediliyor...' : 'Devam Et ->'}
               </button>

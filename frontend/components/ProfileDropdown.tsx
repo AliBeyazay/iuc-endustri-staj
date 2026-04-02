@@ -53,7 +53,7 @@ export default function ProfileDropdown() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex h-10 min-w-10 items-center justify-center rounded-full border border-[#d8ad43]/35 bg-[#f1d27e] px-2 text-[10px] font-bold text-[#10223b] shadow-[0_6px_20px_rgba(0,0,0,0.18)] transition-transform hover:-translate-y-px"
+        className="flex h-10 min-w-10 items-center justify-center rounded-full border border-[#d8ad43]/35 bg-[#f1d27e] px-2 text-[10px] font-bold text-[#10223b] shadow-[0_6px_20px_rgba(0,0,0,0.18)] transition-all duration-200 hover:-translate-y-px hover:ring-2 hover:ring-[#d8ad43]/30"
         aria-label="Profil menüsü"
         aria-expanded={open}
       >
@@ -68,7 +68,7 @@ export default function ProfileDropdown() {
             onClick={() => setOpen(false)}
           />
 
-          <div className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-[#d8ad43]/20 bg-[#10223b] shadow-[0_18px_50px_rgba(7,16,28,0.40)]">
+          <div className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-[#d8ad43]/20 bg-[#10223b] shadow-[0_18px_50px_rgba(7,16,28,0.40)] animate-scale-in origin-top-right">
             {/* user info */}
             <div className="border-b border-white/10 px-4 py-3">
               <div className="flex items-center gap-2.5">
@@ -87,7 +87,7 @@ export default function ProfileDropdown() {
               <Link
                 href="/listings"
                 onClick={() => setOpen(false)}
-                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-[#f7ecd0] transition-colors hover:bg-white/10"
+                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-[#f7ecd0] transition-all duration-150 hover:bg-white/10 hover:pl-4"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#d8ad43]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -98,7 +98,7 @@ export default function ProfileDropdown() {
               <Link
                 href="/profile"
                 onClick={() => setOpen(false)}
-                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-[#f7ecd0] transition-colors hover:bg-white/10"
+                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-[#f7ecd0] transition-all duration-150 hover:bg-white/10 hover:pl-4"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#d8ad43]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -109,7 +109,7 @@ export default function ProfileDropdown() {
               <Link
                 href="/paylasimlar"
                 onClick={() => setOpen(false)}
-                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-[#f7ecd0] transition-colors hover:bg-white/10"
+                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-[#f7ecd0] transition-all duration-150 hover:bg-white/10 hover:pl-4"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#d8ad43]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M7 8h10M7 12h6m-6 4h10M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -120,7 +120,7 @@ export default function ProfileDropdown() {
               <Link
                 href="/saved"
                 onClick={() => setOpen(false)}
-                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-[#f7ecd0] transition-colors hover:bg-white/10"
+                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-[#f7ecd0] transition-all duration-150 hover:bg-white/10 hover:pl-4"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#d8ad43]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
@@ -131,7 +131,7 @@ export default function ProfileDropdown() {
               <Link
                 href="/dashboard#notifications"
                 onClick={() => setOpen(false)}
-                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-[#f7ecd0] transition-colors hover:bg-white/10"
+                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-[#f7ecd0] transition-all duration-150 hover:bg-white/10 hover:pl-4"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#d8ad43]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -148,7 +148,7 @@ export default function ProfileDropdown() {
                   setOpen(false)
                   signOut({ callbackUrl: '/login' })
                 }}
-                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/10"
+                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-red-400 transition-all duration-150 hover:bg-red-500/10 hover:pl-4"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

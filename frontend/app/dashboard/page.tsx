@@ -54,8 +54,8 @@ function BookmarkCard({
   return (
     <div
       onClick={() => router.push(`/listings/${listing.id}`)}
-      className={`group cursor-pointer rounded-xl border bg-white p-3 transition-all hover:shadow-md dark:bg-white/5 dark:hover:shadow-none ${
-        deadline.color === 'red' ? 'border-red-200 dark:border-red-400/30' : 'border-gray-100 dark:border-[#d8ad43]/12'
+      className={`group cursor-pointer rounded-xl border bg-white p-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-campus-sm dark:bg-white/5 ${
+        deadline.color === 'red' ? 'border-red-200 dark:border-red-400/30' : 'border-gray-100 hover:border-[#d8ad43]/25 dark:border-[#d8ad43]/12 dark:hover:border-[#d8ad43]/30'
       }`}
     >
       <div className="flex items-start gap-3">
@@ -391,8 +391,8 @@ export default function DashboardPage() {
                   cls: stats?.listings_expiring_soon ? 'text-red-600' : 'text-[#1E3A5F]',
                 },
               ].map(({ label, value, cls }) => (
-                <div key={label} className="rounded-lg bg-gray-50 p-2.5 text-center dark:bg-white/5">
-                  <p className={`text-2xl font-medium ${cls}`}>{value}</p>
+                <div key={label} className="rounded-lg bg-gray-50 p-2.5 text-center transition-all duration-200 hover:-translate-y-0.5 hover:shadow-campus-sm dark:bg-white/5">
+                  <p className={`text-2xl font-semibold ${cls} dark:text-[#d8ad43]`}>{value}</p>
                   <p className="mt-0.5 text-[9px] text-gray-400 dark:text-[#e7edf4]/40">{label}</p>
                 </div>
               ))}
@@ -485,7 +485,12 @@ export default function DashboardPage() {
                 {APPLICATION_STATUSES.map((column) => {
                   const columnItems = applications.filter((item) => item.status === column.key)
                   return (
-                    <div key={column.key} className="rounded-xl border border-gray-100 bg-gray-50/70 p-2.5 dark:border-[#d8ad43]/12 dark:bg-white/5">
+                    <div key={column.key} className={`rounded-xl border border-gray-100 bg-gray-50/70 p-2.5 dark:border-[#d8ad43]/12 dark:bg-white/5 border-t-[3px] ${
+                      column.key === 'basvurdum' ? 'border-t-blue-400' :
+                      column.key === 'mulakat' ? 'border-t-yellow-400' :
+                      column.key === 'kabul' ? 'border-t-green-400' :
+                      'border-t-red-400'
+                    }`}>
                       <div className="mb-2 flex items-center justify-between">
                         <p className="text-xs font-semibold text-[#1E3A5F] dark:text-[#d8ad43]">{column.label}</p>
                         <span className="rounded-full bg-white px-1.5 py-0.5 text-[10px] text-gray-500 dark:bg-[#0e1e33] dark:text-[#e7edf4]/60">
@@ -500,7 +505,7 @@ export default function DashboardPage() {
                           </p>
                         ) : (
                           columnItems.map((item) => (
-                            <div key={item.id} className="rounded-lg bg-white p-2 shadow-sm dark:bg-[#0e1e33]">
+                            <div key={item.id} className="rounded-lg bg-white p-2 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-campus-sm dark:bg-[#0e1e33]">
                               <button
                                 type="button"
                                 onClick={() => router.push(`/listings/${item.listing.id}`)}
@@ -557,7 +562,7 @@ export default function DashboardPage() {
           <div className="campus-card rounded-2xl p-4">
             <div className="mb-4 flex items-center gap-3">
               <div
-                className={`flex h-12 w-12 items-center justify-center rounded-full text-sm font-semibold ${
+                className={`flex h-12 w-12 items-center justify-center rounded-full text-sm font-semibold ring-2 ring-[#d8ad43]/15 transition-all duration-200 hover:ring-[#d8ad43]/35 ${
                   profile ? getAvatarColor(profile.full_name) : 'bg-gray-100 text-gray-400'
                 }`}
               >
@@ -636,7 +641,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="mb-3 h-1.5 rounded-full bg-gray-100 dark:bg-white/10">
                   <div
-                    className="h-full rounded-full bg-[#1E3A5F] transition-all dark:bg-[#d8ad43]"
+                    className="h-full rounded-full bg-gradient-to-r from-[#1E3A5F] to-[#2a5585] transition-all dark:from-[#d8ad43] dark:to-[#e4c05c]"
                     style={{ width: `${profile.completion_percentage}%` }}
                   />
                 </div>
@@ -687,13 +692,13 @@ export default function DashboardPage() {
             <div className="mt-3 grid grid-cols-1 gap-2">
               <button
                 onClick={() => router.push('/dashboard/scraper-health')}
-                className="rounded-lg border border-[#1E3A5F]/20 px-3 py-2 text-left text-xs font-medium text-[#1E3A5F] hover:bg-[#1E3A5F]/5 dark:border-[#d8ad43]/30 dark:text-[#d8ad43]"
+                className="rounded-lg border border-[#1E3A5F]/20 px-3 py-2 text-left text-xs font-medium text-[#1E3A5F] transition-all duration-200 hover:bg-[#1E3A5F]/5 hover:pl-4 dark:border-[#d8ad43]/30 dark:text-[#d8ad43]"
               >
                 Scraper Health Dashboard
               </button>
               <button
                 onClick={() => router.push('/dashboard/encoding-quality')}
-                className="rounded-lg border border-[#1E3A5F]/20 px-3 py-2 text-left text-xs font-medium text-[#1E3A5F] hover:bg-[#1E3A5F]/5 dark:border-[#d8ad43]/30 dark:text-[#d8ad43]"
+                className="rounded-lg border border-[#1E3A5F]/20 px-3 py-2 text-left text-xs font-medium text-[#1E3A5F] transition-all duration-200 hover:bg-[#1E3A5F]/5 hover:pl-4 dark:border-[#d8ad43]/30 dark:text-[#d8ad43]"
               >
                 Encoding Kalitesi Monitoring
               </button>
@@ -705,19 +710,19 @@ export default function DashboardPage() {
             <div className="mt-3 grid grid-cols-1 gap-2">
               <button
                 onClick={() => router.push('/dashboard/admin')}
-                className="rounded-lg border border-[#1E3A5F]/20 px-3 py-2 text-left text-xs font-medium text-[#1E3A5F] hover:bg-[#1E3A5F]/5 dark:border-[#d8ad43]/30 dark:text-[#d8ad43]"
+                className="rounded-lg border border-[#1E3A5F]/20 px-3 py-2 text-left text-xs font-medium text-[#1E3A5F] transition-all duration-200 hover:bg-[#1E3A5F]/5 hover:pl-4 dark:border-[#d8ad43]/30 dark:text-[#d8ad43]"
               >
                 Admin Dashboard (Moderasyon)
               </button>
               <button
                 onClick={() => router.push('/dashboard/scraper-health')}
-                className="rounded-lg border border-[#1E3A5F]/20 px-3 py-2 text-left text-xs font-medium text-[#1E3A5F] hover:bg-[#1E3A5F]/5 dark:border-[#d8ad43]/30 dark:text-[#d8ad43]"
+                className="rounded-lg border border-[#1E3A5F]/20 px-3 py-2 text-left text-xs font-medium text-[#1E3A5F] transition-all duration-200 hover:bg-[#1E3A5F]/5 hover:pl-4 dark:border-[#d8ad43]/30 dark:text-[#d8ad43]"
               >
                 Scraper Health Dashboard
               </button>
               <button
                 onClick={() => router.push('/dashboard/encoding-quality')}
-                className="rounded-lg border border-[#1E3A5F]/20 px-3 py-2 text-left text-xs font-medium text-[#1E3A5F] hover:bg-[#1E3A5F]/5 dark:border-[#d8ad43]/30 dark:text-[#d8ad43]"
+                className="rounded-lg border border-[#1E3A5F]/20 px-3 py-2 text-left text-xs font-medium text-[#1E3A5F] transition-all duration-200 hover:bg-[#1E3A5F]/5 hover:pl-4 dark:border-[#d8ad43]/30 dark:text-[#d8ad43]"
               >
                 Encoding Kalitesi Monitoring
               </button>

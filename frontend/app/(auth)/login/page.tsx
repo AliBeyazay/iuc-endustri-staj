@@ -250,7 +250,7 @@ function LoginPageContent() {
             {...register('email')}
             type="email"
             placeholder="ornek@ogr.iuc.edu.tr"
-            className="h-9 w-full rounded-lg border border-gray-200 px-3 text-sm focus:border-[#1E3A5F] focus:outline-none dark:border-[#d8ad43]/18 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:focus:border-[#d8ad43]/40"
+            className="h-9 w-full rounded-lg border border-gray-200 px-3 text-sm transition-all duration-200 focus:border-[#1E3A5F] focus:shadow-[0_0_16px_rgba(30,58,95,0.08)] focus:outline-none dark:border-[#d8ad43]/18 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:focus:border-[#d8ad43]/40 dark:focus:shadow-[0_0_16px_rgba(216,173,67,0.06)]"
           />
           {errors.email ? <p className="mt-1 text-[10px] text-red-500">{errors.email.message}</p> : null}
         </div>
@@ -261,7 +261,7 @@ function LoginPageContent() {
             <input
               {...register('password')}
               type={showPassword ? 'text' : 'password'}
-              className="h-9 w-full rounded-lg border border-gray-200 px-3 pr-8 text-sm focus:border-[#1E3A5F] focus:outline-none dark:border-[#d8ad43]/18 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:focus:border-[#d8ad43]/40"
+              className="h-9 w-full rounded-lg border border-gray-200 px-3 pr-8 text-sm transition-all duration-200 focus:border-[#1E3A5F] focus:shadow-[0_0_16px_rgba(30,58,95,0.08)] focus:outline-none dark:border-[#d8ad43]/18 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:focus:border-[#d8ad43]/40 dark:focus:shadow-[0_0_16px_rgba(216,173,67,0.06)]"
             />
             <button
               type="button"
@@ -289,7 +289,7 @@ function LoginPageContent() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="h-10 w-full rounded-lg bg-[#1E3A5F] text-sm font-medium text-white disabled:opacity-50 dark:bg-[#d8ad43] dark:text-[#10223b]"
+          className="h-10 w-full rounded-lg bg-[#1E3A5F] text-sm font-medium text-white transition-all duration-200 hover:bg-[#15304f] hover:shadow-campus-sm disabled:opacity-50 dark:bg-[#d8ad43] dark:text-[#10223b] dark:hover:bg-[#e4c05c]"
         >
           {isSubmitting ? 'Giriş yapılıyor...' : 'Giriş Yap'}
         </button>

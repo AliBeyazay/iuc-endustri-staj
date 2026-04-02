@@ -35,7 +35,7 @@ export default function ShareButton({ url, className = '' }: Props) {
             right:  '1.5rem',
             zIndex: 50,
           }}
-          className="px-4 py-2 bg-green-600 text-white text-xs font-medium rounded-lg shadow-lg"
+          className="px-4 py-2.5 bg-green-600 text-white text-xs font-medium rounded-lg shadow-campus-md animate-scale-in"
         >
           Bağlantı kopyalandı!
         </div>
