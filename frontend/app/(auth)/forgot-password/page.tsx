@@ -22,35 +22,35 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="w-full max-w-sm">
+    <div className="w-full">
       {!sent ? (
         <>
-          <h1 className="text-xl font-medium text-gray-900 mb-1 dark:text-[#e7edf4]">Şifre Sıfırla</h1>
-          <p className="text-sm text-gray-500 mb-5 dark:text-[#e7edf4]/50">E-posta adresine sıfırlama linki gönderilecek</p>
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1 dark:text-[#e7edf4]/60">E-posta</label>
+          <h1 className="text-2xl font-bold text-[#051c38] dark:text-white mb-1 campus-heading">Şifre Sıfırla</h1>
+          <p className="text-sm text-[#44474d] dark:text-white/50 mb-6">E-posta adresine sıfırlama linki gönderilecek</p>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#051c38] dark:text-white">E-posta</label>
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
                 placeholder="ornek@ogr.iuc.edu.tr" required
-                className="w-full h-9 px-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1E3A5F] dark:border-[#d8ad43]/18 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:focus:border-[#d8ad43]/40" />
+                className="w-full py-4 px-4 bg-[#e7eeff] dark:bg-[#1d314e] border-none rounded-xl text-sm text-[#051c38] dark:text-white placeholder:text-[#051c38]/30 dark:placeholder:text-white/25 focus:outline-none focus:ring-0 focus:border-b-2 focus:border-[#d8ad43] transition-all" />
             </div>
             <button type="submit" disabled={loading || !email}
-              className="w-full h-10 bg-[#1E3A5F] text-white rounded-lg text-sm font-medium disabled:opacity-50 dark:bg-[#d8ad43] dark:text-[#10223b]">
+              className="w-full py-4 bg-[#051c38] dark:bg-[#d8ad43] text-white dark:text-[#10223b] rounded-xl font-bold shadow-lg shadow-[#051c38]/10 active:scale-[0.98] transition-all disabled:opacity-50">
               {loading ? 'Gönderiliyor...' : 'Sıfırlama Linki Gönder'}
             </button>
           </form>
-          <p className="text-center text-xs text-gray-400 mt-4 dark:text-[#e7edf4]/40">
-            <button onClick={() => router.push('/login')} className="text-[#1E3A5F] hover:underline">← Giriş sayfasına dön</button>
+          <p className="text-center text-sm text-[#44474d] dark:text-white/50 mt-6">
+            <button onClick={() => router.push('/login')} className="font-bold text-[#d8ad43] hover:text-[#c79828] transition-colors">← Giriş sayfasına dön</button>
           </p>
         </>
       ) : (
         <div className="text-center">
-          <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-xl mx-auto mb-4">✓</div>
-          <h1 className="text-xl font-medium text-gray-900 mb-2 dark:text-[#e7edf4]">E-posta Gönderildi</h1>
-          <p className="text-sm text-gray-500 mb-5 leading-relaxed dark:text-[#e7edf4]/50">
+          <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center text-2xl mx-auto mb-4">✓</div>
+          <h1 className="text-2xl font-bold text-[#051c38] dark:text-white mb-2 campus-heading">E-posta Gönderildi</h1>
+          <p className="text-sm text-[#44474d] dark:text-white/50 mb-6 leading-relaxed">
             E-posta kutunu kontrol et. Link 15 dakika geçerlidir.
           </p>
-          <button onClick={() => setSent(false)} className="text-xs text-[#1E3A5F] hover:underline">
+          <button onClick={() => setSent(false)} className="text-sm font-bold text-[#d8ad43] hover:text-[#c79828] transition-colors">
             Farklı bir adres dene
           </button>
         </div>

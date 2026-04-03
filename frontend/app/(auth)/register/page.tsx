@@ -97,8 +97,8 @@ function OTPInput({
           onKeyDown={(event) => handleKeyDown(index, event)}
           onPaste={handlePaste}
           maxLength={1}
-          className={`h-12 w-10 rounded-lg border text-center text-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 dark:focus:ring-[#d8ad43]/20 ${
-            digit ? 'border-[#1E3A5F] bg-blue-50 text-[#0C447C] dark:border-[#d8ad43] dark:bg-[#d8ad43]/10 dark:text-[#d8ad43]' : 'border-gray-200 bg-gray-50 dark:border-[#d8ad43]/18 dark:bg-[#0e1e33]'
+          className={`h-12 w-10 rounded-xl border text-center text-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#051c38]/20 dark:focus:ring-[#d8ad43]/20 ${
+            digit ? 'border-[#051c38] bg-[#e7eeff] text-[#051c38] dark:border-[#d8ad43] dark:bg-[#d8ad43]/10 dark:text-[#d8ad43]' : 'border-[#c4c6ce] bg-[#e7eeff] dark:border-white/15 dark:bg-[#1d314e]'
           } ${hasError ? 'border-red-400 bg-red-50 animate-pulse' : ''}`}
         />
       ))}
@@ -303,7 +303,7 @@ export default function RegisterPage() {
           <div
             key={value}
             className={`h-1.5 rounded-full transition-all ${
-              value === step ? 'w-4 bg-[#1E3A5F] dark:bg-[#d8ad43]' : 'w-1.5 bg-gray-200 dark:bg-white/15'
+              value === step ? 'w-4 bg-[#051c38] dark:bg-[#d8ad43]' : 'w-1.5 bg-[#c4c6ce] dark:bg-white/15'
             }`}
           />
         ))}
@@ -317,8 +317,8 @@ export default function RegisterPage() {
 
       {step === 1 && (
         <>
-          <h1 className="mb-1 text-xl font-medium text-gray-900 dark:text-[#e7edf4]">Hesap Oluştur</h1>
-          <p className="mb-5 text-sm text-gray-500 dark:text-[#e7edf4]/50">Adım 1/3 - Temel bilgiler</p>
+          <h1 className="mb-1 text-2xl font-bold text-[#051c38] dark:text-white campus-heading">Hesap Oluştur</h1>
+          <p className="mb-5 text-sm text-[#44474d] dark:text-white/50">Adım 1/3 - Temel bilgiler</p>
 
           {step1Status ? (
             <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5 text-xs text-blue-800">
@@ -346,12 +346,12 @@ export default function RegisterPage() {
               { name: 'password_confirm' as const, label: 'Şifre Tekrar', type: 'password', placeholder: '' },
             ].map(({ hint, label, name, placeholder, type }) => (
               <div key={name}>
-                <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-[#e7edf4]/60">{label}</label>
+                <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-[#051c38] dark:text-white">{label}</label>
                 <input
                   {...form1.register(name)}
                   type={type}
                   placeholder={placeholder}
-                  className="h-9 w-full rounded-lg border border-gray-200 px-3 text-sm focus:border-[#1E3A5F] focus:outline-none dark:border-[#d8ad43]/18 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:focus:border-[#d8ad43]/40"
+                  className="w-full py-3 px-4 rounded-xl bg-[#e7eeff] dark:bg-[#1d314e] border-none text-sm text-[#051c38] dark:text-white placeholder:text-[#051c38]/30 dark:placeholder:text-white/25 focus:outline-none focus:ring-0 focus:border-b-2 focus:border-[#d8ad43] transition-all"
                 />
                 {hint ? <p className="mt-1 text-[10px] text-gray-400">{hint}</p> : null}
                 {form1.formState.errors[name] ? (
@@ -365,9 +365,9 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={form1.formState.isSubmitting}
-              className="h-10 w-full rounded-lg bg-[#1E3A5F] text-sm font-medium text-white transition-all duration-200 hover:bg-[#15304f] hover:shadow-campus-sm disabled:opacity-50 dark:bg-[#d8ad43] dark:text-[#10223b] dark:hover:bg-[#e4c05c]"
+              className="w-full py-4 rounded-xl bg-[#051c38] dark:bg-[#d8ad43] text-white dark:text-[#10223b] font-bold shadow-lg shadow-[#051c38]/10 active:scale-[0.98] transition-all disabled:opacity-50"
             >
-              {form1.formState.isSubmitting ? 'Kontrol ediliyor...' : 'Devam Et ->'}
+              {form1.formState.isSubmitting ? 'Kontrol ediliyor...' : 'Devam Et →'}
             </button>
           </form>
 
@@ -386,11 +386,11 @@ export default function RegisterPage() {
             </div>
           ) : null}
 
-          <p className="mt-4 text-center text-xs text-gray-400 dark:text-[#e7edf4]/40">
+          <p className="mt-4 text-center text-sm text-[#44474d] dark:text-white/50">
             Zaten hesabın var mı?{' '}
             <button
               onClick={() => router.push('/login')}
-              className="font-medium text-[#1E3A5F] hover:underline dark:text-[#d8ad43]"
+              className="font-bold text-[#d8ad43] hover:text-[#c79828] transition-colors"
             >
               Giriş Yap
             </button>
@@ -400,18 +400,18 @@ export default function RegisterPage() {
 
       {step === 2 && (
         <>
-          <h1 className="mb-1 text-xl font-medium text-gray-900 dark:text-[#e7edf4]">Öğrenci Bilgileri</h1>
-          <p className="mb-5 text-sm text-gray-500 dark:text-[#e7edf4]/50">Adım 2/3 - Profil kurulumu</p>
+          <h1 className="mb-1 text-2xl font-bold text-[#051c38] dark:text-white campus-heading">Öğrenci Bilgileri</h1>
+          <p className="mb-5 text-sm text-[#44474d] dark:text-white/50">Adım 2/3 - Profil kurulumu</p>
 
           <form onSubmit={form2.handleSubmit(onStep2)} className="space-y-4">
             <div>
-              <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-[#e7edf4]/60">Öğrenci Numarası</label>
+              <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-[#051c38] dark:text-white">Öğrenci Numarası</label>
               <input
                 {...form2.register('student_no')}
                 type="text"
                 placeholder="0401210045"
                 maxLength={10}
-                className="h-9 w-full rounded-lg border border-gray-200 px-3 text-sm transition-all duration-200 focus:border-[#1E3A5F] focus:shadow-[0_0_16px_rgba(30,58,95,0.08)] focus:outline-none dark:border-[#d8ad43]/18 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:focus:border-[#d8ad43]/40 dark:focus:shadow-[0_0_16px_rgba(216,173,67,0.06)]"
+                className="w-full py-3 px-4 rounded-xl bg-[#e7eeff] dark:bg-[#1d314e] border-none text-sm text-[#051c38] dark:text-white placeholder:text-[#051c38]/30 dark:placeholder:text-white/25 focus:outline-none focus:ring-0 focus:border-b-2 focus:border-[#d8ad43] transition-all"
               />
               {form2.formState.errors.student_no ? (
                 <p className="mt-1 text-[10px] text-red-500">
@@ -421,7 +421,7 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label className="mb-2 block text-xs font-medium text-gray-600 dark:text-[#e7edf4]/60">Sınıf</label>
+              <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-[#051c38] dark:text-white">Sınıf</label>
               <div className="grid grid-cols-4 gap-1">
                 {[1, 2, 3, 4].map((year) => (
                   <button
@@ -434,10 +434,10 @@ export default function RegisterPage() {
                         shouldValidate: true,
                       })
                     }}
-                    className={`rounded-lg border py-1.5 text-xs transition-colors ${
+                    className={`rounded-xl border py-2 text-xs transition-colors ${
                       selectedYear === year
-                        ? 'border-[#1E3A5F] bg-blue-50 font-medium text-[#1E3A5F] dark:border-[#d8ad43] dark:bg-[#d8ad43]/15 dark:text-[#d8ad43]'
-                        : 'border-gray-200 text-gray-500 hover:border-gray-300 dark:border-[#d8ad43]/18 dark:text-[#e7edf4]/50 dark:hover:border-[#d8ad43]/30'
+                        ? 'border-[#051c38] bg-[#e7eeff] font-bold text-[#051c38] dark:border-[#d8ad43] dark:bg-[#d8ad43]/15 dark:text-[#d8ad43]'
+                        : 'border-[#c4c6ce] text-[#44474d] hover:border-[#051c38]/40 dark:border-white/15 dark:text-white/50 dark:hover:border-[#d8ad43]/30'
                     }`}
                   >
                     {year}. Sınıf
@@ -448,14 +448,14 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-[#e7edf4]/60">
-                LinkedIn <span className="font-normal text-gray-400 dark:text-[#e7edf4]/35">(opsiyonel)</span>
+              <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-[#051c38] dark:text-white">
+                LinkedIn <span className="font-normal normal-case text-[#44474d]/50 dark:text-white/35">(opsiyonel)</span>
               </label>
               <input
                 {...form2.register('linkedin_url')}
                 type="url"
                 placeholder="https://linkedin.com/in/..."
-                className="h-9 w-full rounded-lg border border-gray-200 px-3 text-sm transition-all duration-200 focus:border-[#1E3A5F] focus:shadow-[0_0_16px_rgba(30,58,95,0.08)] focus:outline-none dark:border-[#d8ad43]/18 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:focus:border-[#d8ad43]/40 dark:focus:shadow-[0_0_16px_rgba(216,173,67,0.06)]"
+                className="w-full py-3 px-4 rounded-xl bg-[#e7eeff] dark:bg-[#1d314e] border-none text-sm text-[#051c38] dark:text-white placeholder:text-[#051c38]/30 dark:placeholder:text-white/25 focus:outline-none focus:ring-0 focus:border-b-2 focus:border-[#d8ad43] transition-all"
               />
               {form2.formState.errors.linkedin_url ? (
                 <p className="mt-1 text-[10px] text-red-500">
@@ -481,16 +481,16 @@ export default function RegisterPage() {
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="h-9 flex-1 rounded-lg border border-gray-200 text-xs text-gray-500 hover:bg-gray-50 dark:border-[#d8ad43]/18 dark:text-[#e7edf4]/50 dark:hover:bg-white/5"
+                className="flex-1 py-3 rounded-xl border-2 border-[#c4c6ce] dark:border-white/20 text-xs text-[#44474d] dark:text-white/60 font-bold hover:bg-[#f0f3ff] dark:hover:bg-white/5 transition-colors"
               >
-                {'<-'} Geri
+                ← Geri
               </button>
               <button
                 type="submit"
                 disabled={form2.formState.isSubmitting}
-                className="h-9 flex-[2] rounded-lg bg-[#1E3A5F] text-sm font-medium text-white transition-all duration-200 hover:bg-[#15304f] hover:shadow-campus-sm disabled:opacity-50 dark:bg-[#d8ad43] dark:text-[#10223b] dark:hover:bg-[#e4c05c]"
+                className="flex-[2] py-3 rounded-xl bg-[#051c38] dark:bg-[#d8ad43] text-white dark:text-[#10223b] font-bold shadow-lg shadow-[#051c38]/10 active:scale-[0.98] transition-all disabled:opacity-50"
               >
-                {form2.formState.isSubmitting ? 'Kaydediliyor...' : 'Devam Et ->'}
+                {form2.formState.isSubmitting ? 'Kaydediliyor...' : 'Devam Et →'}
               </button>
             </div>
           </form>
@@ -499,8 +499,8 @@ export default function RegisterPage() {
 
       {step === 3 && (
         <>
-          <h1 className="mb-1 text-xl font-medium text-gray-900 dark:text-[#e7edf4]">Doğrulama Kodunu Gir</h1>
-          <p className="mb-5 text-sm text-gray-500 dark:text-[#e7edf4]/50">Adım 3/3 - Hesap aktivasyonu</p>
+          <h1 className="mb-1 text-2xl font-bold text-[#051c38] dark:text-white campus-heading">Doğrulama Kodunu Gir</h1>
+          <p className="mb-5 text-sm text-[#44474d] dark:text-white/50">Adım 3/3 - Hesap aktivasyonu</p>
 
           <div className="mb-4 rounded-xl border border-blue-200 bg-blue-50 p-4 text-center">
             <p className="mb-1 text-sm font-medium text-blue-800">Kod Hazır</p>
@@ -542,8 +542,8 @@ export default function RegisterPage() {
 
       {step === 4 && (
         <>
-          <h1 className="mb-1 text-xl font-medium text-gray-900 dark:text-[#e7edf4]">Kayıt Tamamlandı</h1>
-          <p className="mb-5 text-sm text-gray-500 dark:text-[#e7edf4]/50">Hesabın başarıyla oluşturuldu.</p>
+          <h1 className="mb-1 text-2xl font-bold text-[#051c38] dark:text-white campus-heading">Kayıt Tamamlandı</h1>
+          <p className="mb-5 text-sm text-[#44474d] dark:text-white/50">Hesabın başarıyla oluşturuldu.</p>
 
           <div className="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-center">
             <p className="text-base font-semibold text-emerald-800">
@@ -557,7 +557,7 @@ export default function RegisterPage() {
           <button
             type="button"
             onClick={() => router.push('/login?registered=1')}
-            className="h-10 w-full rounded-lg bg-[#1E3A5F] text-sm font-medium text-white dark:bg-[#d8ad43] dark:text-[#10223b]"
+            className="w-full py-4 rounded-xl bg-[#051c38] dark:bg-[#d8ad43] text-white dark:text-[#10223b] font-bold shadow-lg shadow-[#051c38]/10 active:scale-[0.98] transition-all"
           >
             Giriş Yap
           </button>

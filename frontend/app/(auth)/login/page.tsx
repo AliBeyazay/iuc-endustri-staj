@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { fetchAccountStatus, normalizeIucEmail, resendOTP, verifyOTP } from '@/lib/api'
+import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react'
 
 const schema = z.object({
   email: z.string().email('Geçerli bir e-posta girin.'),
@@ -176,37 +177,39 @@ function LoginPageContent() {
   }
 
   return (
-    <div className="w-full max-w-sm">
-      <h1 className="mb-1 text-xl font-medium text-gray-900 dark:text-[#e7edf4]">Giriş Yap</h1>
-      <p className="mb-5 text-sm text-gray-500 dark:text-[#e7edf4]/50">IUC öğrenci hesabınla devam et</p>
+    <div className="w-full">
+      <div className="mb-10 text-center md:text-left">
+        <h3 className="text-[#051c38] dark:text-white text-3xl font-bold campus-heading mb-2">Giriş Yap</h3>
+        <p className="text-[#44474d] dark:text-white/50 text-sm">Devam etmek için kurumsal bilgilerinizle giriş yapın.</p>
+      </div>
 
       {registered ? (
-        <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-xs text-emerald-800">
+        <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-800">
           Kaydınız başarıyla oluşturuldu.
         </div>
       ) : null}
 
       {statusMessage ? (
-        <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5 text-xs text-blue-800">
+        <div className="mb-4 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-xs text-blue-800">
           {statusMessage}
         </div>
       ) : null}
 
       {serverError ? (
-        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-xs text-red-700">
+        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700">
           {serverError}
         </div>
       ) : null}
 
       {pendingVerification ? (
-        <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-3 text-xs text-amber-900">
+        <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-4 text-xs text-amber-900">
           <p className="font-medium">Doğrulama gerekli</p>
           <p className="mt-1 leading-5">
             <span className="font-medium">{pendingVerification.email}</span> için oluşturulan 6 haneli kodu aynı şekilde gir.
           </p>
           {onscreenOtp ? (
-            <div className="mt-3 rounded-lg border border-amber-300 bg-white px-3 py-3 text-center">
-              <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-amber-700">
+            <div className="mt-3 rounded-xl border border-amber-300 bg-white px-4 py-3 text-center">
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-amber-700">
                 Ekranda görünen kod
               </p>
               <p className="mt-2 text-xl font-semibold tracking-[0.34em] text-amber-950">
@@ -221,13 +224,13 @@ function LoginPageContent() {
               onChange={(event) => setVerificationCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
               inputMode="numeric"
               placeholder="123456"
-              className="h-9 flex-1 rounded-lg border border-amber-300 bg-white px-3 text-sm tracking-[0.2em] text-gray-900 focus:border-[#1E3A5F] focus:outline-none"
+              className="h-10 flex-1 rounded-xl border border-amber-300 bg-white px-4 text-sm tracking-[0.2em] text-gray-900 focus:border-[#051c38] focus:outline-none"
             />
             <button
               type="button"
               onClick={handleVerifyAndLogin}
               disabled={verificationCode.length !== 6 || isVerifyingCode}
-              className="rounded-lg bg-[#1E3A5F] px-3 text-xs font-medium text-white disabled:opacity-50"
+              className="rounded-xl bg-[#051c38] px-4 text-xs font-medium text-white disabled:opacity-50"
             >
               {isVerifyingCode ? 'Doğrulanıyor...' : 'Doğrula'}
             </button>
@@ -236,74 +239,94 @@ function LoginPageContent() {
             type="button"
             onClick={handleResendCode}
             disabled={isResendingCode}
-            className="mt-3 text-[11px] font-medium text-[#1E3A5F] hover:underline disabled:opacity-50"
+            className="mt-3 text-[11px] font-medium text-[#051c38] hover:underline disabled:opacity-50"
           >
             {isResendingCode ? 'Kod olusturuluyor...' : 'Kodu yeniden olustur'}
           </button>
         </div>
       ) : null}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
-        <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-[#e7edf4]/60">E-posta</label>
-          <input
-            {...register('email')}
-            type="email"
-            placeholder="ornek@ogr.iuc.edu.tr"
-            className="h-9 w-full rounded-lg border border-gray-200 px-3 text-sm transition-all duration-200 focus:border-[#1E3A5F] focus:shadow-[0_0_16px_rgba(30,58,95,0.08)] focus:outline-none dark:border-[#d8ad43]/18 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:focus:border-[#d8ad43]/40 dark:focus:shadow-[0_0_16px_rgba(216,173,67,0.06)]"
-          />
-          {errors.email ? <p className="mt-1 text-[10px] text-red-500">{errors.email.message}</p> : null}
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <div className="space-y-2">
+          <label className="block text-[#051c38] dark:text-white text-xs font-bold uppercase tracking-wider" htmlFor="email">E-posta</label>
+          <div className="relative">
+            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[#051c38]/40 dark:text-white/30" size={18} />
+            <input
+              {...register('email')}
+              type="email"
+              id="email"
+              placeholder="isim.soyisim@ogr.iuc.edu.tr"
+              className="w-full pl-12 pr-4 py-4 bg-[#e7eeff] dark:bg-[#1d314e] border-none rounded-xl text-sm text-[#051c38] dark:text-white placeholder:text-[#051c38]/30 dark:placeholder:text-white/25 focus:outline-none focus:ring-0 focus:border-b-2 focus:border-[#d8ad43] transition-all"
+            />
+          </div>
+          {errors.email ? <p className="text-[10px] text-red-500">{errors.email.message}</p> : null}
         </div>
 
-        <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-[#e7edf4]/60">Şifre</label>
+        <div className="space-y-2">
+          <label className="block text-[#051c38] dark:text-white text-xs font-bold uppercase tracking-wider" htmlFor="password">Şifre</label>
           <div className="relative">
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#051c38]/40 dark:text-white/30" size={18} />
             <input
               {...register('password')}
               type={showPassword ? 'text' : 'password'}
-              className="h-9 w-full rounded-lg border border-gray-200 px-3 pr-8 text-sm transition-all duration-200 focus:border-[#1E3A5F] focus:shadow-[0_0_16px_rgba(30,58,95,0.08)] focus:outline-none dark:border-[#d8ad43]/18 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:focus:border-[#d8ad43]/40 dark:focus:shadow-[0_0_16px_rgba(216,173,67,0.06)]"
+              id="password"
+              placeholder="••••••••"
+              className="w-full pl-12 pr-12 py-4 bg-[#e7eeff] dark:bg-[#1d314e] border-none rounded-xl text-sm text-[#051c38] dark:text-white placeholder:text-[#051c38]/30 dark:placeholder:text-white/25 focus:outline-none focus:ring-0 focus:border-b-2 focus:border-[#d8ad43] transition-all"
             />
             <button
               type="button"
               onClick={() => setShowPassword((value) => !value)}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-gray-400"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-[#051c38]/40 dark:text-white/30 hover:text-[#051c38] dark:hover:text-white transition-colors"
             >
-              {showPassword ? 'Gizle' : 'Göster'}
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
           {errors.password ? (
-            <p className="mt-1 text-[10px] text-red-500">{errors.password.message}</p>
+            <p className="text-[10px] text-red-500">{errors.password.message}</p>
           ) : null}
         </div>
 
-        <div className="text-right">
+        <div className="flex items-center justify-between py-2">
+          <label className="flex items-center gap-3 cursor-pointer group">
+            <input
+              type="checkbox"
+              className="rounded border-[#c4c6ce] text-[#d8ad43] focus:ring-[#d8ad43]/20 h-5 w-5"
+            />
+            <span className="text-sm text-[#44474d] dark:text-white/60 font-medium group-hover:text-[#051c38] dark:group-hover:text-white transition-colors">Beni Hatırla</span>
+          </label>
           <button
             type="button"
             onClick={() => router.push('/forgot-password')}
-            className="text-[10px] text-[#1E3A5F] hover:underline"
+            className="text-sm font-semibold text-[#d8ad43] hover:text-[#c79828] transition-colors"
           >
-            Şifremi unuttum
+            Şifremi Unuttum
           </button>
         </div>
 
         <button
           type="submit"
           disabled={isSubmitting}
-          className="h-10 w-full rounded-lg bg-[#1E3A5F] text-sm font-medium text-white transition-all duration-200 hover:bg-[#15304f] hover:shadow-campus-sm disabled:opacity-50 dark:bg-[#d8ad43] dark:text-[#10223b] dark:hover:bg-[#e4c05c]"
+          className="w-full bg-[#051c38] dark:bg-[#d8ad43] hover:bg-[#1d314e] dark:hover:bg-[#e4c05c] text-white dark:text-[#10223b] font-bold py-4 rounded-xl shadow-lg shadow-[#051c38]/10 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group disabled:opacity-50"
         >
-          {isSubmitting ? 'Giriş yapılıyor...' : 'Giriş Yap'}
+          <span>{isSubmitting ? 'Giriş yapılıyor...' : 'Giriş Yap'}</span>
+          {!isSubmitting && <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />}
         </button>
       </form>
 
-      <p className="mt-4 text-center text-xs text-gray-400 dark:text-[#e7edf4]/40">
-        Hesabın yok mu?{' '}
+      <div className="mt-12 text-center">
+        <div className="flex items-center gap-4 mb-8">
+          <div className="h-px flex-grow bg-[#c4c6ce]/30" />
+          <span className="text-[#44474d]/50 dark:text-white/30 text-xs font-bold uppercase tracking-widest">veya</span>
+          <div className="h-px flex-grow bg-[#c4c6ce]/30" />
+        </div>
+        <p className="text-[#44474d] dark:text-white/60 text-sm mb-4">Henüz bir hesabınız yok mu?</p>
         <button
           onClick={() => router.push('/register')}
-          className="font-medium text-[#1E3A5F] hover:underline dark:text-[#d8ad43]"
+          className="inline-flex items-center justify-center px-8 py-3 rounded-full border-2 border-[#c4c6ce] dark:border-white/20 text-[#051c38] dark:text-white font-bold text-sm hover:bg-[#f0f3ff] dark:hover:bg-white/5 transition-colors"
         >
-          Kayıt Ol
+          Hesap Oluştur / Kayıt Ol
         </button>
-      </p>
+      </div>
     </div>
   )
 }

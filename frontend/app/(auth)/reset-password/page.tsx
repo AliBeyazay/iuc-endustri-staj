@@ -74,20 +74,20 @@ function ResetPasswordPageContent() {
 
   if (tokenValid === null) {
     return (
-      <div className="w-full max-w-sm text-center py-10">
-        <p className="text-sm text-gray-400">Doğrulanıyor...</p>
+      <div className="w-full text-center py-10">
+        <p className="text-sm text-[#44474d] dark:text-white/50">Doğrulanıyor...</p>
       </div>
     )
   }
 
   if (!tokenValid) {
     return (
-      <div className="w-full max-w-sm">
+      <div className="w-full">
         <div className="bg-red-50 border border-red-200 rounded-xl p-5 text-center">
           <p className="text-sm font-medium text-red-700 mb-1">Geçersiz veya süresi dolmuş link</p>
           <p className="text-xs text-red-500 mb-4">Bu şifre sıfırlama linki artık geçerli değil.</p>
           <button onClick={() => router.push('/forgot-password')}
-            className="text-xs text-[#1E3A5F] hover:underline">
+            className="text-sm font-bold text-[#d8ad43] hover:text-[#c79828] transition-colors">
             Yeni link iste →
           </button>
         </div>
@@ -97,27 +97,27 @@ function ResetPasswordPageContent() {
 
   if (success) {
     return (
-      <div className="w-full max-w-sm text-center">
-        <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-xl mx-auto mb-4">✓</div>
-        <h1 className="text-xl font-medium text-gray-900 mb-2 dark:text-[#e7edf4]">Şifren Güncellendi</h1>
-        <p className="text-sm text-gray-500 dark:text-[#e7edf4]/50">Giriş sayfasına yönlendiriliyorsun...</p>
+      <div className="w-full text-center">
+        <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center text-2xl mx-auto mb-4">✓</div>
+        <h1 className="text-2xl font-bold text-[#051c38] dark:text-white mb-2 campus-heading">Şifren Güncellendi</h1>
+        <p className="text-sm text-[#44474d] dark:text-white/50">Giriş sayfasına yönlendiriliyorsun...</p>
       </div>
     )
   }
 
   return (
-    <div className="w-full max-w-sm">
-      <h1 className="text-xl font-medium text-gray-900 mb-1 dark:text-[#e7edf4]">Yeni Şifre Belirle</h1>
-      <p className="text-sm text-gray-500 mb-5 dark:text-[#e7edf4]/50">En az 8 karakter, büyük harf ve rakam içermeli</p>
+    <div className="w-full">
+      <h1 className="text-2xl font-bold text-[#051c38] dark:text-white mb-1 campus-heading">Yeni Şifre Belirle</h1>
+      <p className="text-sm text-[#44474d] dark:text-white/50 mb-6">En az 8 karakter, büyük harf ve rakam içermeli</p>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
-        <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1 dark:text-[#e7edf4]/60">Yeni Şifre</label>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div className="space-y-2">
+          <label className="block text-xs font-bold uppercase tracking-wider text-[#051c38] dark:text-white">Yeni Şifre</label>
           <div className="relative">
             <input {...register('password')} type={showPw ? 'text' : 'password'}
-              className="w-full h-9 px-3 pr-8 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1E3A5F] dark:border-[#d8ad43]/18 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:focus:border-[#d8ad43]/40" />
+              className="w-full py-4 px-4 pr-12 bg-[#e7eeff] dark:bg-[#1d314e] border-none rounded-xl text-sm text-[#051c38] dark:text-white placeholder:text-[#051c38]/30 dark:placeholder:text-white/25 focus:outline-none focus:ring-0 focus:border-b-2 focus:border-[#d8ad43] transition-all" />
             <button type="button" onClick={() => setShowPw(!showPw)}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-gray-400">
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-[#051c38]/40 dark:text-white/30 hover:text-[#051c38] dark:hover:text-white transition-colors text-xs">
               {showPw ? 'Gizle' : 'Göster'}
             </button>
           </div>
@@ -125,17 +125,17 @@ function ResetPasswordPageContent() {
           <StrengthBar password={watchedPw} />
         </div>
 
-        <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1 dark:text-[#e7edf4]/60">Şifre Tekrar</label>
+        <div className="space-y-2">
+          <label className="block text-xs font-bold uppercase tracking-wider text-[#051c38] dark:text-white">Şifre Tekrar</label>
           <input {...register('password_confirm')} type="password"
-            className="w-full h-9 px-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1E3A5F] dark:border-[#d8ad43]/18 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:focus:border-[#d8ad43]/40" />
+            className="w-full py-4 px-4 bg-[#e7eeff] dark:bg-[#1d314e] border-none rounded-xl text-sm text-[#051c38] dark:text-white placeholder:text-[#051c38]/30 dark:placeholder:text-white/25 focus:outline-none focus:ring-0 focus:border-b-2 focus:border-[#d8ad43] transition-all" />
           {errors.password_confirm && (
             <p className="text-[10px] text-red-500 mt-1">{errors.password_confirm.message}</p>
           )}
         </div>
 
         <button type="submit" disabled={isSubmitting}
-          className="w-full h-10 bg-[#1E3A5F] text-white rounded-lg text-sm font-medium disabled:opacity-50 mt-1 dark:bg-[#d8ad43] dark:text-[#10223b]">
+          className="w-full py-4 bg-[#051c38] dark:bg-[#d8ad43] text-white dark:text-[#10223b] rounded-xl font-bold shadow-lg shadow-[#051c38]/10 active:scale-[0.98] transition-all disabled:opacity-50">
           {isSubmitting ? 'Kaydediliyor...' : 'Şifremi Güncelle'}
         </button>
       </form>
