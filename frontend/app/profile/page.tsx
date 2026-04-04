@@ -5,9 +5,9 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import useSWR from 'swr'
-import { fetchUserProfile, updateUserProfile, uploadCV } from '@/lib/api'
-import { UserProfile } from '@/types'
-import { getAvatarColor, getInitials } from '@/lib/helpers'
+import { fetchNotificationPreferences, fetchUserProfile, updateNotificationPreferences, updateUserProfile, uploadCV } from '@/lib/api'
+import { EMFocusArea, NotificationPreferences, UserProfile } from '@/types'
+import { getAvatarColor, getInitials, FOCUS_AREA_LABELS } from '@/lib/helpers'
 import ProfileDropdown from '@/components/ProfileDropdown'
 import ThemeToggle from '@/components/ThemeToggle'
 import UniversityLogo from '@/components/UniversityLogo'
@@ -86,6 +86,7 @@ export default function ProfilePage() {
   const router = useRouter()
   const { status } = useSession()
   const [editOpen, setEditOpen] = useState(false)
+  const [notifOpen, setNotifOpen] = useState(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -96,6 +97,11 @@ export default function ProfilePage() {
   const { data: profileData, mutate: mutateProfile } = useSWR<UserProfile>(
     status === 'authenticated' ? 'profile' : null,
     fetchUserProfile
+  )
+
+  const { data: notifPrefs, mutate: mutateNotifPrefs } = useSWR<NotificationPreferences>(
+    status === 'authenticated' ? 'notif-prefs' : null,
+    fetchNotificationPreferences
   )
 
   const profile = profileData ?? null
@@ -250,6 +256,66 @@ export default function ProfilePage() {
               ) : null}
             </>
           ) : null}
+        </div>
+
+        {/* ── Bildirim Ayarları ── */}
+        <div className="campus-card mt-4 rounded-2xl p-5">
+          <button onClick={() => setNotifOpen(!notifOpen)} className="flex w-full items-center justify-between">
+            <h2 className="text-base font-bold text-[#132843] dark:text-[#e7edf4]">Bildirim Ayarları</h2>
+            <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 text-gray-400 transition-transform ${notifOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <p className="mt-1 text-xs text-gray-400 dark:text-[#e7edf4]/40">Haftalık e-posta ile yeni ilanlardan haberdar ol</p>
+
+          {notifOpen && (
+            <div className="mt-5 space-y-5">
+              <div className="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3 dark:bg-white/5">
+                <span className="text-sm font-medium text-[#132843] dark:text-[#e7edf4]">E-posta bildirimleri</span>
+                <button
+                  onClick={async () => {
+                    const current = notifPrefs ?? { enabled: false, sectors: [], locations: [] }
+                    const updated = { ...current, enabled: !current.enabled }
+                    await updateNotificationPreferences(updated)
+                    mutateNotifPrefs(updated, false)
+                  }}
+                  className={`relative flex h-6 w-11 shrink-0 items-center rounded-full p-0.5 transition-colors ${
+                    notifPrefs?.enabled ? 'bg-[#132843]' : 'bg-gray-300'
+                  }`}
+                >
+                  <span className={`h-5 w-5 rounded-full bg-white shadow transition-transform ${notifPrefs?.enabled ? 'translate-x-5' : 'translate-x-0'}`} />
+                </button>
+              </div>
+
+              <div>
+                <p className="mb-3 text-sm font-bold text-[#132843] dark:text-[#e7edf4]">Sektörler</p>
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(FOCUS_AREA_LABELS).map(([key, label]) => {
+                    const selected = notifPrefs?.sectors?.includes(key as EMFocusArea) ?? false
+                    return (
+                      <button
+                        key={key}
+                        onClick={async () => {
+                          const current = notifPrefs ?? { enabled: false, sectors: [], locations: [] }
+                          const sectors = selected
+                            ? current.sectors.filter((s) => s !== key)
+                            : [...current.sectors, key as EMFocusArea]
+                          const updated = { ...current, sectors }
+                          await updateNotificationPreferences(updated)
+                          mutateNotifPrefs(updated, false)
+                        }}
+                        className={`rounded-lg px-3 py-2 text-xs font-medium transition-all ${
+                          selected ? 'bg-[#132843] text-white' : 'border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 dark:border-[#d8ad43]/18 dark:bg-white/5 dark:text-[#e7edf4]/70'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
