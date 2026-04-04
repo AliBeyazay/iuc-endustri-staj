@@ -104,18 +104,23 @@ CELERY_BROKER_URL        = os.environ.get('REDIS_URL', 'redis://localhost:6379/0
 CELERY_RESULT_BACKEND    = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
 CELERY_TIMEZONE          = 'Europe/Istanbul'
 CELERY_BEAT_SCHEDULER    = 'django_celery_beat.schedulers:DatabaseScheduler'
+from celery.schedules import crontab
 CELERY_BEAT_SCHEDULE     = {
     'morning-scrape': {
         'task': 'apps.scraper.tasks.run_all_scrapers',
-        'schedule': 28800,  # every 8 hours (crontab needs celery-beat running)
+        'schedule': crontab(hour=8, minute=0),
+    },
+    'evening-scrape': {
+        'task': 'apps.scraper.tasks.run_all_scrapers',
+        'schedule': crontab(hour=20, minute=0),
     },
     'expire-check': {
         'task': 'apps.scraper.tasks.deactivate_expired_listings',
-        'schedule': 86400,  # daily
+        'schedule': crontab(hour=9, minute=0),
     },
     'weekly-digest': {
         'task': 'apps.scraper.tasks.send_weekly_digest',
-        'schedule': 604800,  # weekly (7 days)
+        'schedule': crontab(hour=10, minute=0, day_of_week=1),
     },
 }
 

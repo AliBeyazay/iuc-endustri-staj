@@ -2,7 +2,6 @@ import logging
 import os
 from pathlib import Path
 from celery import shared_task
-from celery.schedules import crontab
 from django.conf import settings
 from dotenv import load_dotenv
 
@@ -21,22 +20,7 @@ SPIDER_MAP = {
     'odtu_kpm':  'apps.scraper.spiders.spiders.OdtuKpmSpider',
     'bogazici_km': 'apps.scraper.spiders.spiders.BogaziciKariyerSpider',
     'ytu_orkam': 'apps.scraper.spiders.spiders.YtuOrkamSpider',
-}
-
-# ─── Celery Beat Schedule (add to Django settings) ────────────────────────────
-CELERY_BEAT_SCHEDULE = {
-    'morning-scrape': {
-        'task': 'apps.scraper.tasks.run_all_scrapers',
-        'schedule': crontab(hour=8, minute=0),
-    },
-    'evening-scrape': {
-        'task': 'apps.scraper.tasks.run_all_scrapers',
-        'schedule': crontab(hour=20, minute=0),
-    },
-    'expire-check': {
-        'task': 'apps.scraper.tasks.deactivate_expired_listings',
-        'schedule': crontab(hour=9, minute=0),
-    },
+    'kariyer':   'apps.scraper.spiders.spiders.KariyerSpider',
 }
 
 

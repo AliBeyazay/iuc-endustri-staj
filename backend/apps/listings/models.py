@@ -279,3 +279,16 @@ class ScraperLog(models.Model):
 
     def __str__(self):
         return f'{self.spider_name} - {self.started_at:%Y-%m-%d %H:%M}'
+
+
+class NegativeKeyword(models.Model):
+    keyword = models.CharField(max_length=100, unique=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['keyword']
+        verbose_name = 'Negatif Anahtar Kelime'
+        verbose_name_plural = 'Negatif Anahtar Kelimeler'
+
+    def __str__(self):
+        return self.keyword

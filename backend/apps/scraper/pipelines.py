@@ -478,12 +478,38 @@ class DjangoORMPipeline:
         return 0.0
 
     def find_best_duplicate_candidate(self, Listing, listing, source_url: str, source_platform: str):
-        candidates = (
+        base_qs = (
             Listing.objects.filter(is_active=True, canonical_listing__isnull=True)
             .exclude(id=listing.id)
             .exclude(source_url=source_url)
             .exclude(source_platform=source_platform)
         )
+
+        # Pre-filter: narrow candidates by company name words to avoid O(N) full scan
+        company_words = [
+            w for w in re.sub(r'[^a-zA-Z0-9çğıöşüÇĞİÖŞÜ]+', ' ', listing.company_name or '').split()
+            if len(w) >= 3
+        ][:3]
+        if company_words:
+            from django.db.models import Q
+            company_q = Q()
+            for word in company_words:
+                company_q |= Q(company_name__icontains=word)
+            candidates = base_qs.filter(company_q)
+        else:
+            # No company name — fall back to title word filtering
+            title_words = [
+                w for w in re.sub(r'[^a-zA-Z0-9çğıöşüÇĞİÖŞÜ]+', ' ', listing.title or '').split()
+                if len(w) >= 4
+            ][:3]
+            if title_words:
+                from django.db.models import Q
+                title_q = Q()
+                for word in title_words:
+                    title_q |= Q(title__icontains=word)
+                candidates = base_qs.filter(title_q)
+            else:
+                candidates = base_qs
 
         best_candidate = None
         best_score = 0.0

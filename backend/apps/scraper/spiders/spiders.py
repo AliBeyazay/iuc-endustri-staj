@@ -453,11 +453,17 @@ def extract_deadline_from_remote_page(spider: BaseEMSpider, url: str) -> date | 
 
 class KariyerSpider(BaseEMSpider):
     name = "kariyer"
-    start_urls = ["https://www.kariyer.net/is-ilanlari?kw=staj"]
+    MAX_PAGES = 5
+
+    def start_requests(self):
+        for page in range(1, self.MAX_PAGES + 1):
+            url = f"https://www.kariyer.net/is-ilanlari?kw=staj&pn={page}"
+            yield Request(url, callback=self.parse, meta={"page": page})
 
     def parse(self, response):
         soup = BeautifulSoup(response.text, "html.parser")
         seen = set()
+        found = 0
 
         for anchor in soup.select("a[href*='/is-ilani/']"):
             href = anchor.get("href")
@@ -467,7 +473,10 @@ class KariyerSpider(BaseEMSpider):
             if "staj" not in preview.lower() and "intern" not in preview.lower():
                 continue
             seen.add(href)
+            found += 1
             yield response.follow(href, callback=self.parse_detail)
+
+        self.logger.info("KARIYER_PAGE_%s: %s listings found", response.meta.get("page", 1), found)
 
     def parse_detail(self, response):
         soup = BeautifulSoup(response.text, "html.parser")
@@ -796,6 +805,10 @@ class YouthallSpider(BaseEMSpider):
             seen.add(full_url)
             yield Request(full_url, callback=self.parse_detail)
 
+        next_link = response.css("a.next::attr(href), a[rel='next']::attr(href), li.next a::attr(href)").get()
+        if next_link:
+            yield Request(response.urljoin(next_link), callback=self.parse)
+
     def parse_detail(self, response):
         soup = BeautifulSoup(response.text, "html.parser")
         text = self.clean_text(soup.get_text(" ", strip=True))
@@ -941,10 +954,11 @@ class AnbeaSpider(BaseEMSpider):
             seen.add(full_url)
             yield response.follow(full_url, callback=self.parse_detail)
 
+        next_link = response.css("a.next::attr(href), a[rel='next']::attr(href), li.next a::attr(href), a.next.page-numbers::attr(href)").get()
+        if next_link:
+            yield Request(response.urljoin(next_link), callback=self.parse)
+
     def parse_detail(self, response):
-        soup = BeautifulSoup(response.text, "html.parser")
-        text = self.clean_text(soup.get_text(" ", strip=True))
-        title = self.clean_text((soup.find("h1") or {}).get_text(" ", strip=True) if soup.find("h1") else "")
         if not title:
             return
         if title in {"Staj İlanları", "Yetenek Programları", "Management Trainee (MT) Programı İlanları"}:
@@ -1043,6 +1057,10 @@ class BoomerangSpider(BaseEMSpider):
                 continue
             seen.add(full_url)
             yield Request(full_url, callback=self.parse_detail)
+
+        next_link = response.css("a.next::attr(href), a[rel='next']::attr(href), li.next a::attr(href), a.next.page-numbers::attr(href)").get()
+        if next_link:
+            yield Request(response.urljoin(next_link), callback=self.parse)
 
     def parse_detail(self, response):
         text = self.clean_text(BeautifulSoup(response.text, "html.parser").get_text(" ", strip=True))
@@ -1227,6 +1245,10 @@ class TopTalentSpider(BaseEMSpider):
                 callback=self.parse_detail,
                 meta={"listing_preview": self.clean_text(anchor.get_text(" ", strip=True))},
             )
+
+        next_link = response.css("a.next::attr(href), a[rel='next']::attr(href), li.next a::attr(href), a.next.page-numbers::attr(href)").get()
+        if next_link:
+            yield Request(response.urljoin(next_link), callback=self.parse)
 
     def parse_detail(self, response):
         soup = BeautifulSoup(response.text, "html.parser")
@@ -1654,6 +1676,8 @@ class SavunmaSpider(BaseEMSpider):
         "summer",
     )
 
+    MAX_PAGES = 10
+
     def start_requests(self):
         payload = {
             "page": 1,
@@ -1666,6 +1690,7 @@ class SavunmaSpider(BaseEMSpider):
             body=json.dumps(payload),
             headers={"Content-Type": "application/json"},
             callback=self.parse,
+            meta={"page": 1},
         )
 
     def should_include_item(self, title: str, description: str) -> bool:
@@ -1682,6 +1707,28 @@ class SavunmaSpider(BaseEMSpider):
         payload = json.loads(response.text)
         data = payload.get("data") or {}
         items = data.get("content") or data.get("contents") or data.get("data") or []
+
+        current_page = response.meta.get("page", 1)
+        total_pages = data.get("totalPages", 1)
+        self.logger.info("SAVUNMA_PAGE_%s_OF_%s: %s items", current_page, total_pages, len(items))
+
+        if current_page < min(total_pages, self.MAX_PAGES):
+            next_page = current_page + 1
+            next_payload = {
+                "page": next_page,
+                "size": 100,
+                "sortDirection": "DESC",
+            }
+            yield Request(
+                self.API_URL,
+                method="POST",
+                body=json.dumps(next_payload),
+                headers={"Content-Type": "application/json"},
+                callback=self.parse,
+                meta={"page": next_page},
+                dont_filter=True,
+            )
+
         for item in items:
             if not item.get("visible") or item.get("jobStatus") != "PUBLISHED":
                 continue

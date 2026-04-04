@@ -21,7 +21,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .filters import ListingFilter
-from .models import Application, Bookmark, InternshipJournal, JournalComment, Listing, Review, ScraperLog, Student
+from .models import Application, Bookmark, InternshipJournal, JournalComment, Listing, NegativeKeyword, Review, ScraperLog, Student
 from .serializers import (
     AdminListingListSerializer,
     AdminListingUpdateSerializer,
@@ -60,55 +60,17 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
     ]
     ordering = ['-created_at']
 
-    # Endüstri mühendisliğiyle ilgisiz ilanları filtrele
-    NEGATIVE_KEYWORDS = [
-        'avukat', 'hukuk', 'savcı', 'noter', 'icra',
-        'legal intern', 'certified legal intern', 'legal internship',
-        'eczacı', 'eczane', 'eczacılık',
-        'diş hekimi', 'dişçi', 'diş kliniği',
-        'veteriner',
-        'kuaför', 'berber', 'güzellik salonu',
-        'aşçı', 'aşçıbaşı', 'pastane',
-        'muhasebe', 'mali müşavir', 'serbest muhasebeci',
-        'hemşire', 'hemşirelik', 'ebe', 'ebelik',
-        'odyolog', 'fizyoterapist', 'diyetisyen',
-        'psikolog', 'pedagog',
-        'sosyal hizmet',
-        'gazetecilik', 'muhabir',
-        'iletişim fakültesi', 'iletisim fakultesi',
-        'halkla ilişkiler', 'public relations',
-        # Yazılım/IT pozisyonları (endüstri müh. değil)
-        'backend developer', 'frontend developer', 'front-end developer',
-        'front end developer', 'react developer', 'next.js developer',
-        'nextjs developer', 'react/next.js developer', 'react nextjs developer',
-        'javascript developer', 'node.js developer', 'nodejs developer',
-        'full stack developer', 'full-stack developer',
-        'fullstack developer', 'software developer', 'software engineer',
-        'web developer', 'mobile developer', 'ios developer', 'android developer',
-        'devops engineer', 'cloud engineer', 'site reliability',
-        'qa engineer', 'test engineer',
-        'ui developer', 'ux designer',
-        'tasarım asistanı', 'stajyer tasarım asistanı',
-        'design assistant', 'graphic designer', 'grafik tasarım',
-        'insansız hava araçları alt sistemleri proje mühendisi',
-        'üretim operatörü', 'uretim operatoru',
-        'satış uzmanı', 'satis uzmani', 'satış operasyonları uzmanı',
-        'halkla ilişkiler stajeri', 'halkla iliskiler stajeri',
-        'pazarlama ve halkla ilişkiler stajyeri', 'public relations intern',
-        'supervisor', 'country operations', 'operations manager',
-        'minimum 5 years', 'minimum 6 years', 'minimum 7 years',
-        'at least 5 years', 'at least 6 years', 'at least 7 years',
-        '5+ years', '6+ years', '7+ years',
-        '5 years experience', '6 years experience', '7 years experience',
-        'cyber security', 'siber güvenlik',
-        'network engineer', 'ağ uzmanı',
-        'database administrator',
-        'game developer', 'oyun geliştirici',
-        'yazılım geliştirme', 'yazılım test', 'yazılım mühendis',
-        'yazılım stajyer', 'test stajyer',
-        'bilgisayar mühendis', 'elektronik mühendis',
-        'sistem yönetici', 'system admin',
-    ]
+    # Endüstri mühendisliğiyle ilgisiz ilanları filtrele (DB'den, 5dk cache)
+    NEGATIVE_KEYWORDS_CACHE_TTL = 300
+
+    @classmethod
+    def _get_negative_keywords(cls):
+        cache_key = 'negative_keywords_list'
+        keywords = cache.get(cache_key)
+        if keywords is None:
+            keywords = list(NegativeKeyword.objects.values_list('keyword', flat=True))
+            cache.set(cache_key, keywords, timeout=cls.NEGATIVE_KEYWORDS_CACHE_TTL)
+        return keywords
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -130,7 +92,7 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
 
         # Negatif anahtar kelime filtresi
         neg = Q()
-        for kw in self.NEGATIVE_KEYWORDS:
+        for kw in self._get_negative_keywords():
             neg |= Q(title__icontains=kw) | Q(company_name__icontains=kw)
         if neg:
             qs = qs.exclude(neg)

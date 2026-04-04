@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Application, InternshipJournal, JournalComment, Listing, Review, Bookmark, Student, ScraperLog
+from .models import Application, InternshipJournal, JournalComment, Listing, NegativeKeyword, Review, Bookmark, Student, ScraperLog
 
 
 @admin.register(Student)
@@ -83,3 +83,9 @@ class ScraperLogAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return False
+
+
+@admin.register(NegativeKeyword)
+class NegativeKeywordAdmin(admin.ModelAdmin):
+    list_display = ['keyword', 'created_at']
+    search_fields = ['keyword']

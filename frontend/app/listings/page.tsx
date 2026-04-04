@@ -1,11 +1,12 @@
 'use client'
 
 import type { Dispatch, SetStateAction } from 'react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { BriefcaseBusiness, Clock3, MapPin, History } from 'lucide-react'
+import useSWR from 'swr'
 import UniversityLogo from '@/components/UniversityLogo'
 import ProfileDropdown from '@/components/ProfileDropdown'
 import { useRecentlyViewed } from '@/hooks'
@@ -813,10 +814,6 @@ export default function ListingsPage() {
   const router = useRouter()
   const { data: session, status } = useSession()
 
-  const [listings, setListings] = useState<Listing[]>([])
-  const [totalCount, setTotalCount] = useState(0)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [query, setQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
   const [selectedSectors, setSelectedSectors] = useState<string[]>([])
@@ -846,42 +843,53 @@ export default function ListingsPage() {
     }
   }, [])
 
-  useEffect(() => {
-    async function loadListings() {
-      try {
-        setLoading(true)
-        setError(null)
-        const queryString = buildListingsApiQuery({
-          page: currentPage,
-          query: debouncedQuery,
-          selectedSectors,
-          selectedPlatforms,
-          selectedDurations,
-          talentOnly,
-          sortBy,
-        })
-        const response = await fetch(`/api/listings?${queryString}`, { cache: 'no-store' })
-        if (!response.ok) {
-          throw new Error('İlanlar alınamadı.')
-        }
-        const data = await response.json()
-        const items = Array.isArray(data)
-          ? data
-          : Array.isArray(data?.results)
-            ? data.results
-            : []
-        const normalizedItems = items.map(normalizeListing)
-        setListings(rankListingsBySearch(normalizedItems, debouncedQuery))
-        setTotalCount(Array.isArray(data) ? items.length : Number(data?.count ?? items.length))
-      } catch (loadError) {
-        setError(loadError instanceof Error ? loadError.message : 'Beklenmeyen hata oluştu.')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    void loadListings()
+  const swrKey = useMemo(() => {
+    const queryString = buildListingsApiQuery({
+      page: currentPage,
+      query: debouncedQuery,
+      selectedSectors,
+      selectedPlatforms,
+      selectedDurations,
+      talentOnly,
+      sortBy,
+    })
+    return `/api/listings?${queryString}`
   }, [currentPage, debouncedQuery, selectedPlatforms, selectedSectors, selectedDurations, sortBy, talentOnly])
+
+  const listingsFetcher = useCallback(async (url: string) => {
+    const response = await fetch(url, { cache: 'no-store' })
+    if (!response.ok) throw new Error('İlanlar alınamadı.')
+    return response.json()
+  }, [])
+
+  const { data: swrData, error: swrError, isLoading: loading } = useSWR(swrKey, listingsFetcher, {
+    revalidateOnFocus: false,
+    dedupingInterval: 10000,
+    keepPreviousData: true,
+  })
+
+  const listings = useMemo(() => {
+    if (!swrData) return []
+    const items = Array.isArray(swrData)
+      ? swrData
+      : Array.isArray(swrData?.results)
+        ? swrData.results
+        : []
+    const normalizedItems = items.map(normalizeListing)
+    return rankListingsBySearch(normalizedItems, debouncedQuery)
+  }, [swrData, debouncedQuery])
+
+  const totalCount = useMemo(() => {
+    if (!swrData) return 0
+    const items = Array.isArray(swrData)
+      ? swrData
+      : Array.isArray(swrData?.results)
+        ? swrData.results
+        : []
+    return Array.isArray(swrData) ? items.length : Number(swrData?.count ?? items.length)
+  }, [swrData])
+
+  const error = swrError ? (swrError instanceof Error ? swrError.message : 'Beklenmeyen hata oluştu.') : null
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
