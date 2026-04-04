@@ -68,7 +68,10 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
         cache_key = 'negative_keywords_list'
         keywords = cache.get(cache_key)
         if keywords is None:
-            keywords = list(NegativeKeyword.objects.values_list('keyword', flat=True))
+            try:
+                keywords = list(NegativeKeyword.objects.values_list('keyword', flat=True))
+            except Exception:
+                keywords = []
             cache.set(cache_key, keywords, timeout=cls.NEGATIVE_KEYWORDS_CACHE_TTL)
         return keywords
 
