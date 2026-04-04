@@ -111,176 +111,189 @@ export default function ProfilePage() {
   if (status === 'unauthenticated') return null
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#f9f9ff]">
-      <nav className="sticky top-0 z-30 flex items-center justify-between bg-[#132843] px-4 py-3 shadow-md sm:px-6">
-        <Link href="/listings" className="flex items-center gap-3">
-          <UniversityLogo className="h-10 w-10 shrink-0 sm:h-11 sm:w-11" />
-          <div className="hidden sm:block">
-            <span className="campus-brand block text-sm leading-tight sm:text-lg">
-              {'İstanbul Üniversitesi-Cerrahpaşa'}
-            </span>
-            <p className="text-[8px] uppercase tracking-[0.15em] text-[#f4e3b3]/80 sm:text-[10px]">
-              {'Endüstri Mühendisliği Staj Platformu'}
-            </p>
+    <div className="flex min-h-screen flex-col bg-[#f8f9fa]">
+      <nav className="sticky top-0 z-30 bg-[#1A233A] shadow-md" style={{ borderBottom: '2px solid transparent', borderImage: 'linear-gradient(to right, #B8860B, #F3E5AB, #B8860B) 1' }}>
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-0 sm:px-6" style={{ height: '64px' }}>
+          <Link href="/listings" className="flex items-center gap-4">
+            <UniversityLogo className="h-10 w-10 shrink-0 rounded border border-[#D4AF37] p-0.5" />
+            <div className="hidden sm:block">
+              <span className="text-sm font-semibold uppercase tracking-wide text-[#D4AF37]">
+                İSTANBUL ÜNİVERSİTESİ-CERRAHPAŞA
+              </span>
+              <p className="text-xs tracking-wider text-gray-300">
+                ENDÜSTRİ MÜHENDİSLİĞİ STAJ PLATFORMU
+              </p>
+            </div>
+          </Link>
+          <div className="flex items-center gap-8">
+            <div className="hidden items-center gap-8 sm:flex">
+              {[
+                { label: 'İlanlar', href: '/listings' },
+                { label: 'Başvurular', href: '/dashboard' },
+                { label: 'Profil', href: '/profile' },
+              ].map((nav) => (
+                <Link
+                  key={nav.href}
+                  href={nav.href}
+                  className={`text-sm font-medium transition-colors ${
+                    nav.href === '/profile'
+                      ? 'border-b-2 border-[#D4AF37] pb-1 text-white'
+                      : 'text-gray-300 hover:text-white'
+                  }`}
+                >
+                  {nav.label}
+                </Link>
+              ))}
+            </div>
+            <ProfileDropdown />
           </div>
-        </Link>
-        <div className="flex items-center gap-4">
-          <div className="hidden items-center gap-1 sm:flex">
-            {[
-              { label: 'İlanlar', href: '/listings' },
-              { label: 'Başvurular', href: '/dashboard' },
-              { label: 'Profil', href: '/profile' },
-            ].map((nav) => (
-              <Link
-                key={nav.href}
-                href={nav.href}
-                className="rounded-lg px-3 py-1.5 text-xs font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white"
-              >
-                {nav.label}
-              </Link>
-            ))}
-          </div>
-          <ProfileDropdown />
         </div>
       </nav>
 
-      <div className="mx-auto max-w-lg px-3 py-6 sm:px-4">
-        <div className="campus-card rounded-2xl p-5">
-          <div className="mb-5 flex items-center gap-3">
-            <div
-              className={`flex h-14 w-14 items-center justify-center rounded-full text-base font-semibold ${
-                profile ? getAvatarColor(profile.full_name) : 'bg-gray-100 text-gray-400'
-              }`}
-            >
-              {profile ? getInitials(profile.full_name) : '??'}
-            </div>
-            <div className="min-w-0">
-              <p className="truncate text-base font-semibold text-gray-800 dark:text-[#e7edf4]">{profile?.full_name ?? '-'}</p>
-              <p className="truncate text-xs text-gray-400 dark:text-[#e7edf4]/40">{profile?.iuc_email ?? '-'}</p>
-            </div>
-          </div>
-
-          {profile ? (
-            <>
-              <div className="mb-4 space-y-2.5">
-                <div className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2.5 dark:bg-white/5">
-                  <span className="text-xs text-gray-500 dark:text-[#e7edf4]/50">Öğrenci No</span>
-                  <span className="text-xs font-medium text-gray-800 dark:text-[#e7edf4]">
-                    {profile.student_no ?? <span className="text-gray-300">Belirtilmedi</span>}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2.5 dark:bg-white/5">
-                  <span className="text-xs text-gray-500 dark:text-[#e7edf4]/50">Sınıf</span>
-                  <span className="text-xs font-medium text-gray-800 dark:text-[#e7edf4]">
-                    {profile.department_year
-                      ? `${profile.department_year}. Sınıf`
-                      : <span className="text-gray-300">Belirtilmedi</span>}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2.5 dark:bg-white/5">
-                  <span className="text-xs text-gray-500 dark:text-[#e7edf4]/50">LinkedIn</span>
-                  {profile.linkedin_url ? (
-                    <a
-                      href={profile.linkedin_url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="truncate text-xs font-medium text-[#1E3A5F] hover:underline"
-                    >
-                      Profili Gör
-                    </a>
-                  ) : (
-                    <span className="text-xs text-gray-300">Belirtilmedi</span>
-                  )}
-                </div>
-                <div className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2.5 dark:bg-white/5">
-                  <span className="text-xs text-gray-500 dark:text-[#e7edf4]/50">CV</span>
-                  {profile.cv_url ? (
-                    <a
-                      href={profile.cv_url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-xs font-medium text-[#1E3A5F] hover:underline"
-                    >
-                      Görüntüle
-                    </a>
-                  ) : (
-                    <span className="text-xs text-gray-300">Yüklenmedi</span>
-                  )}
-                </div>
-                <div className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2.5 dark:bg-white/5">
-                  <span className="text-xs text-gray-500 dark:text-[#e7edf4]/50">Durum</span>
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                      profile.is_verified
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-yellow-100 text-yellow-700'
-                    }`}
-                  >
-                    {profile.is_verified ? 'Doğrulandı' : 'Doğrulanmadı'}
-                  </span>
-                </div>
-              </div>
-
-              <div className="mb-2 flex justify-between text-xs">
-                <span className="text-gray-500 dark:text-[#e7edf4]/50">Profil tamamlanma</span>
-                <span className="font-medium text-[#1E3A5F] dark:text-[#d8ad43]">%{profile.completion_percentage}</span>
-              </div>
-              <div className="mb-4 h-1.5 rounded-full bg-gray-100 dark:bg-white/10">
-                <div
-                  className="h-full rounded-full bg-[#1E3A5F] transition-all dark:bg-[#d8ad43]"
-                  style={{ width: `${profile.completion_percentage}%` }}
-                />
-              </div>
-
-              <button
-                onClick={() => setEditOpen(!editOpen)}
-                className="w-full rounded-lg border border-gray-200 py-2 text-xs text-gray-500 hover:bg-gray-50 dark:border-[#d8ad43]/18 dark:text-[#e7edf4]/50 dark:hover:bg-white/5"
+      <main className="flex flex-grow flex-col items-center px-4 py-12 sm:px-6">
+        <div className="w-full max-w-md space-y-6">
+          {/* ── Profile Card ── */}
+          <section className="rounded-3xl border border-white/40 p-6 sm:p-8" style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(10px)', boxShadow: '0 8px 32px 0 rgba(31,38,135,0.07)' }}>
+            <div className="mb-8 flex items-center gap-4">
+              <div
+                className={`flex h-14 w-14 items-center justify-center rounded-full text-xl font-bold shadow-inner ${
+                  profile ? getAvatarColor(profile.full_name) : 'bg-gray-100 text-gray-400'
+                }`}
               >
-                {editOpen ? 'Kapat' : 'Profili Düzenle'}
-              </button>
-              {editOpen ? (
-                <ProfileEdit
-                  profile={profile}
-                  onSaved={() => {
-                    mutateProfile()
-                    setEditOpen(false)
-                  }}
-                />
-              ) : null}
-            </>
-          ) : null}
-        </div>
+                {profile ? getInitials(profile.full_name) : '??'}
+              </div>
+              <div className="min-w-0">
+                <h2 className="truncate text-xl font-bold text-gray-900">{profile?.full_name ?? '-'}</h2>
+                <p className="truncate text-sm text-gray-500">{profile?.iuc_email ?? '-'}</p>
+              </div>
+            </div>
 
-        {/* ── Görünüm ── */}
-        <div className="campus-card mt-4 rounded-2xl p-5">
-          <div className="flex items-center justify-between">
+            {profile ? (
+              <>
+                <div className="mb-6 space-y-3">
+                  <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50/50 p-3">
+                    <span className="text-sm font-medium text-gray-600">Öğrenci No</span>
+                    <span className="text-sm font-bold text-gray-900">
+                      {profile.student_no ?? <span className="font-medium text-gray-400">Belirtilmedi</span>}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50/50 p-3">
+                    <span className="text-sm font-medium text-gray-600">Sınıf</span>
+                    <span className="text-sm font-bold text-gray-900">
+                      {profile.department_year
+                        ? `${profile.department_year}. Sınıf`
+                        : <span className="font-medium text-gray-400">Belirtilmedi</span>}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50/50 p-3">
+                    <span className="text-sm font-medium text-gray-600">LinkedIn</span>
+                    {profile.linkedin_url ? (
+                      <a
+                        href={profile.linkedin_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-sm font-bold text-gray-900 hover:text-blue-600"
+                      >
+                        Profili Gör
+                      </a>
+                    ) : (
+                      <span className="text-sm font-medium text-gray-400">Belirtilmedi</span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50/50 p-3">
+                    <span className="text-sm font-medium text-gray-600">CV</span>
+                    {profile.cv_url ? (
+                      <a
+                        href={profile.cv_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-sm font-bold text-gray-900 hover:text-blue-600"
+                      >
+                        Görüntüle
+                      </a>
+                    ) : (
+                      <span className="text-sm font-medium text-gray-400">Yüklenmedi</span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50/50 p-3">
+                    <span className="text-sm font-medium text-gray-600">Durum</span>
+                    <span
+                      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium shadow-sm ${
+                        profile.is_verified
+                          ? 'border-green-200 bg-green-100 text-green-800'
+                          : 'border-yellow-200 bg-yellow-100 text-yellow-800'
+                      }`}
+                    >
+                      {profile.is_verified ? 'Doğrulandı' : 'Doğrulanmadı'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mb-6">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-700">Profil Tamamlanma</span>
+                    <span className="text-sm font-bold text-gray-900">%{profile.completion_percentage}</span>
+                  </div>
+                  <div className="h-2.5 w-full rounded-full bg-gray-200 shadow-inner">
+                    <div
+                      className="h-2.5 rounded-full bg-blue-600 transition-all"
+                      style={{ width: `${profile.completion_percentage}%` }}
+                    />
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setEditOpen(!editOpen)}
+                  type="button"
+                  className="w-full rounded-xl py-3 px-4 text-sm font-bold text-gray-900 shadow-md transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2"
+                  style={{ background: 'linear-gradient(to bottom, #D4AF37, #B8860B)' }}
+                >
+                  {editOpen ? 'Kapat' : 'Profili Düzenle'}
+                </button>
+                {editOpen ? (
+                  <ProfileEdit
+                    profile={profile}
+                    onSaved={() => {
+                      mutateProfile()
+                      setEditOpen(false)
+                    }}
+                  />
+                ) : null}
+              </>
+            ) : null}
+          </section>
+
+          {/* ── Dark Mode Toggle ── */}
+          <section className="flex cursor-pointer items-center justify-between rounded-3xl border border-white/40 p-6 transition-colors hover:bg-gray-50/50" style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(10px)', boxShadow: '0 8px 32px 0 rgba(31,38,135,0.07)' }}>
             <div>
-              <h2 className="text-base font-bold text-[#132843] dark:text-[#e7edf4]">Gece Modu</h2>
-              <p className="mt-0.5 text-xs text-gray-400 dark:text-[#e7edf4]/40">Koyu temayı aç veya kapat</p>
+              <h3 className="text-lg font-bold text-gray-900">Gece Modu</h3>
+              <p className="text-sm text-gray-500">Koyu temayı aç veya kapat</p>
             </div>
             <ThemeToggle />
-          </div>
-        </div>
+          </section>
 
-        {/* ── Newsletter ── */}
-        <div className="campus-card mt-4 rounded-2xl p-5">
-          <h2 className="text-base font-bold text-[#132843] dark:text-[#e7edf4]">İlanlardan İlk Sen Haberdar Ol</h2>
-          <p className="mt-1 text-xs text-gray-400 dark:text-[#e7edf4]/40">Yeni ilanlardan anında haberdar olmak için abone ol.</p>
-          <div className="mt-4 flex items-center rounded-xl bg-gray-50 dark:bg-white/5">
-            <input
-              type="email"
-              placeholder="E-posta adresiniz"
-              className="w-full rounded-l-xl bg-transparent px-4 py-3 text-sm text-[#132843] outline-none placeholder:text-gray-400 dark:text-[#e7edf4] dark:placeholder:text-[#e7edf4]/30"
-            />
-            <button
-              type="button"
-              className="shrink-0 rounded-r-xl bg-[#d8ad43] px-5 py-3 text-xs font-bold uppercase tracking-wider text-[#132843] transition-colors hover:bg-[#c79828]"
-            >
-              ABONE OL
-            </button>
-          </div>
+          {/* ── Newsletter ── */}
+          <section className="rounded-3xl border border-white/40 p-6" style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(10px)', boxShadow: '0 8px 32px 0 rgba(31,38,135,0.07)' }}>
+            <h3 className="mb-1 text-lg font-bold text-gray-900">İlanlardan İlk Sen Haberdar Ol</h3>
+            <p className="mb-4 text-sm text-gray-500">Yeni ilanlardan anında haberdar olmak için abone ol.</p>
+            <div className="flex">
+              <input
+                type="email"
+                placeholder="E-posta adresiniz"
+                className="min-w-0 flex-auto rounded-l-xl border-0 px-4 py-3 text-sm text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#D4AF37]"
+                style={{ boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)' }}
+              />
+              <button
+                type="button"
+                className="flex-none rounded-r-xl px-6 py-3 text-sm font-bold text-gray-900 shadow-sm transition-opacity hover:opacity-90"
+                style={{ background: 'linear-gradient(to bottom, #D4AF37, #B8860B)' }}
+              >
+                ABONE OL
+              </button>
+            </div>
+          </section>
         </div>
-      </div>
+      </main>
     </div>
   )
 }
