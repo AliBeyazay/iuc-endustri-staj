@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import { getAvatarColor, getInitials } from '@/lib/helpers'
-import { Menu, X } from 'lucide-react'
+import { ChevronDown, X } from 'lucide-react'
 
 export default function ProfileDropdown() {
   const router = useRouter()
@@ -61,11 +61,14 @@ export default function ProfileDropdown() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex h-10 min-w-10 items-center justify-center rounded-full border border-[#d8ad43]/35 bg-[#f1d27e] px-2 text-[10px] font-bold text-[#10223b] shadow-[0_6px_20px_rgba(0,0,0,0.18)] transition-all duration-200 hover:-translate-y-px hover:ring-2 hover:ring-[#d8ad43]/30"
+        className="flex items-center gap-1.5 rounded-full border border-[#d8ad43]/35 bg-[#f1d27e] py-1 pl-1 pr-2.5 text-[10px] font-bold text-[#10223b] shadow-[0_6px_20px_rgba(0,0,0,0.18)] transition-all duration-200 hover:-translate-y-px hover:ring-2 hover:ring-[#d8ad43]/30"
         aria-label="Profil menüsü"
         aria-expanded={open}
       >
-        {open ? <X size={18} strokeWidth={2.4} /> : initials}
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#10223b]/10 text-[10px] font-bold">
+          {initials}
+        </span>
+        <ChevronDown size={14} strokeWidth={2.5} className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
       </button>
 
       {open && (
