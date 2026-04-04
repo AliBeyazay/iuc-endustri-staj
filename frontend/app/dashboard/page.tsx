@@ -220,6 +220,8 @@ export default function DashboardPage() {
   const [notifOpen, setNotifOpen] = useState(false)
   const [notifSaving, setNotifSaving] = useState(false)
   const [locationInput, setLocationInput] = useState('')
+  const [addAppOpen, setAddAppOpen] = useState(false)
+  const [addAppSearch, setAddAppSearch] = useState('')
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -389,7 +391,91 @@ export default function DashboardPage() {
 
         {/* ── Başvuru Takip Panosu ── */}
         <div id="applications" className="mb-8">
-          <h2 className="mb-4 text-lg font-bold text-[#132843]">Başvuru Takip Panosu</h2>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-bold text-[#132843]">Başvuru Takip Panosu</h2>
+            <button
+              onClick={() => setAddAppOpen(true)}
+              className="flex items-center gap-1.5 rounded-lg bg-[#132843] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#1E3A5F]"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              Yeni Başvuru Ekle
+            </button>
+          </div>
+
+          {/* ── Add Application Modal ── */}
+          {addAppOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => { setAddAppOpen(false); setAddAppSearch('') }}>
+              <div className="mx-4 w-full max-w-md rounded-2xl bg-white p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-base font-bold text-[#132843]">Yeni Başvuru Ekle</h3>
+                  <button onClick={() => { setAddAppOpen(false); setAddAppSearch('') }} className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  placeholder="İlan veya şirket ara..."
+                  value={addAppSearch}
+                  onChange={(e) => setAddAppSearch(e.target.value)}
+                  className="mb-3 h-9 w-full rounded-lg border border-gray-200 px-3 text-sm outline-none focus:border-[#132843]"
+                  autoFocus
+                />
+                <div className="max-h-64 space-y-1.5 overflow-y-auto">
+                  {(() => {
+                    const untrackedBookmarks = bookmarks.filter((b) => !trackedListingIds.has(b.id))
+                    const filtered = addAppSearch.trim()
+                      ? untrackedBookmarks.filter((b) =>
+                          b.title.toLowerCase().includes(addAppSearch.toLowerCase()) ||
+                          b.company_name.toLowerCase().includes(addAppSearch.toLowerCase())
+                        )
+                      : untrackedBookmarks
+                    if (untrackedBookmarks.length === 0) {
+                      return (
+                        <div className="py-6 text-center">
+                          <p className="text-sm text-gray-500">Tüm kayıtlı ilanlar zaten takipte</p>
+                          <button
+                            onClick={() => { setAddAppOpen(false); router.push('/listings') }}
+                            className="mt-2 text-xs font-medium text-[#d8ad43] hover:underline"
+                          >
+                            İlanlara göz at
+                          </button>
+                        </div>
+                      )
+                    }
+                    if (filtered.length === 0) {
+                      return <p className="py-4 text-center text-sm text-gray-400">Sonuç bulunamadı</p>
+                    }
+                    return filtered.map((b) => (
+                      <button
+                        key={b.id}
+                        onClick={async () => {
+                          await handleTrackApplication(b.id)
+                          setAddAppOpen(false)
+                          setAddAppSearch('')
+                        }}
+                        className="flex w-full items-center gap-3 rounded-lg border border-gray-100 px-3 py-2.5 text-left transition-all hover:border-[#d8ad43]/30 hover:bg-[#d8ad43]/5"
+                      >
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-[10px] font-bold text-[#132843]">
+                          {getInitials(b.company_name)}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium text-[#132843]">{b.title}</p>
+                          <p className="truncate text-[11px] text-gray-500">{b.company_name}</p>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                      </button>
+                    ))
+                  })()}
+                </div>
+              </div>
+            </div>
+          )}
 
           {applications.length === 0 ? (
             <p className="rounded-xl border border-gray-200 bg-white px-4 py-6 text-center text-sm text-gray-500">
