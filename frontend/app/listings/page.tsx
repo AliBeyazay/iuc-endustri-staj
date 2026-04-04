@@ -1574,27 +1574,6 @@ export default function ListingsPage() {
         </div>
       </section>
 
-      {/* ── Newsletter ── */}
-      <section className="bg-[#132843] px-4 py-12">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="campus-heading text-xl text-white sm:text-2xl">İLANLARDAN İLK SEN HABERDAR OL</h2>
-          <p className="mt-2 text-sm text-white/60">Yeni ilanlardan anında haberdar olmak için abone ol.</p>
-          <div className="mx-auto mt-6 flex max-w-md items-center rounded-xl bg-white shadow-lg">
-            <input
-              type="email"
-              placeholder="E-posta adresiniz"
-              className="w-full rounded-l-xl bg-transparent px-5 py-3.5 text-sm text-[#132843] outline-none placeholder:text-gray-400"
-            />
-            <button
-              type="button"
-              className="shrink-0 rounded-r-xl bg-[#d8ad43] px-6 py-3.5 text-sm font-bold uppercase tracking-wider text-[#132843] transition-colors hover:bg-[#c79828]"
-            >
-              ABONE OL
-            </button>
-          </div>
-        </div>
-      </section>
-
       {/* ── Mobile Filter Modal ── */}
       {mobileFiltersOpen && (
         <div className="fixed inset-0 z-40 bg-black/40 lg:hidden">
