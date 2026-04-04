@@ -514,31 +514,6 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
-
-      {/* ── Footer ── */}
-      <footer className="mt-auto bg-[#132843] px-4 py-10 sm:px-6">
-        <div className="mx-auto grid max-w-7xl gap-8 sm:grid-cols-2">
-          <div>
-            <h3 className="campus-heading text-lg text-[#d8ad43]">İLETİŞİM</h3>
-            <div className="mt-4 space-y-2 text-sm text-white/70">
-              <p><span className="font-semibold text-white">Adres:</span> İstanbul Üniversitesi-Cerrahpaşa Mühendislik Fakültesi Endüstri Mühendisliği Bölümü, Üniversite Mahallesi Üniversite Caddesi No:7, 34320 Avcılar/İstanbul</p>
-              <p><span className="font-semibold text-white">Bölüm Telefonu:</span> +90 212 404 03 00 / 20204</p>
-              <p><span className="font-semibold text-white">Bölüm E-postası:</span> endustri.muhendisligi@iuc.edu.tr</p>
-            </div>
-          </div>
-          <div>
-            <h3 className="campus-heading text-lg text-[#d8ad43]">BAĞLANTILAR</h3>
-            <div className="mt-4 space-y-2">
-              <a href="https://endustriiuc.com" target="_blank" rel="noreferrer" className="block text-sm text-white/70 hover:text-white transition-colors">
-                Bölüm Web Sitesi
-              </a>
-            </div>
-          </div>
-        </div>
-        <div className="mx-auto mt-8 max-w-7xl border-t border-white/10 pt-6 text-center text-xs text-white/40">
-          © {new Date().getFullYear()} Her hakkı İstanbul Üniversitesi-Cerrahpaşa Endüstri Mühendisliğine aittir.
-        </div>
-      </footer>
     </div>
   )
 }
