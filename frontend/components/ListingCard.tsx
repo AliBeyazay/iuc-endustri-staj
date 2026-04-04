@@ -98,9 +98,14 @@ export default function ListingCard({ listing, isBookmarked, onBookmark }: Props
         )}
 
         <div className="min-w-0 flex-1">
-          <p className="line-clamp-2 text-[1.05rem] font-semibold leading-[1.18] text-[#132843] group-hover:text-[#1E3A5F] transition-colors duration-200 dark:text-[#e7edf4] dark:group-hover:text-[#d8ad43]">
-            {listing.title}
-          </p>
+          <div className="flex items-start gap-2">
+            <p className="line-clamp-2 min-w-0 flex-1 text-[1.05rem] font-semibold leading-[1.18] text-[#132843] group-hover:text-[#1E3A5F] transition-colors duration-200 dark:text-[#e7edf4] dark:group-hover:text-[#d8ad43]">
+              {listing.title}
+            </p>
+            <span className={`shrink-0 rounded-full px-2.5 py-[3px] text-[10px] font-semibold ${FOCUS_AREA_COLORS[listing.em_focus_area]}`}>
+              {FOCUS_AREA_LABELS[listing.em_focus_area]}
+            </span>
+          </div>
           <p className="mt-1 truncate text-[12px] font-medium text-[#173156]/72 dark:text-[#e7edf4]/65">
             {listing.company_name}
           </p>
@@ -120,9 +125,6 @@ export default function ListingCard({ listing, isBookmarked, onBookmark }: Props
             {'Yetenek Program\u0131'}
           </span>
         )}
-        <span className={`rounded-full px-2.5 py-[3px] text-[10px] font-semibold ${FOCUS_AREA_COLORS[listing.em_focus_area]}`}>
-          {FOCUS_AREA_LABELS[listing.em_focus_area]}
-        </span>
         <span className={`rounded-full px-2.5 py-[3px] text-[10px] font-semibold ${ORIGIN_BADGE[listing.company_origin]}`}>
           {ORIGIN_LABEL[listing.company_origin]}
         </span>
