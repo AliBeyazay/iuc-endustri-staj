@@ -327,6 +327,25 @@ export default function ProfilePage() {
             </div>
           )}
         </div>
+
+        {/* ── Newsletter ── */}
+        <div className="campus-card mt-4 rounded-2xl p-5">
+          <h2 className="text-base font-bold text-[#132843] dark:text-[#e7edf4]">İlanlardan İlk Sen Haberdar Ol</h2>
+          <p className="mt-1 text-xs text-gray-400 dark:text-[#e7edf4]/40">Yeni ilanlardan anında haberdar olmak için abone ol.</p>
+          <div className="mt-4 flex items-center rounded-xl bg-gray-50 dark:bg-white/5">
+            <input
+              type="email"
+              placeholder="E-posta adresiniz"
+              className="w-full rounded-l-xl bg-transparent px-4 py-3 text-sm text-[#132843] outline-none placeholder:text-gray-400 dark:text-[#e7edf4] dark:placeholder:text-[#e7edf4]/30"
+            />
+            <button
+              type="button"
+              className="shrink-0 rounded-r-xl bg-[#d8ad43] px-5 py-3 text-xs font-bold uppercase tracking-wider text-[#132843] transition-colors hover:bg-[#c79828]"
+            >
+              ABONE OL
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   )
