@@ -526,10 +526,9 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
           <div className="lg:col-span-4">
             <aside className="sticky top-28 space-y-6">
               {/* Apply Card */}
-              <div className="relative overflow-hidden rounded-xl bg-[#132843] p-8 text-white shadow-2xl shadow-[#132843]/20">
-                <div className="absolute -right-4 -top-4 text-[120px] leading-none opacity-10">★</div>
-                <h3 className="relative z-10 mb-6 text-xl font-bold">BAŞVURU</h3>
-                <div className="relative z-10 space-y-4">
+              <div className="rounded-xl bg-[#132843] p-8 text-white shadow-2xl shadow-[#132843]/20">
+                <h3 className="mb-6 text-xl font-bold">BAŞVURU</h3>
+                <div className="space-y-4">
                   <a
                     href={targetUrl}
                     target="_blank"
