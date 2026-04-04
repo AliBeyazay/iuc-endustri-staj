@@ -58,10 +58,15 @@ export default function ListingCard({ listing, isBookmarked, onBookmark }: Props
       className="campus-card campus-card-hover group cursor-pointer overflow-hidden rounded-[26px] border p-4"
     >
       <div className="mb-3 flex items-center justify-between gap-3">
-        <span className="campus-pill inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold">
-          <Sparkles size={12} />
-          {PLATFORM_LABELS[listing.source_platform]}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="campus-pill inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold">
+            <Sparkles size={12} />
+            {PLATFORM_LABELS[listing.source_platform]}
+          </span>
+          <span className={`rounded-full px-2.5 py-[3px] text-[10px] font-semibold ${FOCUS_AREA_COLORS[listing.em_focus_area]}`}>
+            {FOCUS_AREA_LABELS[listing.em_focus_area]}
+          </span>
+        </div>
 
         <button
           onClick={(e) => {
@@ -115,9 +120,6 @@ export default function ListingCard({ listing, isBookmarked, onBookmark }: Props
       </div>
 
       <div className="mb-4 flex flex-wrap gap-1.5">
-        <span className={`rounded-full px-2.5 py-[3px] text-[10px] font-semibold ${FOCUS_AREA_COLORS[listing.em_focus_area]}`}>
-          {FOCUS_AREA_LABELS[listing.em_focus_area]}
-        </span>
         {listing.is_talent_program && (
           <span className="campus-pill-gold rounded-full px-2.5 py-[3px] text-[10px] font-semibold">
             {'Yetenek Program\u0131'}
