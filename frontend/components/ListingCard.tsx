@@ -98,18 +98,16 @@ export default function ListingCard({ listing, isBookmarked, onBookmark }: Props
         )}
 
         <div className="min-w-0 flex-1">
-          <div className="flex items-start gap-2">
-            <p className="min-w-0 flex-1 line-clamp-2 text-[1.05rem] font-semibold leading-[1.18] text-[#132843] group-hover:text-[#1E3A5F] transition-colors duration-200 dark:text-[#e7edf4] dark:group-hover:text-[#d8ad43]">
-              {listing.title}
-            </p>
-            <span className={`flex-shrink-0 rounded-full px-2.5 py-[3px] text-[10px] font-semibold ${FOCUS_AREA_COLORS[listing.em_focus_area]}`}>
-              {FOCUS_AREA_LABELS[listing.em_focus_area]}
-            </span>
-          </div>
+          <p className="line-clamp-2 text-[1.05rem] font-semibold leading-[1.18] text-[#132843] group-hover:text-[#1E3A5F] transition-colors duration-200 dark:text-[#e7edf4] dark:group-hover:text-[#d8ad43]">
+            {listing.title}
+          </p>
           <p className="mt-1 truncate text-[12px] font-medium text-[#173156]/72 dark:text-[#e7edf4]/65">
             {listing.company_name}
           </p>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] text-[#173156]/58 dark:text-[#e7edf4]/50">
+            <span className={`rounded-full px-2.5 py-[3px] text-[10px] font-semibold ${FOCUS_AREA_COLORS[listing.em_focus_area]}`}>
+              {FOCUS_AREA_LABELS[listing.em_focus_area]}
+            </span>
             <span className="inline-flex items-center gap-1">
               <MapPin size={12} />
               {listing.location}
