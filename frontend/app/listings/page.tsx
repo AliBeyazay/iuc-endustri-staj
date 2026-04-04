@@ -1059,7 +1059,7 @@ export default function ListingsPage() {
   ]
 
   const SIDEBAR_SECTORS = [
-    { label: 'Yazılım, Bilişim, Teknoloji', value: 'Yazılım, Bilişim ve Teknoloji', icon: '💻' },
+    { label: 'Yazılım, Bilişim', value: 'Yazılım, Bilişim ve Teknoloji', icon: '💻' },
     { label: 'Üretim', value: 'İmalat, Metal ve Makine', icon: '🏭' },
     { label: 'Lojistik', value: 'Lojistik ve Taşımacılık', icon: '🚚' },
     { label: 'Enerji', value: 'Savunma, Havacılık ve Enerji', icon: '⚡' },
@@ -1068,6 +1068,7 @@ export default function ListingsPage() {
     { label: 'Gıda, Kimya', value: 'Gıda, Kimya ve Sağlık', icon: '🧪' },
     { label: 'Otomotiv', value: 'Otomotiv ve Yan Sanayi', icon: '🚗' },
     { label: 'İnşaat', value: 'İnşaat ve Yapı Malzemeleri', icon: '🏗️' },
+    { label: 'Diğer', value: 'Diğer', icon: '📁' },
   ]
 
   const SECTOR_TAG_COLORS: Record<string, string> = {
