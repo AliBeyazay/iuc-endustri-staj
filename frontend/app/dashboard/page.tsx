@@ -337,9 +337,9 @@ export default function DashboardPage() {
         <div className="flex items-center gap-4">
           <div className="hidden items-center gap-1 sm:flex">
             {[
-              { label: 'Dashboard', href: '/dashboard' },
               { label: 'İlanlar', href: '/listings' },
-              { label: 'Başvurularım', href: '/dashboard#applications' },
+              { label: 'Başvurular', href: '/dashboard' },
+              { label: 'Profil', href: '/profile' },
             ].map((nav) => (
               <Link
                 key={nav.href}

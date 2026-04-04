@@ -111,20 +111,35 @@ export default function ProfilePage() {
   if (status === 'unauthenticated') return null
 
   return (
-    <div className="campus-shell min-h-screen">
-      <nav className="campus-nav sticky top-0 z-10 flex items-center justify-between gap-3 px-4 py-3 sm:px-5">
-        <Link href="/listings" className="relative z-10 flex min-w-0 items-center gap-3">
-          <UniversityLogo className="h-11 w-11 shrink-0 sm:h-12 sm:w-12" />
-          <div className="min-w-0">
-            <span className="campus-brand block text-[11px] leading-tight xs:text-xs sm:text-2xl sm:leading-none whitespace-nowrap">
-              İstanbul Üniversitesi-Cerrahpaşa
+    <div className="flex min-h-screen flex-col bg-[#f9f9ff]">
+      <nav className="sticky top-0 z-30 flex items-center justify-between bg-[#132843] px-4 py-3 shadow-md sm:px-6">
+        <Link href="/listings" className="flex items-center gap-3">
+          <UniversityLogo className="h-10 w-10 shrink-0 sm:h-11 sm:w-11" />
+          <div className="hidden sm:block">
+            <span className="campus-brand block text-sm leading-tight sm:text-lg">
+              {'İstanbul Üniversitesi-Cerrahpaşa'}
             </span>
-            <p className="text-[7px] uppercase tracking-[0.12em] text-[#f4e3b3]/80 xs:text-[8px] sm:text-[10px] sm:tracking-[0.28em] whitespace-nowrap">
-              Endüstri Mühendisliği Staj Platformu
+            <p className="text-[8px] uppercase tracking-[0.15em] text-[#f4e3b3]/80 sm:text-[10px]">
+              {'Endüstri Mühendisliği Staj Platformu'}
             </p>
           </div>
         </Link>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
+          <div className="hidden items-center gap-1 sm:flex">
+            {[
+              { label: 'İlanlar', href: '/listings' },
+              { label: 'Başvurular', href: '/dashboard' },
+              { label: 'Profil', href: '/profile' },
+            ].map((nav) => (
+              <Link
+                key={nav.href}
+                href={nav.href}
+                className="rounded-lg px-3 py-1.5 text-xs font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+              >
+                {nav.label}
+              </Link>
+            ))}
+          </div>
           <ThemeToggle />
           <ProfileDropdown />
         </div>
