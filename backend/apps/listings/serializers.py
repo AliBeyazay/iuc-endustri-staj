@@ -492,6 +492,9 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         super().__init__(*args, **kwargs)
         self.fields['email'] = serializers.EmailField()
         self.fields['password'] = serializers.CharField(write_only=True)
+        # Remove the auto-generated iuc_email field from SimpleJWT;
+        # we map email -> iuc_email in validate() instead.
+        self.fields.pop('iuc_email', None)
 
     def validate(self, attrs):
         email = (attrs.get('email') or '').strip().lower()
