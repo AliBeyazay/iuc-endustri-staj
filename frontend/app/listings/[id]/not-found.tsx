@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center">
+    <div className="min-h-screen bg-[#f9f9ff] flex items-center justify-center">
       <div className="text-center">
         <p className="text-4xl font-medium text-gray-200 mb-3">404</p>
         <p className="text-gray-500 text-sm mb-5">İlan bulunamadı veya kaldırılmış olabilir.</p>

@@ -1,7 +1,7 @@
 // app/dashboard/loading.tsx
 export default function DashboardLoading() {
   return (
-    <div className="min-h-screen bg-[#F8F9FA] dark:bg-[#0b1a2c]">
+    <div className="min-h-screen bg-[#f9f9ff] dark:bg-[#0b1a2c]">
       <div className="h-12 bg-[#1E3A5F]" />
       <div className="max-w-5xl mx-auto px-4 py-5 grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-5 animate-pulse">
         <div className="space-y-4">

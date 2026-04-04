@@ -50,7 +50,7 @@ function DetailSkeleton() {
 
       <main className="mx-auto max-w-7xl px-4 pb-20 pt-8 sm:px-6 lg:px-8">
         {/* Hero Skeleton */}
-        <section className="relative mb-10 overflow-hidden rounded-xl bg-[#00132b] p-6 sm:p-8 md:p-12">
+        <section className="relative mb-10 overflow-hidden rounded-xl bg-[#132843] p-6 sm:p-8 md:p-12">
           <div className="flex flex-col gap-6 md:flex-row md:items-start">
             <div className="h-24 w-24 shrink-0 rounded-xl bg-white/10 campus-shimmer" />
             <div className="flex-1 space-y-4">
@@ -65,26 +65,26 @@ function DetailSkeleton() {
           {/* Left Column Skeleton */}
           <div className="space-y-8 lg:col-span-8">
             <section className="rounded-xl bg-white p-6 sm:p-8 space-y-4">
-              <div className="h-6 w-48 rounded-lg bg-[#00132b]/10 campus-shimmer" />
-              <div className="h-4 w-full rounded-lg bg-[#00132b]/6 campus-shimmer" />
-              <div className="h-4 w-full rounded-lg bg-[#00132b]/6 campus-shimmer" />
-              <div className="h-4 w-5/6 rounded-lg bg-[#00132b]/5 campus-shimmer" />
-              <div className="h-4 w-4/6 rounded-lg bg-[#00132b]/4 campus-shimmer" />
-              <div className="h-4 w-full rounded-lg bg-[#00132b]/6 campus-shimmer" />
+              <div className="h-6 w-48 rounded-lg bg-[#132843]/10 campus-shimmer" />
+              <div className="h-4 w-full rounded-lg bg-[#132843]/6 campus-shimmer" />
+              <div className="h-4 w-full rounded-lg bg-[#132843]/6 campus-shimmer" />
+              <div className="h-4 w-5/6 rounded-lg bg-[#132843]/5 campus-shimmer" />
+              <div className="h-4 w-4/6 rounded-lg bg-[#132843]/4 campus-shimmer" />
+              <div className="h-4 w-full rounded-lg bg-[#132843]/6 campus-shimmer" />
             </section>
           </div>
 
           {/* Right Column Skeleton */}
           <div className="lg:col-span-4 space-y-6">
-            <div className="rounded-xl bg-[#00132b] p-8 space-y-4">
+            <div className="rounded-xl bg-[#132843] p-8 space-y-4">
               <div className="h-6 w-24 rounded-lg bg-white/15 campus-shimmer" />
-              <div className="h-12 w-full rounded-lg bg-[#fdce61]/20 campus-shimmer" />
+              <div className="h-12 w-full rounded-lg bg-[#d8ad43]/20 campus-shimmer" />
               <div className="h-12 w-full rounded-lg bg-white/10 campus-shimmer" />
             </div>
             <div className="rounded-xl bg-[#f0f3ff] p-6 space-y-3">
-              <div className="h-4 w-full rounded bg-[#00132b]/8 campus-shimmer" />
-              <div className="h-4 w-full rounded bg-[#00132b]/8 campus-shimmer" />
-              <div className="h-4 w-full rounded bg-[#00132b]/8 campus-shimmer" />
+              <div className="h-4 w-full rounded bg-[#132843]/8 campus-shimmer" />
+              <div className="h-4 w-full rounded bg-[#132843]/8 campus-shimmer" />
+              <div className="h-4 w-full rounded bg-[#132843]/8 campus-shimmer" />
             </div>
           </div>
         </div>

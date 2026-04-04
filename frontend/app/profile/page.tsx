@@ -111,7 +111,7 @@ export default function ProfilePage() {
   if (status === 'unauthenticated') return null
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#f8f9fa]">
+    <div className="flex min-h-screen flex-col bg-[#f9f9ff]">
       <nav className="sticky top-0 z-30 bg-[#1A233A] shadow-md" style={{ borderBottom: '2px solid transparent', borderImage: 'linear-gradient(to right, #B8860B, #F3E5AB, #B8860B) 1' }}>
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-0 sm:px-6" style={{ height: '64px' }}>
           <Link href="/listings" className="flex items-center gap-4">
@@ -163,7 +163,7 @@ export default function ProfilePage() {
                 {profile ? getInitials(profile.full_name) : '??'}
               </div>
               <div className="min-w-0">
-                <h2 className="truncate text-xl font-bold text-gray-900">{profile?.full_name ?? '-'}</h2>
+                <h2 className="campus-heading truncate text-xl font-bold text-[#132843]">{profile?.full_name ?? '-'}</h2>
                 <p className="truncate text-sm text-gray-500">{profile?.iuc_email ?? '-'}</p>
               </div>
             </div>
@@ -173,13 +173,13 @@ export default function ProfilePage() {
                 <div className="mb-6 space-y-3">
                   <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50/50 p-3">
                     <span className="text-sm font-medium text-gray-600">Öğrenci No</span>
-                    <span className="text-sm font-bold text-gray-900">
+                    <span className="text-sm font-bold text-[#132843]">
                       {profile.student_no ?? <span className="font-medium text-gray-400">Belirtilmedi</span>}
                     </span>
                   </div>
                   <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50/50 p-3">
                     <span className="text-sm font-medium text-gray-600">Sınıf</span>
-                    <span className="text-sm font-bold text-gray-900">
+                    <span className="text-sm font-bold text-[#132843]">
                       {profile.department_year
                         ? `${profile.department_year}. Sınıf`
                         : <span className="font-medium text-gray-400">Belirtilmedi</span>}
@@ -192,7 +192,7 @@ export default function ProfilePage() {
                         href={profile.linkedin_url}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-sm font-bold text-gray-900 hover:text-blue-600"
+                        className="text-sm font-bold text-[#132843] hover:text-blue-600"
                       >
                         Profili Gör
                       </a>
@@ -207,7 +207,7 @@ export default function ProfilePage() {
                         href={profile.cv_url}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-sm font-bold text-gray-900 hover:text-blue-600"
+                        className="text-sm font-bold text-[#132843] hover:text-blue-600"
                       >
                         Görüntüle
                       </a>
@@ -232,7 +232,7 @@ export default function ProfilePage() {
                 <div className="mb-6">
                   <div className="mb-2 flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-700">Profil Tamamlanma</span>
-                    <span className="text-sm font-bold text-gray-900">%{profile.completion_percentage}</span>
+                    <span className="text-sm font-bold text-[#132843]">%{profile.completion_percentage}</span>
                   </div>
                   <div className="h-2.5 w-full rounded-full bg-gray-200 shadow-inner">
                     <div
@@ -245,7 +245,7 @@ export default function ProfilePage() {
                 <button
                   onClick={() => setEditOpen(!editOpen)}
                   type="button"
-                  className="w-full rounded-xl py-3 px-4 text-sm font-bold text-gray-900 shadow-md transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2"
+                  className="w-full rounded-xl py-3 px-4 text-sm font-bold text-[#132843] shadow-md transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2"
                   style={{ background: 'linear-gradient(to bottom, #D4AF37, #B8860B)' }}
                 >
                   {editOpen ? 'Kapat' : 'Profili Düzenle'}
@@ -266,7 +266,7 @@ export default function ProfilePage() {
           {/* ── Dark Mode Toggle ── */}
           <section className="flex cursor-pointer items-center justify-between rounded-3xl border border-white/40 p-6 transition-colors hover:bg-gray-50/50" style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(10px)', boxShadow: '0 8px 32px 0 rgba(31,38,135,0.07)' }}>
             <div>
-              <h3 className="text-lg font-bold text-gray-900">Gece Modu</h3>
+              <h3 className="campus-heading text-lg font-bold text-[#132843]">Gece Modu</h3>
               <p className="text-sm text-gray-500">Koyu temayı aç veya kapat</p>
             </div>
             <ThemeToggle />
@@ -274,18 +274,18 @@ export default function ProfilePage() {
 
           {/* ── Newsletter ── */}
           <section className="rounded-3xl border border-white/40 p-6" style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(10px)', boxShadow: '0 8px 32px 0 rgba(31,38,135,0.07)' }}>
-            <h3 className="mb-1 text-lg font-bold text-gray-900">İlanlardan İlk Sen Haberdar Ol</h3>
+            <h3 className="campus-heading mb-1 text-lg font-bold text-[#132843]">İlanlardan İlk Sen Haberdar Ol</h3>
             <p className="mb-4 text-sm text-gray-500">Yeni ilanlardan anında haberdar olmak için abone ol.</p>
             <div className="flex">
               <input
                 type="email"
                 placeholder="E-posta adresiniz"
-                className="min-w-0 flex-auto rounded-l-xl border-0 px-4 py-3 text-sm text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#D4AF37]"
+                className="min-w-0 flex-auto rounded-l-xl border-0 px-4 py-3 text-sm text-[#132843] shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#D4AF37]"
                 style={{ boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)' }}
               />
               <button
                 type="button"
-                className="flex-none rounded-r-xl px-6 py-3 text-sm font-bold text-gray-900 shadow-sm transition-opacity hover:opacity-90"
+                className="flex-none rounded-r-xl px-6 py-3 text-sm font-bold text-[#132843] shadow-sm transition-opacity hover:opacity-90"
                 style={{ background: 'linear-gradient(to bottom, #D4AF37, #B8860B)' }}
               >
                 ABONE OL

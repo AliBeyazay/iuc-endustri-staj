@@ -272,7 +272,7 @@ export default function DashboardPage() {
 
         {/* ── Welcome + Stats ── */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-[#132843]">
+          <h1 className="campus-heading text-2xl font-bold text-[#132843]">
             Hoş geldin, <span className="text-[#d8ad43]">{firstName}</span>
           </h1>
           <p className="mt-1 text-sm text-gray-500">
@@ -302,7 +302,7 @@ export default function DashboardPage() {
         {/* ── Başvuru Takip Panosu ── */}
         <div id="applications" className="mb-8">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-[#132843]">Başvuru Takip Panosu</h2>
+            <h2 className="campus-heading text-lg font-bold text-[#132843]">Başvuru Takip Panosu</h2>
             <button
               onClick={() => setAddAppOpen(true)}
               className="flex items-center gap-1.5 rounded-lg bg-[#132843] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#1E3A5F]"
@@ -449,7 +449,7 @@ export default function DashboardPage() {
         {/* ── Kaydedilen İlanlar ── */}
         <div id="saved" className="mb-8">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-[#132843]">
+            <h2 className="campus-heading text-lg font-bold text-[#132843]">
               Kaydedilen İlanlar
               {bookmarks.length > 0 && <span className="ml-2 text-gray-400">({bookmarks.length})</span>}
             </h2>
