@@ -1054,15 +1054,65 @@ export default function ListingsPage() {
     selectedSectors.length + selectedPlatforms.length + selectedDurations.length + (talentOnly ? 1 : 0)
 
   const summaryCards = [
-    { label: 'Toplam sonuç', value: totalCount },
-    { label: 'Seçili sektör', value: selectedSectors.length },
-    { label: 'Yakın son başvuru', value: urgentCount },
+    { label: 'Toplam Sonuç', value: totalCount },
+    { label: 'Seçili Sektör', value: selectedSectors.length },
+    { label: 'Yakın Son Başvuru', value: urgentCount },
   ]
 
+  const SIDEBAR_SECTORS = [
+    { label: 'Yazılım, Bilişim, Teknoloji', value: 'Yazılım, Bilişim ve Teknoloji', icon: '💻' },
+    { label: 'Üretim', value: 'İmalat, Metal ve Makine', icon: '🏭' },
+    { label: 'Lojistik', value: 'Lojistik ve Taşımacılık', icon: '🚚' },
+    { label: 'Enerji', value: 'Savunma, Havacılık ve Enerji', icon: '⚡' },
+    { label: 'Finans', value: 'Hizmet, Finans ve Danışmanlık', icon: '🏦' },
+    { label: 'E-Ticaret', value: 'E-Ticaret, Perakende ve FMCG', icon: '🛒' },
+    { label: 'Gıda, Kimya', value: 'Gıda, Kimya ve Sağlık', icon: '🧪' },
+    { label: 'Otomotiv', value: 'Otomotiv ve Yan Sanayi', icon: '🚗' },
+    { label: 'İnşaat', value: 'İnşaat ve Yapı Malzemeleri', icon: '🏗️' },
+  ]
+
+  const SECTOR_TAG_COLORS: Record<string, string> = {
+    'Yazılım, Bilişim ve Teknoloji': 'bg-emerald-600 text-white',
+    'Hizmet, Finans ve Danışmanlık': 'bg-blue-600 text-white',
+    'Lojistik ve Taşımacılık': 'bg-red-600 text-white',
+    'Otomotiv ve Yan Sanayi': 'bg-orange-600 text-white',
+    'E-Ticaret, Perakende ve FMCG': 'bg-pink-600 text-white',
+    'İmalat, Metal ve Makine': 'bg-slate-600 text-white',
+    'Savunma, Havacılık ve Enerji': 'bg-[#132843] text-white',
+    'Gıda, Kimya ve Sağlık': 'bg-teal-600 text-white',
+    'İnşaat ve Yapı Malzemeleri': 'bg-amber-700 text-white',
+    'Tekstil ve Moda': 'bg-purple-600 text-white',
+    'Diğer': 'bg-gray-500 text-white',
+  }
+
+  function getSectorTagColor(sectorLabel: string | null) {
+    if (!sectorLabel) return 'bg-gray-500 text-white'
+    return SECTOR_TAG_COLORS[sectorLabel] ?? 'bg-gray-500 text-white'
+  }
+
+  function getSectorShortLabel(sectorLabel: string | null) {
+    if (!sectorLabel) return 'Diğer'
+    const map: Record<string, string> = {
+      'Yazılım, Bilişim ve Teknoloji': 'Teknoloji',
+      'Hizmet, Finans ve Danışmanlık': 'Finans',
+      'Lojistik ve Taşımacılık': 'Lojistik',
+      'Otomotiv ve Yan Sanayi': 'Otomotiv',
+      'E-Ticaret, Perakende ve FMCG': 'E-Ticaret',
+      'İmalat, Metal ve Makine': 'İmalat',
+      'Savunma, Havacılık ve Enerji': 'Savunma',
+      'Gıda, Kimya ve Sağlık': 'Sağlık',
+      'İnşaat ve Yapı Malzemeleri': 'İnşaat',
+      'Tekstil ve Moda': 'Tekstil',
+      'Diğer': 'Diğer',
+    }
+    return map[sectorLabel] ?? sectorLabel
+  }
+
   return (
-    <div className="campus-shell flex min-h-screen flex-col">
-      <nav className="campus-nav sticky top-0 z-50 shrink-0 px-4 py-3 sm:px-5">
-        <div className="flex items-center justify-between gap-3">
+    <div className="flex min-h-screen flex-col bg-[#f9f9ff]">
+      {/* ── Navbar ── */}
+      <nav className="campus-nav sticky top-0 z-50 shrink-0 px-4 py-3 sm:px-6">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
           <Link href="/listings" className="flex min-w-0 items-center gap-3">
             <UniversityLogo className="h-11 w-11 shrink-0 sm:h-12 sm:w-12" />
             <div className="min-w-0">
@@ -1075,6 +1125,12 @@ export default function ListingsPage() {
             </div>
           </Link>
 
+          <div className="hidden md:flex items-center gap-6">
+            <Link href="/listings" className="text-[#d8ad43] text-sm font-semibold hover:text-[#f0cf7a] transition-colors">İlanlar</Link>
+            <Link href="/dashboard" className="text-white/70 text-sm font-medium hover:text-white transition-colors">Başvurular</Link>
+            <Link href="/profile" className="text-white/70 text-sm font-medium hover:text-white transition-colors">Profil</Link>
+          </div>
+
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <ProfileDropdown />
@@ -1082,446 +1138,402 @@ export default function ListingsPage() {
         </div>
       </nav>
 
-      <div className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
-        <div className="relative z-40 isolate mb-6 overflow-visible rounded-[32px] border border-[#d8ad43]/16 bg-white/72 p-5 shadow-[0_24px_60px_rgba(18,40,67,0.08)] backdrop-blur dark:bg-[#0e1e33]/80 dark:border-[#d8ad43]/20">
-          <div className="grid gap-5 border-b border-[#d8ad43]/12 pb-6 lg:grid-cols-[minmax(0,1.35fr)_360px] lg:items-end">
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-[#8f670b] dark:text-[#f0cf7a]">IUC Staj Platformu</p>
-              <h1 className="campus-heading mt-3 max-w-4xl text-3xl leading-[0.95] text-[#132843] sm:text-4xl lg:text-5xl dark:text-[#e7edf4]">
-                Endüstri mühendisliği odaklı staj ve yetenek programlarını tek ekranda keşfet.
-              </h1>
-              <p className="mt-4 max-w-3xl text-sm leading-6 text-[#173156]/72 sm:text-base dark:text-[#e7edf4]/60">
-                LinkedIn, Youthall, Anbean, TopTalent ve diğer kaynaklardan çekilen ilanları tek
-                bir akışta takip et. Önce genel resmi gör, sonra filtrelerle kendi sektörüne ve
-                hedeflerine en uygun ilanlara hızla ulaş.
-              </p>
-            </div>
+      {/* ── Hero Section ── */}
+      <section className="bg-[#132843] px-4 py-12 sm:py-16">
+        <div className="mx-auto max-w-4xl text-center">
+          <h1 className="campus-heading text-2xl leading-tight text-white sm:text-4xl lg:text-5xl">
+            ENDÜSTRİ MÜHENDİSLİĞİ ODAKLI STAJ VE YETENEK PROGRAMLARINI TEK EKRANDA KEŞFET.
+          </h1>
+          <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-white/60 sm:text-base">
+            LinkedIn, Youthall, Anbean, TopTalent ve diğer kaynaklardan çekilen ilanları tek
+            bir akışta takip et.
+          </p>
 
-            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-              <div className="rounded-[26px] bg-[#132843] px-4 py-4 text-[#eef3fa] shadow-[0_20px_40px_rgba(10,21,35,0.2)]">
-                <p className="text-[11px] uppercase tracking-[0.24em] text-[#f0cf7a]/82">
-                  Güncel Havuz
-                </p>
-                <p className="mt-2 text-3xl font-semibold">{loading ? '...' : totalCount}</p>
-                <p className="mt-1 text-[11px] text-white/68">Aktif ilan ve program</p>
-              </div>
-              <div className="rounded-[26px] border border-[#d8ad43]/18 bg-white/70 px-4 py-4 dark:bg-white/5">
-                <p className="text-[11px] uppercase tracking-[0.24em] text-[#8f670b]/72 dark:text-[#f0cf7a]/60">
-                  Kaynak Çeşitliliği
-                </p>
-                <p className="mt-2 text-3xl font-semibold text-[#132843] dark:text-[#e7edf4]">
-                  {platforms.length || '0'}
-                </p>
-                <p className="mt-1 text-[11px] text-[#173156]/58 dark:text-[#e7edf4]/45">Farklı platformdan veri</p>
-              </div>
-              <div className="rounded-[26px] border border-[#d8ad43]/18 bg-white/70 px-4 py-4 dark:bg-white/5">
-                <p className="text-[11px] uppercase tracking-[0.24em] text-[#8f670b]/72 dark:text-[#f0cf7a]/60">
-                  Hızlı Eylem
-                </p>
-                <p className="mt-2 text-base font-semibold text-[#132843] dark:text-[#e7edf4]">
-                  Filtrele, incele, yönlen
-                </p>
-                <p className="mt-1 text-[11px] text-[#173156]/58 dark:text-[#e7edf4]/45">
-                  Detaydan kaynağa anında geç
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-[#8f670b] dark:text-[#f0cf7a]">Arama ve Filtreleme</p>
-              <h2 className="mt-1 text-2xl font-semibold tracking-tight text-[#132843] sm:text-3xl dark:text-[#e7edf4]">
-                {dynamicTitle}
-              </h2>
-              <p className="mt-2 max-w-3xl text-sm text-[#173156]/72 dark:text-[#e7edf4]/55"> anında güncellenen ilan görünümü. Sektör, platform ve güven
-                skoru birlikte okunabilir olsun diye arama, metrikler ve filtre özeti aynı alanda
-                toplandı.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setMobileFiltersOpen(true)}
-              className="inline-flex items-center justify-center rounded-2xl border border-[#d8ad43]/20 bg-white px-4 py-2 text-sm font-medium text-[#173156] shadow-sm lg:hidden dark:bg-white/8 dark:text-[#e7edf4]"
-            >
-              Filtreler
-              {activeFilterCount > 0 && (
-                <span className="ml-2 rounded-full bg-[#132843] px-2 py-0.5 text-xs text-white">
-                  {activeFilterCount}
-                </span>
-              )}
-            </button>
-          </div>
-
-          <div className="mt-5 grid gap-3 sm:grid-cols-3">
-            {summaryCards.map((card) => (
-              <div
-                key={card.label}
-                className="rounded-[24px] border border-[#d8ad43]/18 bg-[#fffaf0] px-4 py-3 dark:bg-white/5"
-              >
-                <p className="text-xs font-medium uppercase tracking-wide text-[#8f670b]/72 dark:text-[#f0cf7a]/60">
-                  {card.label}
-                </p>
-                <p className="mt-1 text-2xl font-semibold text-[#132843] dark:text-[#e7edf4]">{card.value}</p>
-              </div>
-            ))}
-          </div>
-
-          {recentItems.length > 0 && (
-            <div className="mt-5">
-              <div className="mb-2 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <History size={14} className="text-[#8f670b]/70 dark:text-[#f0cf7a]/60" />
-                  <p className="text-xs font-medium uppercase tracking-wide text-[#8f670b]/70 dark:text-[#f0cf7a]/60">Son Görüntülenenler</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={clearRecentlyViewed}
-                  className="text-[10px] text-[#8f670b]/50 hover:text-[#8f670b] dark:text-[#f0cf7a]/40 dark:hover:text-[#f0cf7a]"
-                >
-                  Temizle
-                </button>
-              </div>
-              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                {recentItems.map((item) => (
-                  <Link
-                    key={item.id}
-                    href={`/listings/${item.id}`}
-                    className="group flex min-w-[180px] max-w-[220px] shrink-0 items-center gap-2.5 rounded-2xl border border-[#d8ad43]/16 bg-[#fffaf0] px-3 py-2.5 transition-all duration-200 hover:border-[#d8ad43]/35 hover:bg-white hover:-translate-y-0.5 hover:shadow-campus-sm dark:bg-white/5 dark:hover:bg-white/10"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-xs font-semibold text-[#132843] group-hover:text-[#1E3A5F] dark:text-[#e7edf4] dark:group-hover:text-[#d8ad43]">
-                        {item.title}
-                      </p>
-                      <p className="mt-0.5 truncate text-[10px] text-[#173156]/55 dark:text-[#e7edf4]/45">
-                        {item.company_name}
-                      </p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="relative z-[90] mt-5 flex flex-col gap-3 lg:flex-row">
-            <div className="relative z-[90] flex-1" ref={searchBoxRef}>
-              <div className="relative z-[95] flex items-center rounded-[24px] border border-[#d8ad43]/18 bg-white px-4 py-3.5 shadow-sm ring-0 transition-all duration-200 focus-within:border-[#d8ad43]/50 focus-within:ring-2 focus-within:ring-[#f1d27e]/30 focus-within:shadow-[0_0_24px_rgba(216,173,67,0.08)] dark:bg-[#0e1e33] dark:border-[#d8ad43]/22">
-                <span className="mr-3 text-[#173156]/45 transition-colors duration-200 group-focus-within:text-[#d8ad43]">⌕</span>
-                <input
-                  value={query}
-                  onChange={(event) => {
-                    setQuery(event.target.value)
-                    setShowSuggestions(true)
-                  }}
-                  onFocus={() => setShowSuggestions(true)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter') {
-                      persistRecentSearch(query)
-                      setShowSuggestions(false)
-                    }
-                  }}
-                  placeholder="Şirket, pozisyon veya anahtar kelime ara"
-                  className="w-full bg-transparent text-[15px] text-[#132843] outline-none placeholder:text-[#173156]/40 dark:text-[#e7edf4] dark:placeholder:text-[#e7edf4]/35"
-                />
-              </div>
-
-              {showSuggestions && (
-                <div className="absolute left-0 top-full z-[94] mt-2 max-h-[320px] w-full overflow-y-auto rounded-[24px] border border-[#d8ad43]/18 bg-white p-2 shadow-[0_24px_60px_rgba(18,40,67,0.18)] animate-scale-in sm:max-w-[40rem] dark:bg-[#132843] dark:border-[#d8ad43]/22">
-                  {autocompleteSuggestions.length > 0 && (
-                    <div className="mb-2">
-                      <p className="px-2 py-1 text-xs font-semibold uppercase tracking-wide text-[#173156]/35 dark:text-[#e7edf4]/35">
-                        Öneriler
-                      </p>
-                      {autocompleteSuggestions.map((item) => (
-                        <button
-                          key={item}
-                          type="button"
-                          onClick={() => submitSuggestion(item)}
-                          className="block w-full rounded-xl px-3 py-2 text-left text-sm text-[#173156] hover:bg-[#fff7e6] dark:text-[#e7edf4] dark:hover:bg-white/8"
-                        >
-                          {item}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {recentSearches.length > 0 && (
-                    <div>
-                      <p className="px-2 py-1 text-xs font-semibold uppercase tracking-wide text-[#173156]/35 dark:text-[#e7edf4]/35">
-                        Son aramalar
-                      </p>
-                      {recentSearches.map((item) => (
-                        <button
-                          key={item}
-                          type="button"
-                          onClick={() => submitSuggestion(item)}
-                          className="block w-full rounded-xl px-3 py-2 text-left text-sm text-[#173156] hover:bg-[#fff7e6] dark:text-[#e7edf4] dark:hover:bg-white/8"
-                        >
-                          {item}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {autocompleteSuggestions.length === 0 && recentSearches.length === 0 && (
-                    <div className="px-3 py-4 text-sm text-[#173156]/58 dark:text-[#e7edf4]/45">
-                      Henüz öneri yok. Firma adı, şehir veya pozisyon yaz.
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div className="w-full lg:w-[280px]">
-              <label className="mb-1 block text-[11px] font-medium uppercase tracking-[0.18em] text-[#8f670b]/70 dark:text-[#f0cf7a]/60">
-                Siralama
-              </label>
-              <select
-                value={sortBy}
-                onChange={(event) => setSortBy(event.target.value as SortOption)}
-                className="w-full cursor-pointer rounded-[20px] border border-[#d8ad43]/20 bg-white px-4 py-3.5 text-sm text-[#173156] outline-none transition-all duration-200 focus:border-[#d8ad43]/50 focus:ring-2 focus:ring-[#f1d27e]/25 hover:border-[#d8ad43]/35 dark:border-[#d8ad43]/24 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:hover:border-[#d8ad43]/35"
-              >
-                {SORT_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-          </div>
-
-          {(selectedSectors.length > 0 || selectedPlatforms.length > 0 || selectedDurations.length > 0 || talentOnly) && (
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              {selectedSectors.map((sector) => (
-                <button
-                  key={sector}
-                  type="button"
-                  onClick={() => setSelectedSectors(selectedSectors.filter((item) => item !== sector))}
-                  className="rounded-full border border-[rgba(216,173,67,0.18)] bg-[rgba(216,173,67,0.14)] px-3 py-1 text-xs font-medium text-[#8f670b]"
-                >
-                  {sector} ×
-                </button>
-              ))}
-
-              {selectedPlatforms.map((platform) => (
-                <button
-                  key={platform}
-                  type="button"
-                  onClick={() =>
-                    setSelectedPlatforms(selectedPlatforms.filter((item) => item !== platform))
+          {/* Search */}
+          <div className="relative z-[90] mx-auto mt-8 max-w-2xl" ref={searchBoxRef}>
+            <div className="flex items-center rounded-xl bg-white shadow-lg">
+              <input
+                value={query}
+                onChange={(event) => {
+                  setQuery(event.target.value)
+                  setShowSuggestions(true)
+                }}
+                onFocus={() => setShowSuggestions(true)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    persistRecentSearch(query)
+                    setShowSuggestions(false)
                   }
-                  className="rounded-full border border-[rgba(216,173,67,0.18)] bg-[rgba(216,173,67,0.14)] px-3 py-1 text-xs font-medium text-[#8f670b]"
-                >
-                  {platform} ×
-                </button>
-              ))}
-
-              {selectedDurations.map((durationValue) => {
-                const durationLabel =
-                  DURATION_OPTIONS.find((item) => item.value === durationValue)?.label ?? durationValue
-                return (
-                  <button
-                    key={durationValue}
-                    type="button"
-                    onClick={() =>
-                      setSelectedDurations(selectedDurations.filter((item) => item !== durationValue))
-                    }
-                    className="rounded-full border border-[rgba(216,173,67,0.18)] bg-[rgba(216,173,67,0.14)] px-3 py-1 text-xs font-medium text-[#8f670b]"
-                  >
-                    {durationLabel} Ã—
-                  </button>
-                )
-              })}
-
-              {talentOnly && (
-                <button
-                  type="button"
-                  onClick={() => setTalentOnly(false)}
-                  className="rounded-full border border-[rgba(216,173,67,0.18)] bg-[rgba(216,173,67,0.14)] px-3 py-1 text-xs font-medium text-[#8f670b]"
-                >
-                  Yetenek Programı ×
-                </button>
-              )}
-
+                }}
+                placeholder="Şirket, pozisyon veya anahtar kelime ara..."
+                className="w-full rounded-l-xl bg-transparent px-5 py-4 text-[15px] text-[#132843] outline-none placeholder:text-gray-400"
+              />
               <button
                 type="button"
-                onClick={clearAllFilters}
-                className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-700"
+                onClick={() => {
+                  persistRecentSearch(query)
+                  setShowSuggestions(false)
+                }}
+                className="shrink-0 rounded-r-xl bg-[#d8ad43] px-6 py-4 text-sm font-bold uppercase tracking-wider text-[#132843] transition-colors hover:bg-[#c79828]"
               >
-                Tümünü temizle
+                İLANLARI BUL
               </button>
             </div>
-          )}
-        </div>
 
-        <div className="relative z-0 grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
+            {showSuggestions && (
+              <div className="absolute left-0 top-full z-[94] mt-2 max-h-[320px] w-full overflow-y-auto rounded-xl border border-gray-200 bg-white p-2 shadow-xl">
+                {autocompleteSuggestions.length > 0 && (
+                  <div className="mb-2">
+                    <p className="px-2 py-1 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                      Öneriler
+                    </p>
+                    {autocompleteSuggestions.map((item) => (
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() => submitSuggestion(item)}
+                        className="block w-full rounded-lg px-3 py-2 text-left text-sm text-[#173156] hover:bg-[#f5f0e0]"
+                      >
+                        {item}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {recentSearches.length > 0 && (
+                  <div>
+                    <p className="px-2 py-1 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                      Son aramalar
+                    </p>
+                    {recentSearches.map((item) => (
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() => submitSuggestion(item)}
+                        className="block w-full rounded-lg px-3 py-2 text-left text-sm text-[#173156] hover:bg-[#f5f0e0]"
+                      >
+                        {item}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {autocompleteSuggestions.length === 0 && recentSearches.length === 0 && (
+                  <div className="px-3 py-4 text-sm text-gray-400">
+                    Henüz öneri yok. Firma adı, şehir veya pozisyon yaz.
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Summary Cards ── */}
+      <section className="bg-[#f9f9ff] px-4 py-6">
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 sm:flex-row sm:gap-4">
+          {summaryCards.map((card) => (
+            <div
+              key={card.label}
+              className="flex-1 rounded-xl border border-gray-200 bg-white px-5 py-4 text-center shadow-sm"
+            >
+              <p className="text-xs font-bold uppercase tracking-wider text-gray-400">{card.label}</p>
+              <p className="mt-1 text-3xl font-bold text-[#132843]">{loading ? '...' : card.value}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Active Filters ── */}
+      {(selectedSectors.length > 0 || selectedPlatforms.length > 0 || selectedDurations.length > 0 || talentOnly) && (
+        <div className="bg-[#f9f9ff] px-4 pb-2">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2">
+            {selectedSectors.map((sector) => (
+              <button
+                key={sector}
+                type="button"
+                onClick={() => setSelectedSectors(selectedSectors.filter((item) => item !== sector))}
+                className="rounded-full bg-[#132843] px-3 py-1 text-xs font-medium text-white"
+              >
+                {sector} ×
+              </button>
+            ))}
+            {selectedPlatforms.map((platform) => (
+              <button
+                key={platform}
+                type="button"
+                onClick={() => setSelectedPlatforms(selectedPlatforms.filter((item) => item !== platform))}
+                className="rounded-full bg-[#132843] px-3 py-1 text-xs font-medium text-white"
+              >
+                {platform} ×
+              </button>
+            ))}
+            {selectedDurations.map((durationValue) => {
+              const durationLabel = DURATION_OPTIONS.find((item) => item.value === durationValue)?.label ?? durationValue
+              return (
+                <button
+                  key={durationValue}
+                  type="button"
+                  onClick={() => setSelectedDurations(selectedDurations.filter((item) => item !== durationValue))}
+                  className="rounded-full bg-[#132843] px-3 py-1 text-xs font-medium text-white"
+                >
+                  {durationLabel} ×
+                </button>
+              )
+            })}
+            {talentOnly && (
+              <button type="button" onClick={() => setTalentOnly(false)} className="rounded-full bg-[#132843] px-3 py-1 text-xs font-medium text-white">
+                Yetenek Programı ×
+              </button>
+            )}
+            <button type="button" onClick={clearAllFilters} className="rounded-full border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50">
+              Tümünü temizle
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Main Content ── */}
+      <section className="flex-1 bg-[#f9f9ff] px-4 pb-12">
+        <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
+
+          {/* Sidebar */}
           <aside className="hidden lg:block">
-            <div className="sticky top-6 rounded-[32px] border border-[#d8ad43]/16 bg-white/72 p-5 shadow-campus-sm backdrop-blur dark:bg-[#0e1e33]/80 dark:border-[#d8ad43]/20">
-              <FilterPanel
-                sectors={sectors}
-                platforms={platforms}
-                durations={DURATION_OPTIONS}
-                selectedSectors={selectedSectors}
-                selectedPlatforms={selectedPlatforms}
-                selectedDurations={selectedDurations}
-                talentOnly={talentOnly}
-                onToggleSector={(value) => toggleItem(value, selectedSectors, setSelectedSectors)}
-                onTogglePlatform={(value) =>
-                  toggleItem(value, selectedPlatforms, setSelectedPlatforms)
-                }
-                onToggleDuration={(value) =>
-                  toggleItem(value, selectedDurations, setSelectedDurations)
-                }
-                onToggleTalent={() => setTalentOnly((prev) => !prev)}
-                onClearAll={clearAllFilters}
-              />
+            <div className="sticky top-24 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+              <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-[#132843]">Sektör Filtreleri</h3>
+              <ul className="space-y-1">
+                {SIDEBAR_SECTORS.map((sector) => {
+                  const isActive = selectedSectors.includes(sector.value)
+                  return (
+                    <li key={sector.value}>
+                      <button
+                        type="button"
+                        onClick={() => toggleItem(sector.value, selectedSectors, setSelectedSectors)}
+                        className={classNames(
+                          'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all',
+                          isActive
+                            ? 'bg-[#132843] text-white'
+                            : 'text-gray-600 hover:bg-gray-100 hover:text-[#132843]',
+                        )}
+                      >
+                        <span className="text-lg">{sector.icon}</span>
+                        {sector.label}
+                      </button>
+                    </li>
+                  )
+                })}
+              </ul>
+
+              <hr className="my-4 border-gray-200" />
+
+              {/* Platform Filters */}
+              <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-[#132843]">Platform</h3>
+              <ul className="space-y-1">
+                {platforms.map((platform) => {
+                  const isActive = selectedPlatforms.includes(platform)
+                  return (
+                    <li key={platform}>
+                      <button
+                        type="button"
+                        onClick={() => toggleItem(platform, selectedPlatforms, setSelectedPlatforms)}
+                        className={classNames(
+                          'flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all',
+                          isActive
+                            ? 'bg-[#132843] text-white'
+                            : 'text-gray-600 hover:bg-gray-100 hover:text-[#132843]',
+                        )}
+                      >
+                        {platform}
+                      </button>
+                    </li>
+                  )
+                })}
+              </ul>
+
+              <hr className="my-4 border-gray-200" />
+
+              {/* Talent Only */}
+              <button
+                type="button"
+                onClick={() => setTalentOnly((prev) => !prev)}
+                className={classNames(
+                  'flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-all',
+                  talentOnly ? 'bg-[#d8ad43] text-[#132843]' : 'text-gray-600 hover:bg-gray-100',
+                )}
+              >
+                <span className="text-lg">⭐</span>
+                Yetenek Programları
+              </button>
+
+              {activeFilterCount > 0 && (
+                <button
+                  type="button"
+                  onClick={clearAllFilters}
+                  className="mt-4 w-full rounded-lg border border-gray-200 py-2 text-xs font-medium text-gray-500 hover:bg-gray-50"
+                >
+                  Filtreleri Temizle
+                </button>
+              )}
             </div>
           </aside>
 
+          {/* Main Grid */}
           <main>
+            {/* Header Row */}
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-[#132843]">{dynamicTitle}</h2>
+                {!loading && listings.length > 0 && (
+                  <p className="mt-0.5 text-sm text-gray-500">
+                    {visibleRange.start}-{visibleRange.end} arası gösteriliyor (Sayfa {currentPage}/{totalPages})
+                  </p>
+                )}
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setMobileFiltersOpen(true)}
+                  className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-[#132843] shadow-sm lg:hidden"
+                >
+                  Filtreler
+                  {activeFilterCount > 0 && (
+                    <span className="rounded-full bg-[#132843] px-2 py-0.5 text-xs text-white">{activeFilterCount}</span>
+                  )}
+                </button>
+
+                <select
+                  value={sortBy}
+                  onChange={(event) => setSortBy(event.target.value as SortOption)}
+                  className="cursor-pointer rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-[#132843] outline-none shadow-sm"
+                >
+                  {SORT_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Listings */}
             {loading ? (
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {Array.from({ length: 9 }).map((_, index) => (
-                  <div
-                    key={index}
-                    className="h-64 rounded-[32px] border border-[#d8ad43]/16 bg-white/70 campus-shimmer dark:bg-white/5"
-                  />
+              <div className="grid gap-4 sm:grid-cols-2">
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <div key={index} className="h-64 rounded-xl border border-gray-200 bg-white campus-shimmer" />
                 ))}
               </div>
             ) : error ? (
-              <div className="rounded-[32px] border border-rose-200 bg-rose-50 p-8 text-center shadow-sm">
-                <p className="text-lg font-semibold text-rose-800">Veri yuklenemedi</p>
+              <div className="rounded-xl border border-rose-200 bg-rose-50 p-8 text-center">
+                <p className="text-lg font-semibold text-rose-800">Veri yüklenemedi</p>
                 <p className="mt-2 text-sm text-rose-700">{error}</p>
-                <button
-                  type="button"
-                  onClick={() => window.location.reload()}
-                  className="mt-4 rounded-2xl bg-rose-600 px-4 py-2 text-sm font-medium text-white"
-                >
+                <button type="button" onClick={() => window.location.reload()} className="mt-4 rounded-lg bg-rose-600 px-4 py-2 text-sm font-medium text-white">
                   Tekrar dene
                 </button>
               </div>
             ) : listings.length === 0 ? (
-              <div className="rounded-[32px] border border-[#d8ad43]/16 bg-white/72 p-10 text-center shadow-sm dark:bg-[#0e1e33]/80">
+              <div className="rounded-xl border border-gray-200 bg-white p-10 text-center shadow-sm">
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#d8ad43]/10">
                   <svg className="h-8 w-8 text-[#d8ad43]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                   </svg>
                 </div>
-                <p className="text-lg font-semibold text-[#132843] dark:text-[#e7edf4]">Sonuç bulunamadı</p>
-                <p className="mt-2 text-sm text-[#173156]/72 dark:text-[#e7edf4]/55">
-                  Seçtiğin filtre kombinasyonu fazla dar olabilir. Bazı filtreleri kaldır.
-                </p>
-                <button
-                  type="button"
-                  onClick={clearAllFilters}
-                  className="mt-4 rounded-2xl bg-[#132843] px-4 py-2 text-sm font-medium text-white"
-                >
+                <p className="text-lg font-semibold text-[#132843]">Sonuç bulunamadı</p>
+                <p className="mt-2 text-sm text-gray-500">Seçtiğin filtre kombinasyonu fazla dar olabilir.</p>
+                <button type="button" onClick={clearAllFilters} className="mt-4 rounded-lg bg-[#132843] px-4 py-2 text-sm font-medium text-white">
                   Filtreleri temizle
                 </button>
               </div>
             ) : (
               <>
-                <div className="mb-4 flex flex-col gap-2 rounded-[24px] border border-[#d8ad43]/12 bg-white/60 px-4 py-3 text-sm text-[#173156]/72 sm:flex-row sm:items-center sm:justify-between dark:bg-white/5 dark:text-[#e7edf4]/55">
-                  <p>
-                    {visibleRange.start}-{visibleRange.end} arası gösteriliyor
-                  </p>
-                  <p>
-                    Sayfa {currentPage} / {totalPages}
-                  </p>
-                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {listings.map((item) => {
+                    const sectorLabel = item.sector ?? null
+                    return (
+                      <article
+                        key={item.id}
+                        className="group relative flex flex-col rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                      >
+                        {/* Sector Tag */}
+                        {sectorLabel && (
+                          <span className={classNames(
+                            'absolute right-3 top-3 rounded-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider',
+                            getSectorTagColor(sectorLabel),
+                          )}>
+                            {getSectorShortLabel(sectorLabel)}
+                          </span>
+                        )}
 
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {listings.map((item) => {
-                  return (
-                    <article
-                      key={item.id}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => router.push(`/listings/${item.id}`)}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter' || event.key === ' ') {
-                          event.preventDefault()
-                          router.push(`/listings/${item.id}`)
-                        }
-                      }}
-                      className="group cursor-pointer rounded-[28px] border border-[#e9edf5] bg-white px-4 py-4 shadow-campus-sm transition-all duration-200 hover:-translate-y-1 hover:border-[#d8ad43]/30 hover:shadow-campus-md dark:bg-[#0e1e33] dark:border-[#d8ad43]/15 dark:hover:border-[#d8ad43]/35"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-[78px] w-[78px] shrink-0 items-center justify-center rounded-[22px] border border-[#dde4f0] bg-white shadow-[0_8px_22px_rgba(15,23,42,0.05)] dark:bg-[#132843] dark:border-[#d8ad43]/15">
-                          {item.company_logo_url ? (
-                            <img
-                              src={item.company_logo_url}
-                              alt={item.company_name}
-                              className="h-12 w-12 object-contain"
-                              loading="lazy"
-                              referrerPolicy="no-referrer"
-                              onError={(e) => { (e.currentTarget).style.display = 'none'; (e.currentTarget.nextElementSibling as HTMLElement)?.style.removeProperty('display') }}
-                            />
-                          ) : null}
-                          {item.company_logo_url ? (
-                            <div
-                              style={{ display: 'none' }}
-                              className={classNames(
-                                'flex h-[56px] w-[56px] items-center justify-center rounded-[18px] border bg-gradient-to-br text-[15px] font-semibold tracking-[0.08em] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]',
-                                getCompanyMonogramStyle(item.company_name),
+                        <div className="flex-1 p-5">
+                          {/* Company + Title */}
+                          <div className="flex items-start gap-4">
+                            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border-2 border-gray-200 bg-white">
+                              {item.company_logo_url ? (
+                                <img
+                                  src={item.company_logo_url}
+                                  alt={item.company_name}
+                                  className="h-10 w-10 object-contain"
+                                  loading="lazy"
+                                  referrerPolicy="no-referrer"
+                                  onError={(e) => { (e.currentTarget).style.display = 'none'; (e.currentTarget.nextElementSibling as HTMLElement)?.style.removeProperty('display') }}
+                                />
+                              ) : null}
+                              {item.company_logo_url ? (
+                                <span style={{ display: 'none' }} className="text-sm font-bold text-[#132843]">
+                                  {getCompanyBadgeText(item.company_name)}
+                                </span>
+                              ) : (
+                                <span className="text-sm font-bold text-[#132843]">
+                                  {getCompanyBadgeText(item.company_name)}
+                                </span>
                               )}
-                            >
-                              {getCompanyBadgeText(item.company_name)}
                             </div>
-                          ) : (
-                            <div
-                              className={classNames(
-                                'flex h-[56px] w-[56px] items-center justify-center rounded-[18px] border bg-gradient-to-br text-[15px] font-semibold tracking-[0.08em] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]',
-                                getCompanyMonogramStyle(item.company_name),
-                              )}
-                            >
-                              {getCompanyBadgeText(item.company_name)}
+                            <div className="min-w-0 flex-1">
+                              <h3 className="text-[15px] font-bold leading-snug text-[#132843] group-hover:text-[#1E3A5F]">
+                                {item.title}
+                              </h3>
+                              <p className="mt-1 text-sm text-gray-500">{item.company_name}</p>
                             </div>
-                          )}
+                          </div>
+
+                          {/* Meta */}
+                          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500">
+                            <span className="inline-flex items-center gap-1.5">
+                              <MapPin size={14} />
+                              {getWorkModelLabel(item)}
+                            </span>
+                            <span className="inline-flex items-center gap-1.5">
+                              <Clock3 size={14} />
+                              {formatDate(item.deadline)}
+                            </span>
+                          </div>
+
+                          {/* Employment Type Tag */}
+                          <div className="mt-3">
+                            <span className="inline-block rounded-md border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-600">
+                              {getEmploymentTypeLabel(item.employment_type)}
+                            </span>
+                          </div>
                         </div>
 
-                        <div className="min-w-0 flex-1">
-                          <p className="text-[13px] font-medium text-[#173156]/58 dark:text-[#e7edf4]/55">{item.company_name}</p>
-                          <h2 className="mt-1 text-[0.98rem] font-semibold leading-[1.14] tracking-[-0.015em] text-[#132843] group-hover:text-[#1E3A5F] transition-colors duration-200 sm:text-[1.05rem] dark:text-[#e7edf4] dark:group-hover:text-[#d8ad43]">
-                            {item.title}
-                          </h2>
-                        </div>
-                      </div>
-
-                      <p className="mt-4 line-clamp-2 text-[0.9rem] leading-6 text-[#173156]/76 dark:text-[#e7edf4]/60">
-                        {getListingSummary(item)}
-                      </p>
-
-                      <div className="mt-4 border-t border-dashed border-[#e1e6ef] dark:border-[#d8ad43]/12" />
-
-                      <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-                        <span className="inline-flex items-center gap-1.5 rounded-[15px] border border-[#e7ebf3] bg-[#f8fafc] px-3 py-1.5 text-[12px] font-medium text-[#4a5c76] shadow-[0_2px_8px_rgba(15,23,42,0.03)] dark:border-white/10 dark:bg-white/5 dark:text-[#e7edf4]/65">
-                          <BriefcaseBusiness size={16} strokeWidth={2} />
-                          {getEmploymentTypeLabel(item.employment_type)}
-                        </span>
-                        <span className="inline-flex items-center gap-1.5 rounded-[15px] border border-[#e7ebf3] bg-[#f8fafc] px-3 py-1.5 text-[12px] font-medium text-[#4a5c76] shadow-[0_2px_8px_rgba(15,23,42,0.03)] dark:border-white/10 dark:bg-white/5 dark:text-[#e7edf4]/65">
-                          <Clock3 size={16} strokeWidth={2} />
-                          {formatDate(item.deadline)}
-                        </span>
-                        <span className="inline-flex items-center gap-1.5 rounded-[15px] border border-[#e7ebf3] bg-[#f8fafc] px-3 py-1.5 text-[12px] font-medium text-[#4a5c76] shadow-[0_2px_8px_rgba(15,23,42,0.03)] dark:border-white/10 dark:bg-white/5 dark:text-[#e7edf4]/65">
-                          <MapPin size={16} strokeWidth={2} />
-                          {getWorkModelLabel(item)}
-                        </span>
-                      </div>
-                    </article>
-                  )
-                })}
+                        {/* Detail Button */}
+                        <Link
+                          href={`/listings/${item.id}`}
+                          className="block rounded-b-xl bg-[#132843] py-3 text-center text-sm font-bold uppercase tracking-wider text-white transition-colors hover:bg-[#0e1e33]"
+                        >
+                          DETAYLARI GÖR
+                        </Link>
+                      </article>
+                    )
+                  })}
                 </div>
 
+                {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+                  <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
                     <button
                       type="button"
                       onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
                       disabled={currentPage === 1}
-                      className="rounded-2xl border border-[#d8ad43]/20 bg-white px-4 py-2.5 text-sm font-medium text-[#173156] transition-all duration-150 hover:border-[#d8ad43]/35 hover:bg-[#fff8e8] disabled:cursor-not-allowed disabled:opacity-45 dark:bg-white/5 dark:text-[#e7edf4] dark:hover:bg-white/10"
+                      className="rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-[#132843] hover:bg-gray-50 disabled:opacity-40"
                     >
                       ← Önceki
                     </button>
@@ -1532,10 +1544,10 @@ export default function ListingsPage() {
                         type="button"
                         onClick={() => setCurrentPage(page)}
                         className={classNames(
-                          'rounded-2xl px-4 py-2.5 text-sm font-medium transition-all duration-150',
+                          'rounded-lg px-4 py-2.5 text-sm font-medium transition-all',
                           currentPage === page
-                            ? 'bg-gradient-to-br from-[#d8ad43] to-[#c79828] text-[#10223b] shadow-[0_6px_18px_rgba(199,152,40,0.25)]'
-                            : 'border border-[#d8ad43]/20 bg-white text-[#173156] hover:border-[#d8ad43]/35 hover:bg-[#fff8e8] dark:bg-white/5 dark:text-[#e7edf4] dark:hover:bg-white/10',
+                            ? 'bg-[#132843] text-white shadow-md'
+                            : 'border border-gray-200 bg-white text-[#132843] hover:bg-gray-50',
                         )}
                       >
                         {page}
@@ -1546,7 +1558,7 @@ export default function ListingsPage() {
                       type="button"
                       onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
                       disabled={currentPage === totalPages}
-                      className="rounded-2xl border border-[#d8ad43]/20 bg-white px-4 py-2.5 text-sm font-medium text-[#173156] transition-all duration-150 hover:border-[#d8ad43]/35 hover:bg-[#fff8e8] disabled:cursor-not-allowed disabled:opacity-45 dark:bg-white/5 dark:text-[#e7edf4] dark:hover:bg-white/10"
+                      className="rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-[#132843] hover:bg-gray-50 disabled:opacity-40"
                     >
                       Sonraki →
                     </button>
@@ -1556,17 +1568,39 @@ export default function ListingsPage() {
             )}
           </main>
         </div>
-      </div>
+      </section>
 
+      {/* ── Newsletter ── */}
+      <section className="bg-[#132843] px-4 py-12">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="campus-heading text-xl text-white sm:text-2xl">İLANLARDAN İLK SEN HABERDAR OL</h2>
+          <p className="mt-2 text-sm text-white/60">Yeni ilanlardan anında haberdar olmak için abone ol.</p>
+          <div className="mx-auto mt-6 flex max-w-md items-center rounded-xl bg-white shadow-lg">
+            <input
+              type="email"
+              placeholder="E-posta adresiniz"
+              className="w-full rounded-l-xl bg-transparent px-5 py-3.5 text-sm text-[#132843] outline-none placeholder:text-gray-400"
+            />
+            <button
+              type="button"
+              className="shrink-0 rounded-r-xl bg-[#d8ad43] px-6 py-3.5 text-sm font-bold uppercase tracking-wider text-[#132843] transition-colors hover:bg-[#c79828]"
+            >
+              ABONE OL
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Mobile Filter Modal ── */}
       {mobileFiltersOpen && (
         <div className="fixed inset-0 z-40 bg-black/40 lg:hidden">
-          <div className="absolute inset-y-0 right-0 w-full max-w-sm overflow-y-auto bg-white p-5 shadow-2xl dark:bg-[#0e1e33]">
+          <div className="absolute inset-y-0 right-0 w-full max-w-sm overflow-y-auto bg-white p-5 shadow-2xl">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-[#132843] dark:text-[#e7edf4]">Filtreler</h2>
+              <h2 className="text-lg font-bold text-[#132843]">Filtreler</h2>
               <button
                 type="button"
                 onClick={() => setMobileFiltersOpen(false)}
-                className="rounded-xl border border-gray-200 px-3 py-1.5 text-sm text-gray-700 dark:border-white/15 dark:text-[#e7edf4]"
+                className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm text-gray-600"
               >
                 Kapat
               </button>
@@ -1594,7 +1628,7 @@ export default function ListingsPage() {
             <button
               type="button"
               onClick={() => setMobileFiltersOpen(false)}
-              className="mt-6 w-full rounded-2xl bg-[#132843] px-4 py-3 text-sm font-medium text-white"
+              className="mt-6 w-full rounded-xl bg-[#132843] px-4 py-3 text-sm font-bold text-white"
             >
               Sonuçları Göster
             </button>
