@@ -1538,12 +1538,12 @@ export default function ListingsPage() {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
+                  <div className="mt-8 flex items-center justify-center gap-1.5 sm:gap-2">
                     <button
                       type="button"
                       onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
                       disabled={currentPage === 1}
-                      className="rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-[#132843] hover:bg-gray-50 disabled:opacity-40"
+                      className="rounded-lg border border-gray-200 bg-white px-2.5 py-2 text-xs font-medium text-[#132843] hover:bg-gray-50 disabled:opacity-40 sm:px-4 sm:py-2.5 sm:text-sm"
                     >
                       ← Önceki
                     </button>
@@ -1554,7 +1554,7 @@ export default function ListingsPage() {
                         type="button"
                         onClick={() => setCurrentPage(page)}
                         className={classNames(
-                          'rounded-lg px-4 py-2.5 text-sm font-medium transition-all',
+                          'rounded-lg px-2.5 py-2 text-xs font-medium transition-all sm:px-4 sm:py-2.5 sm:text-sm',
                           currentPage === page
                             ? 'bg-[#132843] text-white shadow-md'
                             : 'border border-gray-200 bg-white text-[#132843] hover:bg-gray-50',
@@ -1568,7 +1568,7 @@ export default function ListingsPage() {
                       type="button"
                       onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
                       disabled={currentPage === totalPages}
-                      className="rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-[#132843] hover:bg-gray-50 disabled:opacity-40"
+                      className="rounded-lg border border-gray-200 bg-white px-2.5 py-2 text-xs font-medium text-[#132843] hover:bg-gray-50 disabled:opacity-40 sm:px-4 sm:py-2.5 sm:text-sm"
                     >
                       Sonraki →
                     </button>
