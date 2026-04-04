@@ -16,9 +16,9 @@ interface Props {
 }
 
 const INTERNSHIP_BADGE: Record<string, string> = {
-  zorunlu: 'bg-[#dfe9f6] text-[#23446f]',
-  gonullu: 'bg-[#e6efe3] text-[#355b2a]',
-  belirsiz: 'bg-[#ece6d8] text-[#6e6140]',
+  zorunlu: 'bg-[#dfe9f6] text-[#23446f] dark:bg-[#23446f]/30 dark:text-[#a8c4e6]',
+  gonullu: 'bg-[#e6efe3] text-[#355b2a] dark:bg-[#355b2a]/30 dark:text-[#a8d4a0]',
+  belirsiz: 'bg-[#ece6d8] text-[#6e6140] dark:bg-[#6e6140]/30 dark:text-[#d4c8a8]',
 }
 
 const INTERNSHIP_LABEL: Record<string, string> = {
@@ -28,9 +28,9 @@ const INTERNSHIP_LABEL: Record<string, string> = {
 }
 
 const ORIGIN_BADGE: Record<string, string> = {
-  yerli: 'bg-[#f0dfb3] text-[#8b660f]',
-  yabanci: 'bg-[#e7e1f2] text-[#5b487b]',
-  belirsiz: 'bg-[#ece6d8] text-[#6e6140]',
+  yerli: 'bg-[#f0dfb3] text-[#8b660f] dark:bg-[#8b660f]/30 dark:text-[#f0cf7a]',
+  yabanci: 'bg-[#e7e1f2] text-[#5b487b] dark:bg-[#5b487b]/30 dark:text-[#c8b8e0]',
+  belirsiz: 'bg-[#ece6d8] text-[#6e6140] dark:bg-[#6e6140]/30 dark:text-[#d4c8a8]',
 }
 
 const ORIGIN_LABEL: Record<string, string> = {
@@ -47,10 +47,10 @@ export default function ListingCard({ listing, isBookmarked, onBookmark }: Props
   const avatarColor = getAvatarColor(listing.company_name)
 
   const deadlineClass =
-    deadline.color === 'red' ? 'bg-red-50 text-red-700' :
-    deadline.color === 'orange' ? 'bg-[#f7ead2] text-[#a46c09]' :
-    deadline.color === 'blue' ? 'bg-[#e1ebf7] text-[#23446f]' :
-    'text-[#173156]/55'
+    deadline.color === 'red' ? 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300' :
+    deadline.color === 'orange' ? 'bg-[#f7ead2] text-[#a46c09] dark:bg-[#a46c09]/20 dark:text-[#f0cf7a]' :
+    deadline.color === 'blue' ? 'bg-[#e1ebf7] text-[#23446f] dark:bg-[#23446f]/30 dark:text-[#a8c4e6]' :
+    'text-[#173156]/55 dark:text-[#e7edf4]/40'
 
   return (
     <article

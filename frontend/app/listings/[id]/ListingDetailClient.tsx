@@ -144,12 +144,12 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
 
   const deadlineBadgeClass =
     deadline.color === 'red'
-      ? 'bg-red-50 text-red-700'
+      ? 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300'
       : deadline.color === 'orange'
-        ? 'bg-orange-50 text-orange-700'
+        ? 'bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'
         : deadline.color === 'blue'
-          ? 'bg-blue-50 text-blue-700'
-          : 'bg-slate-100 text-slate-600'
+          ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+          : 'bg-slate-100 text-slate-600 dark:bg-white/8 dark:text-slate-300'
 
   async function handleShare() {
     await navigator.clipboard.writeText(shareUrl)
@@ -205,7 +205,7 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#f9f9ff]">
+    <div className="min-h-screen bg-[#f9f9ff] dark:bg-[#0e1e33]">
       {/* ── Navbar ── */}
       <nav className="sticky top-0 z-50 bg-[#1A233A] shadow-md" style={{ borderBottom: '2px solid transparent', borderImage: 'linear-gradient(to right, #B8860B, #F3E5AB, #B8860B) 1' }}>
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-0 sm:px-6" style={{ height: '64px' }}>
@@ -305,8 +305,8 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
           {/* ── Left Column ── */}
           <div className="space-y-8 lg:col-span-8">
             {/* Description */}
-            <section className="rounded-xl bg-white p-6 sm:p-8">
-              <h2 className="campus-heading mb-6 flex items-center gap-3 text-xl font-bold text-[#132843]">
+            <section className="rounded-xl bg-white p-6 sm:p-8 dark:bg-[#1a2d45]">
+              <h2 className="campus-heading mb-6 flex items-center gap-3 text-xl font-bold text-[#132843] dark:text-[#e7edf4]">
                 <span className="block h-6 w-1.5 bg-[#785a00]" />
                 İLAN AÇIKLAMASI
               </h2>
@@ -318,7 +318,7 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
 
                   if (isSectionTitle) {
                     return (
-                      <h3 key={`${block}-${index}`} className="text-sm font-bold uppercase tracking-wider text-[#132843]">
+                      <h3 key={`${block}-${index}`} className="text-sm font-bold uppercase tracking-wider text-[#132843] dark:text-[#e7edf4]">
                         {block}
                       </h3>
                     )
@@ -326,14 +326,14 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
 
                   if (isNumberedItem) {
                     return (
-                      <p key={`${block}-${index}`} className="border-l-2 border-[#d8ad43]/25 pl-3 text-sm leading-relaxed text-[#44474d]">
+                      <p key={`${block}-${index}`} className="border-l-2 border-[#d8ad43]/25 pl-3 text-sm leading-relaxed text-[#44474d] dark:text-[#e7edf4]/70">
                         {block}
                       </p>
                     )
                   }
 
                   return (
-                    <p key={`${block}-${index}`} className="text-sm leading-relaxed text-[#44474d]">
+                    <p key={`${block}-${index}`} className="text-sm leading-relaxed text-[#44474d] dark:text-[#e7edf4]/70">
                       {block}
                     </p>
                   )
@@ -351,8 +351,8 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
 
             {/* Requirements */}
             {listing.requirements && (
-              <section className="rounded-xl bg-white p-6 sm:p-8">
-                <h2 className="campus-heading mb-6 flex items-center gap-3 text-xl font-bold text-[#132843]">
+              <section className="rounded-xl bg-white p-6 sm:p-8 dark:bg-[#1a2d45]">
+                <h2 className="campus-heading mb-6 flex items-center gap-3 text-xl font-bold text-[#132843] dark:text-[#e7edf4]">
                   <span className="block h-6 w-1.5 bg-[#785a00]" />
                   ARANAN NİTELİKLER
                 </h2>
@@ -362,7 +362,7 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
                     .map((item) => item.trim())
                     .filter(Boolean)
                     .map((item, index) => (
-                      <li key={`${item}-${index}`} className="flex items-start gap-2.5 text-sm leading-relaxed text-[#44474d]">
+                      <li key={`${item}-${index}`} className="flex items-start gap-2.5 text-sm leading-relaxed text-[#44474d] dark:text-[#e7edf4]/70">
                         <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#785a00]" />
                         <span>{item}</span>
                       </li>
@@ -372,20 +372,20 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
             )}
 
             {/* Reviews */}
-            <section className="rounded-xl border border-[#c4c6ce]/15 bg-[#f0f3ff] p-6 sm:p-8">
-              <h2 className="campus-heading mb-8 flex items-center gap-3 text-xl font-bold text-[#132843]">
+            <section className="rounded-xl border border-[#c4c6ce]/15 bg-[#f0f3ff] p-6 sm:p-8 dark:border-white/10 dark:bg-[#132843]/50">
+              <h2 className="campus-heading mb-8 flex items-center gap-3 text-xl font-bold text-[#132843] dark:text-[#e7edf4]">
                 <span className="block h-6 w-1.5 bg-[#785a00]" />
                 ÖĞRENCİ DEĞERLENDİRMELERİ
               </h2>
 
               {/* Rating Summary */}
               <div className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-3">
-                <div className="flex flex-col items-center justify-center rounded-xl bg-white p-6 text-center">
-                  <span className="text-4xl font-bold text-[#132843]">{averageRating.toFixed(1)}</span>
+                <div className="flex flex-col items-center justify-center rounded-xl bg-white p-6 text-center dark:bg-[#1a2d45]">
+                  <span className="text-4xl font-bold text-[#132843] dark:text-[#e7edf4]">{averageRating.toFixed(1)}</span>
                   <div className="my-2">
                     <ReviewStars value={Math.round(averageRating)} />
                   </div>
-                  <span className="text-xs font-medium text-[#44474d]">{reviews.length} Değerlendirme</span>
+                  <span className="text-xs font-medium text-[#44474d] dark:text-[#e7edf4]/60">{reviews.length} Değerlendirme</span>
                 </div>
                 <div className="flex flex-col justify-center space-y-2 md:col-span-2">
                   {[5, 4, 3, 2, 1].map((star) => {
@@ -393,8 +393,8 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
                     const pct = reviews.length ? (count / reviews.length) * 100 : 0
                     return (
                       <div key={star} className="flex items-center gap-3">
-                        <span className="w-14 text-xs font-bold text-[#132843]">{star} Yıldız</span>
-                        <div className="h-2 flex-1 overflow-hidden rounded-full bg-white">
+                        <span className="w-14 text-xs font-bold text-[#132843] dark:text-[#e7edf4]">{star} Yıldız</span>
+                        <div className="h-2 flex-1 overflow-hidden rounded-full bg-white dark:bg-white/10">
                           <div className="h-full rounded-full bg-[#785a00] transition-all" style={{ width: `${pct}%` }} />
                         </div>
                       </div>
@@ -406,16 +406,16 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
               {/* Review Form */}
               <form
                 onSubmit={handleReviewSubmit}
-                className="mb-8 rounded-xl border border-[#c4c6ce]/20 bg-white/50 p-6 backdrop-blur"
+                className="mb-8 rounded-xl border border-[#c4c6ce]/20 bg-white/50 p-6 backdrop-blur dark:bg-[#1a2d45]/50"
               >
-                <h3 className="mb-4 text-sm font-bold text-[#132843]">Bir Değerlendirme Bırakın</h3>
+                <h3 className="mb-4 text-sm font-bold text-[#132843] dark:text-[#e7edf4]">Bir Değerlendirme Bırakın</h3>
                 <div className="mb-4">
                   <ReviewStars value={rating} onChange={setRating} interactive />
                 </div>
 
                 <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
-                    <label htmlFor="internship-year" className="mb-1 block text-xs font-medium text-[#44474d]">
+                    <label htmlFor="internship-year" className="mb-1 block text-xs font-medium text-[#44474d] dark:text-[#e7edf4]/60">
                       Staj Yılı
                     </label>
                     <input
@@ -425,11 +425,11 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
                       onChange={(event) => setInternshipYear(Number(event.target.value))}
                       min={2000}
                       max={2100}
-                      className="w-full rounded-lg border-0 bg-white p-3 text-sm text-[#132843] ring-1 ring-inset ring-[#c4c6ce]/30 focus:ring-2 focus:ring-[#785a00]/50"
+                      className="w-full rounded-lg border-0 bg-white p-3 text-sm text-[#132843] ring-1 ring-inset ring-[#c4c6ce]/30 focus:ring-2 focus:ring-[#785a00]/50 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:ring-white/10"
                     />
                   </div>
                   <div className="flex items-end">
-                    <label className="flex items-center gap-2 text-sm text-[#44474d]">
+                    <label className="flex items-center gap-2 text-sm text-[#44474d] dark:text-[#e7edf4]/60">
                       <input
                         type="checkbox"
                         checked={isAnonymous}
@@ -446,21 +446,21 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
                   onChange={(event) => setComment(event.target.value)}
                   rows={4}
                   placeholder="Deneyiminizi paylaşın..."
-                  className="mb-4 w-full rounded-lg border-0 bg-white p-4 text-sm text-[#132843] ring-1 ring-inset ring-[#c4c6ce]/30 placeholder:text-[#44474d]/50 focus:ring-2 focus:ring-[#785a00]/50"
+                  className="mb-4 w-full rounded-lg border-0 bg-white p-4 text-sm text-[#132843] ring-1 ring-inset ring-[#c4c6ce]/30 placeholder:text-[#44474d]/50 focus:ring-2 focus:ring-[#785a00]/50 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:ring-white/10 dark:placeholder:text-[#e7edf4]/30"
                 />
 
                 {!isAuthenticated && (
-                  <p className="mb-4 rounded-lg border border-[#fdce61]/30 bg-[#fff8e8] px-4 py-3 text-xs text-[#44474d]">
+                  <p className="mb-4 rounded-lg border border-[#fdce61]/30 bg-[#fff8e8] px-4 py-3 text-xs text-[#44474d] dark:border-[#fdce61]/20 dark:bg-[#fdce61]/10 dark:text-[#e7edf4]/70">
                     Değerlendirme bırakmak için önce giriş yapmalısın.
                   </p>
                 )}
                 {reviewError && (
-                  <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800/30 dark:bg-red-900/20 dark:text-red-300">
                     {reviewError}
                   </p>
                 )}
                 {reviewSuccess && (
-                  <p className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                  <p className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-800/30 dark:bg-emerald-900/20 dark:text-emerald-300">
                     {reviewSuccess}
                   </p>
                 )}
@@ -468,13 +468,13 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
                 <button
                   type="submit"
                   disabled={reviewSubmitting}
-                  className="rounded-lg bg-[#132843] px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-[#1E3A5F] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="rounded-lg bg-[#132843] px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-[#1E3A5F] disabled:cursor-not-allowed disabled:opacity-60 dark:bg-[#d8ad43] dark:text-[#10223b] dark:hover:bg-[#e4c05c]"
                 >
                   {reviewSubmitting ? 'Gönderiliyor...' : 'Gönder'}
                 </button>
 
                 {isAuthenticated && session?.user && (
-                  <p className="mt-3 text-xs text-[#44474d]/60">
+                  <p className="mt-3 text-xs text-[#44474d]/60 dark:text-[#e7edf4]/40">
                     Giriş yapan kullanıcı olarak yorumun hesabına bağlı kaydedilir.
                   </p>
                 )}
@@ -483,36 +483,36 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
               {/* Individual Reviews */}
               <div className="space-y-4">
                 {reviewsLoading ? (
-                  <div className="rounded-xl bg-white px-6 py-4 text-sm text-[#44474d]">
+                  <div className="rounded-xl bg-white px-6 py-4 text-sm text-[#44474d] dark:bg-[#1a2d45] dark:text-[#e7edf4]/60">
                     Değerlendirmeler yükleniyor...
                   </div>
                 ) : reviews.length === 0 ? (
-                  <div className="rounded-xl bg-white px-6 py-4 text-sm text-[#44474d]">
+                  <div className="rounded-xl bg-white px-6 py-4 text-sm text-[#44474d] dark:bg-[#1a2d45] dark:text-[#e7edf4]/60">
                     Henüz öğrenci değerlendirmesi yok. İlk yorumu sen paylaşabilirsin.
                   </div>
                 ) : (
                   reviews.map((review) => (
                     <article
                       key={review.id}
-                      className="rounded-xl border-l-4 border-[#785a00]/30 bg-white p-6"
+                      className="rounded-xl border-l-4 border-[#785a00]/30 bg-white p-6 dark:bg-[#1a2d45]"
                     >
                       <div className="mb-3 flex items-start justify-between">
                         <div>
-                          <h4 className="text-sm font-bold text-[#132843]">
+                          <h4 className="text-sm font-bold text-[#132843] dark:text-[#e7edf4]">
                             {review.is_anonymous ? 'Anonim Öğrenci' : 'Öğrenci'}
                           </h4>
-                          <span className="text-[10px] font-medium text-[#44474d]">
+                          <span className="text-[10px] font-medium text-[#44474d] dark:text-[#e7edf4]/60">
                             Staj Yılı: {review.internship_year}
                           </span>
                         </div>
-                        <span className="text-[10px] text-[#44474d]">
+                        <span className="text-[10px] text-[#44474d] dark:text-[#e7edf4]/50">
                           {formatDateTurkish(review.created_at)}
                         </span>
                       </div>
                       <div className="mb-2">
                         <ReviewStars value={review.rating} />
                       </div>
-                      <p className="text-xs italic leading-relaxed text-[#44474d]">
+                      <p className="text-xs italic leading-relaxed text-[#44474d] dark:text-[#e7edf4]/70">
                         &ldquo;{review.comment}&rdquo;
                       </p>
                     </article>
@@ -573,18 +573,18 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
               </div>
 
               {/* Meta Info Card */}
-              <div className="space-y-4 rounded-xl bg-[#f0f3ff] p-6">
-                <div className="flex items-center justify-between border-b border-[#c4c6ce]/10 py-2">
-                  <span className="text-xs font-medium text-[#44474d]">Yayınlanma Tarihi</span>
-                  <span className="text-xs font-bold text-[#132843]">{formatDateTurkish(listing.created_at)}</span>
+              <div className="space-y-4 rounded-xl bg-[#f0f3ff] p-6 dark:bg-[#132843]/50">
+                <div className="flex items-center justify-between border-b border-[#c4c6ce]/10 py-2 dark:border-white/10">
+                  <span className="text-xs font-medium text-[#44474d] dark:text-[#e7edf4]/60">Yayınlanma Tarihi</span>
+                  <span className="text-xs font-bold text-[#132843] dark:text-[#e7edf4]">{formatDateTurkish(listing.created_at)}</span>
                 </div>
-                <div className="flex items-center justify-between border-b border-[#c4c6ce]/10 py-2">
-                  <span className="text-xs font-medium text-[#44474d]">Kategori</span>
-                  <span className="text-xs font-bold text-[#132843]">{FOCUS_AREA_LABELS[listing.em_focus_area]}</span>
+                <div className="flex items-center justify-between border-b border-[#c4c6ce]/10 py-2 dark:border-white/10">
+                  <span className="text-xs font-medium text-[#44474d] dark:text-[#e7edf4]/60">Kategori</span>
+                  <span className="text-xs font-bold text-[#132843] dark:text-[#e7edf4]">{FOCUS_AREA_LABELS[listing.em_focus_area]}</span>
                 </div>
-                <div className="flex items-center justify-between border-b border-[#c4c6ce]/10 py-2">
-                  <span className="text-xs font-medium text-[#44474d]">Firma Kökeni</span>
-                  <span className="text-xs font-bold text-[#132843]">{ORIGIN_LABEL[listing.company_origin]}</span>
+                <div className="flex items-center justify-between border-b border-[#c4c6ce]/10 py-2 dark:border-white/10">
+                  <span className="text-xs font-medium text-[#44474d] dark:text-[#e7edf4]/60">Firma Kökeni</span>
+                  <span className="text-xs font-bold text-[#132843] dark:text-[#e7edf4]">{ORIGIN_LABEL[listing.company_origin]}</span>
                 </div>
                 <button
                   onClick={handleShare}
@@ -601,7 +601,7 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
         {/* ── Similar Listings ── */}
         {similar && similar.length > 0 && (
           <section className="mt-16">
-            <h2 className="campus-heading mb-8 flex items-center gap-3 text-2xl font-bold text-[#132843]">
+            <h2 className="campus-heading mb-8 flex items-center gap-3 text-2xl font-bold text-[#132843] dark:text-[#e7edf4]">
               <span className="block h-8 w-2 bg-[#785a00]" />
               BENZER İLANLAR
             </h2>
@@ -612,35 +612,35 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
                   <Link
                     key={item.id}
                     href={`/listings/${item.id}`}
-                    className="group rounded-xl border border-[#c4c6ce]/10 bg-white p-6 transition-all hover:shadow-xl"
+                    className="group rounded-xl border border-[#c4c6ce]/10 bg-white p-6 transition-all hover:shadow-xl dark:border-white/10 dark:bg-[#1a2d45] dark:hover:shadow-none"
                   >
                     <div className="mb-6 flex items-center gap-4">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-[#c4c6ce]/5 bg-[#f0f3ff] p-2">
-                        <span className="text-xs font-bold text-[#132843]">{getInitials(item.company_name)}</span>
+                      <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-[#c4c6ce]/5 bg-[#f0f3ff] p-2 dark:border-white/5 dark:bg-[#132843]/50">
+                        <span className="text-xs font-bold text-[#132843] dark:text-[#e7edf4]">{getInitials(item.company_name)}</span>
                       </div>
                       <div className="min-w-0">
-                        <h4 className="truncate text-sm font-bold text-[#132843]">{item.title}</h4>
-                        <p className="text-[10px] font-medium text-[#44474d]">{item.company_name}</p>
+                        <h4 className="truncate text-sm font-bold text-[#132843] dark:text-[#e7edf4]">{item.title}</h4>
+                        <p className="text-[10px] font-medium text-[#44474d] dark:text-[#e7edf4]/60">{item.company_name}</p>
                       </div>
                     </div>
                     {reasons.length > 0 && (
                       <div className="mb-6 flex flex-wrap gap-2">
                         {reasons.includes('company') && (
-                          <span className="rounded-full bg-[#e7eeff] px-2 py-1 text-[10px] font-bold text-[#132843]">AYNI ŞİRKET</span>
+                          <span className="rounded-full bg-[#e7eeff] px-2 py-1 text-[10px] font-bold text-[#132843] dark:bg-[#132843] dark:text-[#e7edf4]">AYNI ŞİRKET</span>
                         )}
                         {reasons.includes('focus_area') && (
-                          <span className="rounded-full bg-[#e7eeff] px-2 py-1 text-[10px] font-bold text-[#132843]">AYNI ALAN</span>
+                          <span className="rounded-full bg-[#e7eeff] px-2 py-1 text-[10px] font-bold text-[#132843] dark:bg-[#132843] dark:text-[#e7edf4]">AYNI ALAN</span>
                         )}
                         {reasons.includes('location') && (
-                          <span className="rounded-full bg-[#e7eeff] px-2 py-1 text-[10px] font-bold text-[#132843]">AYNI KONUM</span>
+                          <span className="rounded-full bg-[#e7eeff] px-2 py-1 text-[10px] font-bold text-[#132843] dark:bg-[#132843] dark:text-[#e7edf4]">AYNI KONUM</span>
                         )}
                         {reasons.includes('title') && (
-                          <span className="rounded-full bg-[#e7eeff] px-2 py-1 text-[10px] font-bold text-[#132843]">BENZER BAŞLIK</span>
+                          <span className="rounded-full bg-[#e7eeff] px-2 py-1 text-[10px] font-bold text-[#132843] dark:bg-[#132843] dark:text-[#e7edf4]">BENZER BAŞLIK</span>
                         )}
                       </div>
                     )}
-                    <div className="flex items-center justify-between border-t border-[#c4c6ce]/10 pt-4">
-                      <span className="text-[10px] font-medium text-[#44474d]">
+                    <div className="flex items-center justify-between border-t border-[#c4c6ce]/10 pt-4 dark:border-white/10">
+                      <span className="text-[10px] font-medium text-[#44474d] dark:text-[#e7edf4]/50">
                         {timeAgoTurkish(listing.created_at)}
                       </span>
                       <span className="text-[10px] font-bold uppercase tracking-wider text-[#785a00] group-hover:text-[#d8ad43]">

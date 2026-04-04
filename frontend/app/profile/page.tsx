@@ -111,7 +111,7 @@ export default function ProfilePage() {
   if (status === 'unauthenticated') return null
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#f9f9ff]">
+    <div className="flex min-h-screen flex-col bg-[#f9f9ff] dark:bg-[#0e1e33]">
       <nav className="sticky top-0 z-30 bg-[#1A233A] shadow-md" style={{ borderBottom: '2px solid transparent', borderImage: 'linear-gradient(to right, #B8860B, #F3E5AB, #B8860B) 1' }}>
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-0 sm:px-6" style={{ height: '64px' }}>
           <Link href="/listings" className="flex items-center gap-4">
@@ -153,7 +153,7 @@ export default function ProfilePage() {
       <main className="flex flex-grow flex-col items-center px-4 py-12 sm:px-6">
         <div className="w-full max-w-md space-y-6">
           {/* ── Profile Card ── */}
-          <section className="rounded-3xl border border-white/40 p-6 sm:p-8" style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(10px)', boxShadow: '0 8px 32px 0 rgba(31,38,135,0.07)' }}>
+          <section className="campus-card rounded-3xl p-6 sm:p-8">
             <div className="mb-8 flex items-center gap-4">
               <div
                 className={`flex h-14 w-14 items-center justify-center rounded-full text-xl font-bold shadow-inner ${
@@ -163,65 +163,65 @@ export default function ProfilePage() {
                 {profile ? getInitials(profile.full_name) : '??'}
               </div>
               <div className="min-w-0">
-                <h2 className="campus-heading truncate text-xl font-bold text-[#132843]">{profile?.full_name ?? '-'}</h2>
-                <p className="truncate text-sm text-gray-500">{profile?.iuc_email ?? '-'}</p>
+                <h2 className="campus-heading truncate text-xl font-bold text-[#132843] dark:text-[#e7edf4]">{profile?.full_name ?? '-'}</h2>
+                <p className="truncate text-sm text-gray-500 dark:text-[#e7edf4]/50">{profile?.iuc_email ?? '-'}</p>
               </div>
             </div>
 
             {profile ? (
               <>
                 <div className="mb-6 space-y-3">
-                  <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50/50 p-3">
-                    <span className="text-sm font-medium text-gray-600">Öğrenci No</span>
-                    <span className="text-sm font-bold text-[#132843]">
-                      {profile.student_no ?? <span className="font-medium text-gray-400">Belirtilmedi</span>}
+                  <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50/50 p-3 dark:border-white/8 dark:bg-white/5">
+                    <span className="text-sm font-medium text-gray-600 dark:text-[#e7edf4]/60">Öğrenci No</span>
+                    <span className="text-sm font-bold text-[#132843] dark:text-[#e7edf4]">
+                      {profile.student_no ?? <span className="font-medium text-gray-400 dark:text-[#e7edf4]/40">Belirtilmedi</span>}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50/50 p-3">
-                    <span className="text-sm font-medium text-gray-600">Sınıf</span>
-                    <span className="text-sm font-bold text-[#132843]">
+                  <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50/50 p-3 dark:border-white/8 dark:bg-white/5">
+                    <span className="text-sm font-medium text-gray-600 dark:text-[#e7edf4]/60">Sınıf</span>
+                    <span className="text-sm font-bold text-[#132843] dark:text-[#e7edf4]">
                       {profile.department_year
                         ? `${profile.department_year}. Sınıf`
-                        : <span className="font-medium text-gray-400">Belirtilmedi</span>}
+                        : <span className="font-medium text-gray-400 dark:text-[#e7edf4]/40">Belirtilmedi</span>}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50/50 p-3">
-                    <span className="text-sm font-medium text-gray-600">LinkedIn</span>
+                  <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50/50 p-3 dark:border-white/8 dark:bg-white/5">
+                    <span className="text-sm font-medium text-gray-600 dark:text-[#e7edf4]/60">LinkedIn</span>
                     {profile.linkedin_url ? (
                       <a
                         href={profile.linkedin_url}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-sm font-bold text-[#132843] hover:text-blue-600"
+                        className="text-sm font-bold text-[#132843] hover:text-blue-600 dark:text-[#e7edf4] dark:hover:text-[#d8ad43]"
                       >
                         Profili Gör
                       </a>
                     ) : (
-                      <span className="text-sm font-medium text-gray-400">Belirtilmedi</span>
+                      <span className="text-sm font-medium text-gray-400 dark:text-[#e7edf4]/40">Belirtilmedi</span>
                     )}
                   </div>
-                  <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50/50 p-3">
-                    <span className="text-sm font-medium text-gray-600">CV</span>
+                  <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50/50 p-3 dark:border-white/8 dark:bg-white/5">
+                    <span className="text-sm font-medium text-gray-600 dark:text-[#e7edf4]/60">CV</span>
                     {profile.cv_url ? (
                       <a
                         href={profile.cv_url}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-sm font-bold text-[#132843] hover:text-blue-600"
+                        className="text-sm font-bold text-[#132843] hover:text-blue-600 dark:text-[#e7edf4] dark:hover:text-[#d8ad43]"
                       >
                         Görüntüle
                       </a>
                     ) : (
-                      <span className="text-sm font-medium text-gray-400">Yüklenmedi</span>
+                      <span className="text-sm font-medium text-gray-400 dark:text-[#e7edf4]/40">Yüklenmedi</span>
                     )}
                   </div>
-                  <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50/50 p-3">
-                    <span className="text-sm font-medium text-gray-600">Durum</span>
+                  <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50/50 p-3 dark:border-white/8 dark:bg-white/5">
+                    <span className="text-sm font-medium text-gray-600 dark:text-[#e7edf4]/60">Durum</span>
                     <span
                       className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium shadow-sm ${
                         profile.is_verified
-                          ? 'border-green-200 bg-green-100 text-green-800'
-                          : 'border-yellow-200 bg-yellow-100 text-yellow-800'
+                          ? 'border-green-200 bg-green-100 text-green-800 dark:border-green-800/30 dark:bg-green-900/30 dark:text-green-300'
+                          : 'border-yellow-200 bg-yellow-100 text-yellow-800 dark:border-yellow-800/30 dark:bg-yellow-900/30 dark:text-yellow-300'
                       }`}
                     >
                       {profile.is_verified ? 'Doğrulandı' : 'Doğrulanmadı'}
@@ -231,10 +231,10 @@ export default function ProfilePage() {
 
                 <div className="mb-6">
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700">Profil Tamamlanma</span>
-                    <span className="text-sm font-bold text-[#132843]">%{profile.completion_percentage}</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-[#e7edf4]/70">Profil Tamamlanma</span>
+                    <span className="text-sm font-bold text-[#132843] dark:text-[#e7edf4]">%{profile.completion_percentage}</span>
                   </div>
-                  <div className="h-2.5 w-full rounded-full bg-gray-200 shadow-inner">
+                  <div className="h-2.5 w-full rounded-full bg-gray-200 shadow-inner dark:bg-white/10">
                     <div
                       className="h-2.5 rounded-full bg-blue-600 transition-all"
                       style={{ width: `${profile.completion_percentage}%` }}
@@ -264,23 +264,23 @@ export default function ProfilePage() {
           </section>
 
           {/* ── Dark Mode Toggle ── */}
-          <section className="flex cursor-pointer items-center justify-between rounded-3xl border border-white/40 p-6 transition-colors hover:bg-gray-50/50" style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(10px)', boxShadow: '0 8px 32px 0 rgba(31,38,135,0.07)' }}>
+          <section className="campus-card flex cursor-pointer items-center justify-between rounded-3xl p-6 transition-colors">
             <div>
-              <h3 className="campus-heading text-lg font-bold text-[#132843]">Gece Modu</h3>
-              <p className="text-sm text-gray-500">Koyu temayı aç veya kapat</p>
+              <h3 className="campus-heading text-lg font-bold text-[#132843] dark:text-[#e7edf4]">Gece Modu</h3>
+              <p className="text-sm text-gray-500 dark:text-[#e7edf4]/50">Koyu temayı aç veya kapat</p>
             </div>
             <ThemeToggle />
           </section>
 
           {/* ── Newsletter ── */}
-          <section className="rounded-3xl border border-white/40 p-6" style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(10px)', boxShadow: '0 8px 32px 0 rgba(31,38,135,0.07)' }}>
-            <h3 className="campus-heading mb-1 text-lg font-bold text-[#132843]">İlanlardan İlk Sen Haberdar Ol</h3>
-            <p className="mb-4 text-sm text-gray-500">Yeni ilanlardan anında haberdar olmak için abone ol.</p>
+          <section className="campus-card rounded-3xl p-6">
+            <h3 className="campus-heading mb-1 text-lg font-bold text-[#132843] dark:text-[#e7edf4]">İlanlardan İlk Sen Haberdar Ol</h3>
+            <p className="mb-4 text-sm text-gray-500 dark:text-[#e7edf4]/50">Yeni ilanlardan anında haberdar olmak için abone ol.</p>
             <div className="flex">
               <input
                 type="email"
                 placeholder="E-posta adresiniz"
-                className="min-w-0 flex-auto rounded-l-xl border-0 px-4 py-3 text-sm text-[#132843] shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#D4AF37]"
+                className="min-w-0 flex-auto rounded-l-xl border-0 px-4 py-3 text-sm text-[#132843] shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#D4AF37] dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:ring-white/10 dark:placeholder:text-[#e7edf4]/30"
                 style={{ boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)' }}
               />
               <button

@@ -227,7 +227,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#f9f9ff]">
+    <div className="flex min-h-screen flex-col bg-[#f9f9ff] dark:bg-[#0e1e33]">
       {/* ── Navbar ── */}
       <nav className="sticky top-0 z-30 bg-[#1A233A] shadow-md" style={{ borderBottom: '2px solid transparent', borderImage: 'linear-gradient(to right, #B8860B, #F3E5AB, #B8860B) 1' }}>
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-0 sm:px-6" style={{ height: '64px' }}>
@@ -272,10 +272,10 @@ export default function DashboardPage() {
 
         {/* ── Welcome + Stats ── */}
         <div className="mb-8">
-          <h1 className="campus-heading text-2xl font-bold text-[#132843]">
+          <h1 className="campus-heading text-2xl font-bold text-[#132843] dark:text-[#e7edf4]">
             Hoş geldin, <span className="text-[#d8ad43]">{firstName}</span>
           </h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-gray-500 dark:text-[#e7edf4]/50">
             {new Date().toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
           </p>
         </div>
@@ -290,11 +290,11 @@ export default function DashboardPage() {
             <div
               key={label}
               className={`rounded-xl border p-5 text-center transition-all hover:shadow-sm ${
-                accent ? 'border-red-200 bg-red-50' : 'border-gray-200 bg-white'
+                accent ? 'border-red-200 bg-red-50 dark:border-red-800/30 dark:bg-red-900/20' : 'border-gray-200 bg-white dark:border-white/10 dark:bg-[#1a2d45]'
               }`}
             >
-              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">{label}</p>
-              <p className={`mt-1 text-3xl font-bold ${accent ? 'text-red-600' : 'text-[#132843]'}`}>{value}</p>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-[#e7edf4]/40">{label}</p>
+              <p className={`mt-1 text-3xl font-bold ${accent ? 'text-red-600 dark:text-red-400' : 'text-[#132843] dark:text-[#e7edf4]'}`}>{value}</p>
             </div>
           ))}
         </div>
@@ -302,10 +302,10 @@ export default function DashboardPage() {
         {/* ── Başvuru Takip Panosu ── */}
         <div id="applications" className="mb-8">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="campus-heading text-lg font-bold text-[#132843]">Başvuru Takip Panosu</h2>
+            <h2 className="campus-heading text-lg font-bold text-[#132843] dark:text-[#e7edf4]">Başvuru Takip Panosu</h2>
             <button
               onClick={() => setAddAppOpen(true)}
-              className="flex items-center gap-1.5 rounded-lg bg-[#132843] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#1E3A5F]"
+              className="flex items-center gap-1.5 rounded-lg bg-[#132843] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#1E3A5F] dark:bg-[#d8ad43] dark:text-[#10223b] dark:hover:bg-[#c79828]"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -317,10 +317,10 @@ export default function DashboardPage() {
           {/* ── Add Application Modal ── */}
           {addAppOpen && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => { setAddAppOpen(false); setAddAppSearch('') }}>
-              <div className="mx-4 w-full max-w-md rounded-2xl bg-white p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+              <div className="mx-4 w-full max-w-md rounded-2xl bg-white p-5 shadow-xl dark:bg-[#1a2d45] dark:shadow-2xl" onClick={(e) => e.stopPropagation()}>
                 <div className="mb-4 flex items-center justify-between">
-                  <h3 className="text-base font-bold text-[#132843]">Yeni Başvuru Ekle</h3>
-                  <button onClick={() => { setAddAppOpen(false); setAddAppSearch('') }} className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+                  <h3 className="text-base font-bold text-[#132843] dark:text-[#e7edf4]">Yeni Başvuru Ekle</h3>
+                  <button onClick={() => { setAddAppOpen(false); setAddAppSearch('') }} className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:text-[#e7edf4]/40 dark:hover:bg-white/10 dark:hover:text-[#e7edf4]">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -331,7 +331,7 @@ export default function DashboardPage() {
                   placeholder="İlan veya şirket ara..."
                   value={addAppSearch}
                   onChange={(e) => setAddAppSearch(e.target.value)}
-                  className="mb-3 h-9 w-full rounded-lg border border-gray-200 px-3 text-sm outline-none focus:border-[#132843]"
+                  className="mb-3 h-9 w-full rounded-lg border border-gray-200 px-3 text-sm outline-none focus:border-[#132843] dark:border-white/10 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:focus:border-[#d8ad43]/40"
                   autoFocus
                 />
                 <div className="max-h-64 space-y-1.5 overflow-y-auto">
@@ -346,7 +346,7 @@ export default function DashboardPage() {
                     if (untrackedBookmarks.length === 0) {
                       return (
                         <div className="py-6 text-center">
-                          <p className="text-sm text-gray-500">Tüm kayıtlı ilanlar zaten takipte</p>
+                          <p className="text-sm text-gray-500 dark:text-[#e7edf4]/50">Tüm kayıtlı ilanlar zaten takipte</p>
                           <button
                             onClick={() => { setAddAppOpen(false); router.push('/listings') }}
                             className="mt-2 text-xs font-medium text-[#d8ad43] hover:underline"
@@ -357,7 +357,7 @@ export default function DashboardPage() {
                       )
                     }
                     if (filtered.length === 0) {
-                      return <p className="py-4 text-center text-sm text-gray-400">Sonuç bulunamadı</p>
+                      return <p className="py-4 text-center text-sm text-gray-400 dark:text-[#e7edf4]/40">Sonuç bulunamadı</p>
                     }
                     return filtered.map((b) => (
                       <button
@@ -367,16 +367,16 @@ export default function DashboardPage() {
                           setAddAppOpen(false)
                           setAddAppSearch('')
                         }}
-                        className="flex w-full items-center gap-3 rounded-lg border border-gray-100 px-3 py-2.5 text-left transition-all hover:border-[#d8ad43]/30 hover:bg-[#d8ad43]/5"
+                        className="flex w-full items-center gap-3 rounded-lg border border-gray-100 px-3 py-2.5 text-left transition-all hover:border-[#d8ad43]/30 hover:bg-[#d8ad43]/5 dark:border-white/8 dark:hover:border-[#d8ad43]/30"
                       >
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-[10px] font-bold text-[#132843]">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-[10px] font-bold text-[#132843] dark:bg-white/8 dark:text-[#e7edf4]">
                           {getInitials(b.company_name)}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium text-[#132843]">{b.title}</p>
-                          <p className="truncate text-[11px] text-gray-500">{b.company_name}</p>
+                          <p className="truncate text-sm font-medium text-[#132843] dark:text-[#e7edf4]">{b.title}</p>
+                          <p className="truncate text-[11px] text-gray-500 dark:text-[#e7edf4]/50">{b.company_name}</p>
                         </div>
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0 text-gray-300 dark:text-[#e7edf4]/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                         </svg>
                       </button>
@@ -388,7 +388,7 @@ export default function DashboardPage() {
           )}
 
           {applications.length === 0 ? (
-            <p className="rounded-xl border border-gray-200 bg-white px-4 py-6 text-center text-sm text-gray-500">
+            <p className="rounded-xl border border-gray-200 bg-white px-4 py-6 text-center text-sm text-gray-500 dark:border-white/10 dark:bg-[#1a2d45] dark:text-[#e7edf4]/50">
               Henüz takipte bir başvuru yok. Kaydedilen ilanlardan &quot;Takibe Al&quot; ile ekleyebilirsin.
             </p>
           ) : (
@@ -401,35 +401,35 @@ export default function DashboardPage() {
                   column.key === 'kabul' ? 'border-t-green-500' :
                   'border-t-red-500'
                 const badgeColor =
-                  column.key === 'basvurdum' ? 'bg-blue-100 text-blue-700' :
-                  column.key === 'mulakat' ? 'bg-yellow-100 text-yellow-700' :
-                  column.key === 'kabul' ? 'bg-green-100 text-green-700' :
-                  'bg-red-100 text-red-700'
+                  column.key === 'basvurdum' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' :
+                  column.key === 'mulakat' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' :
+                  column.key === 'kabul' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
+                  'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
                 return (
-                  <div key={column.key} className={`rounded-xl border border-gray-200 border-t-[3px] bg-white p-3 ${borderColor}`}>
+                  <div key={column.key} className={`rounded-xl border border-gray-200 border-t-[3px] bg-white p-3 dark:border-white/10 dark:bg-[#1a2d45] ${borderColor}`}>
                     <div className="mb-3 flex items-center justify-between">
-                      <p className="text-xs font-bold uppercase tracking-wider text-[#132843]">{column.label}</p>
+                      <p className="text-xs font-bold uppercase tracking-wider text-[#132843] dark:text-[#e7edf4]">{column.label}</p>
                       <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${badgeColor}`}>
                         {columnItems.length}
                       </span>
                     </div>
                     <div className="space-y-2">
                       {columnItems.length === 0 ? (
-                        <p className="rounded-lg bg-gray-50 px-3 py-3 text-center text-[11px] text-gray-400">Kayıt yok</p>
+                        <p className="rounded-lg bg-gray-50 px-3 py-3 text-center text-[11px] text-gray-400 dark:bg-white/5 dark:text-[#e7edf4]/40">Kayıt yok</p>
                       ) : (
                         columnItems.map((item) => (
-                          <div key={item.id} className="rounded-lg border border-gray-100 bg-gray-50 p-2.5">
+                          <div key={item.id} className="rounded-lg border border-gray-100 bg-gray-50 p-2.5 dark:border-white/8 dark:bg-white/5">
                             <button type="button" onClick={() => router.push(`/listings/${item.listing.id}`)} className="w-full text-left">
-                              <p className="line-clamp-2 text-xs font-semibold text-[#132843]">{item.listing.title}</p>
-                              <p className="mt-0.5 text-[10px] text-gray-500">{item.listing.company_name}</p>
+                              <p className="line-clamp-2 text-xs font-semibold text-[#132843] dark:text-[#e7edf4]">{item.listing.title}</p>
+                              <p className="mt-0.5 text-[10px] text-gray-500 dark:text-[#e7edf4]/50">{item.listing.company_name}</p>
                             </button>
                             {item.notes && (
-                              <p className="mt-1 rounded bg-yellow-50 px-2 py-1 text-[10px] text-yellow-700">{item.notes}</p>
+                              <p className="mt-1 rounded bg-yellow-50 px-2 py-1 text-[10px] text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300">{item.notes}</p>
                             )}
                             <select
                               value={item.status}
                               onChange={(event) => handleUpdateApplication(item.id, { status: event.target.value as ApplicationStatus })}
-                              className="mt-2 h-7 w-full rounded-lg border border-gray-200 bg-white px-2 text-[11px] text-[#132843] outline-none"
+                              className="mt-2 h-7 w-full rounded-lg border border-gray-200 bg-white px-2 text-[11px] text-[#132843] outline-none dark:border-white/10 dark:bg-[#0e1e33] dark:text-[#e7edf4]"
                             >
                               {APPLICATION_STATUSES.map((s) => (
                                 <option key={s.key} value={s.key}>{s.label}</option>
@@ -449,9 +449,9 @@ export default function DashboardPage() {
         {/* ── Kaydedilen İlanlar ── */}
         <div id="saved" className="mb-8">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="campus-heading text-lg font-bold text-[#132843]">
+            <h2 className="campus-heading text-lg font-bold text-[#132843] dark:text-[#e7edf4]">
               Kaydedilen İlanlar
-              {bookmarks.length > 0 && <span className="ml-2 text-gray-400">({bookmarks.length})</span>}
+              {bookmarks.length > 0 && <span className="ml-2 text-gray-400 dark:text-[#e7edf4]/40">({bookmarks.length})</span>}
             </h2>
             <div className="flex items-center gap-3">
               <button onClick={() => router.push('/listings')} className="rounded-lg bg-[#d8ad43] px-4 py-2 text-xs font-bold text-[#132843] hover:bg-[#c79828]">
@@ -467,10 +467,10 @@ export default function DashboardPage() {
           </div>
 
           {!bookmarks || bookmarks.length === 0 ? (
-            <div className="rounded-xl border border-gray-200 bg-white py-12 text-center">
-              <p className="mb-2 text-sm font-medium text-gray-500">Henüz kaydettiğin ilan yok</p>
-              <p className="mb-4 text-xs text-gray-400">İlanlara göz at ve beğendiklerini kaydet</p>
-              <button onClick={() => router.push('/listings')} className="rounded-lg bg-[#132843] px-5 py-2.5 text-xs font-bold text-white">
+            <div className="rounded-xl border border-gray-200 bg-white py-12 text-center dark:border-white/10 dark:bg-[#1a2d45]">
+              <p className="mb-2 text-sm font-medium text-gray-500 dark:text-[#e7edf4]/50">Henüz kaydettiğin ilan yok</p>
+              <p className="mb-4 text-xs text-gray-400 dark:text-[#e7edf4]/40">İlanlara göz at ve beğendiklerini kaydet</p>
+              <button onClick={() => router.push('/listings')} className="rounded-lg bg-[#132843] px-5 py-2.5 text-xs font-bold text-white dark:bg-[#d8ad43] dark:text-[#10223b]">
                 İlanlara Göz At
               </button>
             </div>
@@ -484,26 +484,26 @@ export default function DashboardPage() {
                   <div
                     key={bookmark.id}
                     onClick={() => router.push(`/listings/${bookmark.id}`)}
-                    className="group flex cursor-pointer items-center gap-4 rounded-xl border border-gray-200 bg-white px-5 py-3 transition-all hover:shadow-sm"
+                    className="group flex cursor-pointer items-center gap-4 rounded-xl border border-gray-200 bg-white px-5 py-3 transition-all hover:shadow-sm dark:border-white/10 dark:bg-[#1a2d45]"
                   >
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-bold text-[#132843]">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-bold text-[#132843] dark:bg-white/8 dark:text-[#e7edf4]">
                       {initials}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-[#132843] group-hover:text-[#1E3A5F]">{bookmark.title}</p>
-                      <p className="truncate text-xs text-gray-500">{bookmark.company_name}</p>
+                      <p className="truncate text-sm font-semibold text-[#132843] group-hover:text-[#1E3A5F] dark:text-[#e7edf4] dark:group-hover:text-[#d8ad43]">{bookmark.title}</p>
+                      <p className="truncate text-xs text-gray-500 dark:text-[#e7edf4]/50">{bookmark.company_name}</p>
                     </div>
                     <div className="flex shrink-0 items-center gap-3" onClick={(e) => e.stopPropagation()}>
                       {deadline.label && (
                         <span className={`rounded-full px-3 py-1 text-[10px] font-bold ${
-                          deadline.color === 'red' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-700'
+                          deadline.color === 'red' ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
                         }`}>
                           {deadline.label}
                         </span>
                       )}
                       <button
                         onClick={(e) => { e.stopPropagation(); handleRemove(bookmark.id) }}
-                        className="rounded-lg border border-gray-200 px-4 py-1.5 text-xs font-medium text-[#132843] hover:bg-gray-50"
+                        className="rounded-lg border border-gray-200 px-4 py-1.5 text-xs font-medium text-[#132843] hover:bg-gray-50 dark:border-white/10 dark:text-[#e7edf4] dark:hover:bg-white/5"
                       >
                         İlanı Çıkar
                       </button>
@@ -512,7 +512,7 @@ export default function DashboardPage() {
                 )
               })}
               {!showAll && bookmarks.length > 5 && (
-                <button onClick={() => setShowAll(true)} className="w-full py-2 text-xs text-gray-400 hover:text-gray-600">
+                <button onClick={() => setShowAll(true)} className="w-full py-2 text-xs text-gray-400 hover:text-gray-600 dark:text-[#e7edf4]/40 dark:hover:text-[#e7edf4]/60">
                   {bookmarks.length - 5} ilan daha göster
                 </button>
               )}

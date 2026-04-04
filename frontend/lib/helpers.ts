@@ -15,17 +15,17 @@ export const FOCUS_AREA_LABELS: Record<string, string> = {
 }
 
 export const FOCUS_AREA_COLORS: Record<string, string> = {
-  imalat_metal_makine: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)]',
-  otomotiv_yan_sanayi: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)]',
-  yazilim_bilisim_teknoloji: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)]',
-  hizmet_finans_danismanlik: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)]',
-  eticaret_perakende_fmcg: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)]',
-  savunma_havacilik_enerji: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)]',
-  gida_kimya_saglik: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)]',
-  lojistik_tasimacilik: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)]',
-  tekstil_moda: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)]',
-  insaat_yapi_malzemeleri: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)]',
-  diger: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)]',
+  imalat_metal_makine: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)] dark:text-[#f0cf7a] dark:bg-[rgba(216,173,67,0.12)]',
+  otomotiv_yan_sanayi: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)] dark:text-[#f0cf7a] dark:bg-[rgba(216,173,67,0.12)]',
+  yazilim_bilisim_teknoloji: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)] dark:text-[#f0cf7a] dark:bg-[rgba(216,173,67,0.12)]',
+  hizmet_finans_danismanlik: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)] dark:text-[#f0cf7a] dark:bg-[rgba(216,173,67,0.12)]',
+  eticaret_perakende_fmcg: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)] dark:text-[#f0cf7a] dark:bg-[rgba(216,173,67,0.12)]',
+  savunma_havacilik_enerji: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)] dark:text-[#f0cf7a] dark:bg-[rgba(216,173,67,0.12)]',
+  gida_kimya_saglik: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)] dark:text-[#f0cf7a] dark:bg-[rgba(216,173,67,0.12)]',
+  lojistik_tasimacilik: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)] dark:text-[#f0cf7a] dark:bg-[rgba(216,173,67,0.12)]',
+  tekstil_moda: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)] dark:text-[#f0cf7a] dark:bg-[rgba(216,173,67,0.12)]',
+  insaat_yapi_malzemeleri: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)] dark:text-[#f0cf7a] dark:bg-[rgba(216,173,67,0.12)]',
+  diger: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)] dark:text-[#f0cf7a] dark:bg-[rgba(216,173,67,0.12)]',
 }
 
 export const PLATFORM_LABELS: Record<SourcePlatform, string> = {

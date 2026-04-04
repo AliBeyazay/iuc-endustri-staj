@@ -1108,7 +1108,7 @@ export default function ListingsPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#f9f9ff]">
+    <div className="flex min-h-screen flex-col bg-[#f9f9ff] dark:bg-[#0e1e33]">
       {/* ── Navbar ── */}
       <nav className="sticky top-0 z-50 bg-[#1A233A] shadow-md" style={{ borderBottom: '2px solid transparent', borderImage: 'linear-gradient(to right, #B8860B, #F3E5AB, #B8860B) 1' }}>
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-0 sm:px-6" style={{ height: '64px' }}>
@@ -1161,7 +1161,7 @@ export default function ListingsPage() {
 
           {/* Search */}
           <div className="relative z-[90] mx-auto mt-8 max-w-2xl" ref={searchBoxRef}>
-            <div className="flex items-center rounded-xl bg-white shadow-lg">
+            <div className="flex items-center rounded-xl bg-white shadow-lg dark:bg-[#1a2d45]">
               <input
                 value={query}
                 onChange={(event) => {
@@ -1176,7 +1176,7 @@ export default function ListingsPage() {
                   }
                 }}
                 placeholder="Şirket, pozisyon veya anahtar kelime ara..."
-                className="w-full rounded-l-xl bg-transparent px-5 py-4 text-[15px] text-[#132843] outline-none placeholder:text-gray-400"
+                className="w-full rounded-l-xl bg-transparent px-5 py-4 text-[15px] text-[#132843] outline-none placeholder:text-gray-400 dark:text-[#e7edf4] dark:placeholder:text-[#e7edf4]/30"
               />
               <button
                 type="button"
@@ -1191,7 +1191,7 @@ export default function ListingsPage() {
             </div>
 
             {showSuggestions && (
-              <div className="absolute left-0 top-full z-[94] mt-2 max-h-[320px] w-full overflow-y-auto rounded-xl border border-gray-200 bg-white p-2 shadow-xl">
+              <div className="absolute left-0 top-full z-[94] mt-2 max-h-[320px] w-full overflow-y-auto rounded-xl border border-gray-200 bg-white p-2 shadow-xl dark:border-white/10 dark:bg-[#1a2d45]">
                 {autocompleteSuggestions.length > 0 && (
                   <div className="mb-2">
                     <p className="px-2 py-1 text-xs font-semibold uppercase tracking-wide text-gray-400">
@@ -1202,7 +1202,7 @@ export default function ListingsPage() {
                         key={item}
                         type="button"
                         onClick={() => submitSuggestion(item)}
-                        className="block w-full rounded-lg px-3 py-2 text-left text-sm text-[#173156] hover:bg-[#f5f0e0]"
+                        className="block w-full rounded-lg px-3 py-2 text-left text-sm text-[#173156] hover:bg-[#f5f0e0] dark:text-[#e7edf4] dark:hover:bg-white/10"
                       >
                         {item}
                       </button>
@@ -1212,7 +1212,7 @@ export default function ListingsPage() {
 
                 {recentSearches.length > 0 && (
                   <div>
-                    <p className="px-2 py-1 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                    <p className="px-2 py-1 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-[#e7edf4]/40">
                       Son aramalar
                     </p>
                     {recentSearches.map((item) => (
@@ -1220,7 +1220,7 @@ export default function ListingsPage() {
                         key={item}
                         type="button"
                         onClick={() => submitSuggestion(item)}
-                        className="block w-full rounded-lg px-3 py-2 text-left text-sm text-[#173156] hover:bg-[#f5f0e0]"
+                        className="block w-full rounded-lg px-3 py-2 text-left text-sm text-[#173156] hover:bg-[#f5f0e0] dark:text-[#e7edf4] dark:hover:bg-white/10"
                       >
                         {item}
                       </button>
@@ -1240,15 +1240,15 @@ export default function ListingsPage() {
       </section>
 
       {/* ── Summary Cards ── */}
-      <section className="bg-[#f9f9ff] px-4 py-6">
+      <section className="bg-[#f9f9ff] px-4 py-6 dark:bg-[#0e1e33]">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 sm:flex-row sm:gap-4">
           {summaryCards.map((card) => (
             <div
               key={card.label}
-              className="flex-1 rounded-xl border border-gray-200 bg-white px-5 py-4 text-center shadow-sm"
+              className="flex-1 rounded-xl border border-gray-200 bg-white px-5 py-4 text-center shadow-sm dark:border-white/10 dark:bg-[#1a2d45]"
             >
-              <p className="text-xs font-bold uppercase tracking-wider text-gray-400">{card.label}</p>
-              <p className="mt-1 text-3xl font-bold text-[#132843]">{loading ? '...' : card.value}</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-[#e7edf4]/40">{card.label}</p>
+              <p className="mt-1 text-3xl font-bold text-[#132843] dark:text-[#e7edf4]">{loading ? '...' : card.value}</p>
             </div>
           ))}
         </div>
@@ -1256,7 +1256,7 @@ export default function ListingsPage() {
 
       {/* ── Active Filters ── */}
       {(selectedSectors.length > 0 || selectedPlatforms.length > 0 || selectedDurations.length > 0 || talentOnly) && (
-        <div className="bg-[#f9f9ff] px-4 pb-2">
+        <div className="bg-[#f9f9ff] px-4 pb-2 dark:bg-[#0e1e33]">
           <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2">
             {selectedSectors.map((sector) => (
               <button
@@ -1296,7 +1296,7 @@ export default function ListingsPage() {
                 Yetenek Programı ×
               </button>
             )}
-            <button type="button" onClick={clearAllFilters} className="rounded-full border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50">
+            <button type="button" onClick={clearAllFilters} className="rounded-full border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-gray-300">
               Tümünü temizle
             </button>
           </div>
@@ -1304,13 +1304,13 @@ export default function ListingsPage() {
       )}
 
       {/* ── Main Content ── */}
-      <section className="flex-1 bg-[#f9f9ff] px-4 pb-12">
+      <section className="flex-1 bg-[#f9f9ff] px-4 pb-12 dark:bg-[#0e1e33]">
         <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
 
           {/* Sidebar */}
           <aside className="hidden lg:block">
-            <div className="sticky top-24 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-              <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-[#132843]">Sektör Filtreleri</h3>
+            <div className="sticky top-24 rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#1a2d45]">
+              <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-[#132843] dark:text-[#e7edf4]">Sektör Filtreleri</h3>
               <ul className="space-y-1">
                 {SIDEBAR_SECTORS.map((sector) => {
                   const isActive = selectedSectors.includes(sector.value)
@@ -1323,7 +1323,7 @@ export default function ListingsPage() {
                           'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all',
                           isActive
                             ? 'bg-[#132843] text-white'
-                            : 'text-gray-600 hover:bg-gray-100 hover:text-[#132843]',
+                            : 'text-gray-600 hover:bg-gray-100 hover:text-[#132843] dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-[#e7edf4]',
                         )}
                       >
                         <span className="text-lg">{sector.icon}</span>
@@ -1334,10 +1334,10 @@ export default function ListingsPage() {
                 })}
               </ul>
 
-              <hr className="my-4 border-gray-200" />
+              <hr className="my-4 border-gray-200 dark:border-white/10" />
 
               {/* Platform Filters */}
-              <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-[#132843]">Platform</h3>
+              <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-[#132843] dark:text-[#e7edf4]">Platform</h3>
               <ul className="space-y-1">
                 {platforms.map((platform) => {
                   const isActive = selectedPlatforms.includes(platform)
@@ -1350,7 +1350,7 @@ export default function ListingsPage() {
                           'flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all',
                           isActive
                             ? 'bg-[#132843] text-white'
-                            : 'text-gray-600 hover:bg-gray-100 hover:text-[#132843]',
+                            : 'text-gray-600 hover:bg-gray-100 hover:text-[#132843] dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-[#e7edf4]',
                         )}
                       >
                         {platform}
@@ -1360,7 +1360,7 @@ export default function ListingsPage() {
                 })}
               </ul>
 
-              <hr className="my-4 border-gray-200" />
+              <hr className="my-4 border-gray-200 dark:border-white/10" />
 
               {/* Talent Only */}
               <button
@@ -1379,7 +1379,7 @@ export default function ListingsPage() {
                 <button
                   type="button"
                   onClick={clearAllFilters}
-                  className="mt-4 w-full rounded-lg border border-gray-200 py-2 text-xs font-medium text-gray-500 hover:bg-gray-50"
+                  className="mt-4 w-full rounded-lg border border-gray-200 py-2 text-xs font-medium text-gray-500 hover:bg-gray-50 dark:border-white/10 dark:text-gray-400 dark:hover:bg-white/5"
                 >
                   Filtreleri Temizle
                 </button>
@@ -1392,9 +1392,9 @@ export default function ListingsPage() {
             {/* Header Row */}
             <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-xl font-bold text-[#132843]">{dynamicTitle}</h2>
+                <h2 className="text-xl font-bold text-[#132843] dark:text-[#e7edf4]">{dynamicTitle}</h2>
                 {!loading && listings.length > 0 && (
-                  <p className="mt-0.5 text-sm text-gray-500">
+                  <p className="mt-0.5 text-sm text-gray-500 dark:text-[#e7edf4]/50">
                     {visibleRange.start}-{visibleRange.end} arası gösteriliyor (Sayfa {currentPage}/{totalPages})
                   </p>
                 )}
@@ -1404,7 +1404,7 @@ export default function ListingsPage() {
                 <button
                   type="button"
                   onClick={() => setMobileFiltersOpen(true)}
-                  className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-[#132843] shadow-sm lg:hidden"
+                  className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-[#132843] shadow-sm lg:hidden dark:border-white/10 dark:bg-[#1a2d45] dark:text-[#e7edf4]"
                 >
                   Filtreler
                   {activeFilterCount > 0 && (
@@ -1415,7 +1415,7 @@ export default function ListingsPage() {
                 <select
                   value={sortBy}
                   onChange={(event) => setSortBy(event.target.value as SortOption)}
-                  className="cursor-pointer rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-[#132843] outline-none shadow-sm"
+                  className="cursor-pointer rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-[#132843] outline-none shadow-sm dark:border-white/10 dark:bg-[#1a2d45] dark:text-[#e7edf4]"
                 >
                   {SORT_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>{option.label}</option>
@@ -1428,11 +1428,11 @@ export default function ListingsPage() {
             {loading ? (
               <div className="grid gap-4 sm:grid-cols-2">
                 {Array.from({ length: 6 }).map((_, index) => (
-                  <div key={index} className="h-64 rounded-xl border border-gray-200 bg-white campus-shimmer" />
+                  <div key={index} className="h-64 rounded-xl border border-gray-200 bg-white campus-shimmer dark:border-white/10 dark:bg-[#1a2d45]" />
                 ))}
               </div>
             ) : error ? (
-              <div className="rounded-xl border border-rose-200 bg-rose-50 p-8 text-center">
+              <div className="rounded-xl border border-rose-200 bg-rose-50 p-8 text-center dark:border-rose-800/30 dark:bg-rose-900/20">
                 <p className="text-lg font-semibold text-rose-800">Veri yüklenemedi</p>
                 <p className="mt-2 text-sm text-rose-700">{error}</p>
                 <button type="button" onClick={() => window.location.reload()} className="mt-4 rounded-lg bg-rose-600 px-4 py-2 text-sm font-medium text-white">
@@ -1440,14 +1440,14 @@ export default function ListingsPage() {
                 </button>
               </div>
             ) : listings.length === 0 ? (
-              <div className="rounded-xl border border-gray-200 bg-white p-10 text-center shadow-sm">
+              <div className="rounded-xl border border-gray-200 bg-white p-10 text-center shadow-sm dark:border-white/10 dark:bg-[#1a2d45]">
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#d8ad43]/10">
                   <svg className="h-8 w-8 text-[#d8ad43]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                   </svg>
                 </div>
-                <p className="text-lg font-semibold text-[#132843]">Sonuç bulunamadı</p>
-                <p className="mt-2 text-sm text-gray-500">Seçtiğin filtre kombinasyonu fazla dar olabilir.</p>
+                <p className="text-lg font-semibold text-[#132843] dark:text-[#e7edf4]">Sonuç bulunamadı</p>
+                <p className="mt-2 text-sm text-gray-500 dark:text-[#e7edf4]/50">Seçtiğin filtre kombinasyonu fazla dar olabilir.</p>
                 <button type="button" onClick={clearAllFilters} className="mt-4 rounded-lg bg-[#132843] px-4 py-2 text-sm font-medium text-white">
                   Filtreleri temizle
                 </button>
@@ -1460,7 +1460,7 @@ export default function ListingsPage() {
                     return (
                       <article
                         key={item.id}
-                        className="group relative flex flex-col rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                        className="group relative flex flex-col rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md dark:border-white/10 dark:bg-[#1a2d45]"
                       >
                         {/* Sector Tag */}
                         {sectorLabel && (
@@ -1475,7 +1475,7 @@ export default function ListingsPage() {
                         <div className="flex-1 p-5">
                           {/* Company + Title */}
                           <div className="flex items-start gap-4">
-                            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border-2 border-gray-200 bg-white">
+                            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border-2 border-gray-200 bg-white dark:border-white/10 dark:bg-[#0e1e33]">
                               {item.company_logo_url ? (
                                 <img
                                   src={item.company_logo_url}
@@ -1491,21 +1491,21 @@ export default function ListingsPage() {
                                   {getCompanyBadgeText(item.company_name)}
                                 </span>
                               ) : (
-                                <span className="text-sm font-bold text-[#132843]">
+                                <span className="text-sm font-bold text-[#132843] dark:text-[#e7edf4]">
                                   {getCompanyBadgeText(item.company_name)}
                                 </span>
                               )}
                             </div>
                             <div className="min-w-0 flex-1">
-                              <h3 className="text-[15px] font-bold leading-snug text-[#132843] group-hover:text-[#1E3A5F]">
+                              <h3 className="text-[15px] font-bold leading-snug text-[#132843] group-hover:text-[#1E3A5F] dark:text-[#e7edf4] dark:group-hover:text-[#d8ad43]">
                                 {item.title}
                               </h3>
-                              <p className="mt-1 text-sm text-gray-500">{item.company_name}</p>
+                              <p className="mt-1 text-sm text-gray-500 dark:text-[#e7edf4]/50">{item.company_name}</p>
                             </div>
                           </div>
 
                           {/* Meta */}
-                          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500">
+                          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500 dark:text-[#e7edf4]/50">
                             <span className="inline-flex items-center gap-1.5">
                               <MapPin size={14} />
                               {getWorkModelLabel(item)}
@@ -1518,7 +1518,7 @@ export default function ListingsPage() {
 
                           {/* Employment Type Tag */}
                           <div className="mt-3">
-                            <span className="inline-block rounded-md border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-600">
+                            <span className="inline-block rounded-md border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-600 dark:border-white/10 dark:bg-white/5 dark:text-gray-300">
                               {getEmploymentTypeLabel(item.employment_type)}
                             </span>
                           </div>
@@ -1543,7 +1543,7 @@ export default function ListingsPage() {
                       type="button"
                       onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
                       disabled={currentPage === 1}
-                      className="rounded-lg border border-gray-200 bg-white px-2.5 py-2 text-xs font-medium text-[#132843] hover:bg-gray-50 disabled:opacity-40 sm:px-4 sm:py-2.5 sm:text-sm"
+                      className="rounded-lg border border-gray-200 bg-white px-2.5 py-2 text-xs font-medium text-[#132843] hover:bg-gray-50 disabled:opacity-40 sm:px-4 sm:py-2.5 sm:text-sm dark:border-white/10 dark:bg-[#1a2d45] dark:text-[#e7edf4] dark:hover:bg-white/10"
                     >
                       ← Önceki
                     </button>
@@ -1557,7 +1557,7 @@ export default function ListingsPage() {
                           'rounded-lg px-2.5 py-2 text-xs font-medium transition-all sm:px-4 sm:py-2.5 sm:text-sm',
                           currentPage === page
                             ? 'bg-[#132843] text-white shadow-md'
-                            : 'border border-gray-200 bg-white text-[#132843] hover:bg-gray-50',
+                            : 'border border-gray-200 bg-white text-[#132843] hover:bg-gray-50 dark:border-white/10 dark:bg-[#1a2d45] dark:text-[#e7edf4] dark:hover:bg-white/10',
                         )}
                       >
                         {page}
@@ -1568,7 +1568,7 @@ export default function ListingsPage() {
                       type="button"
                       onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
                       disabled={currentPage === totalPages}
-                      className="rounded-lg border border-gray-200 bg-white px-2.5 py-2 text-xs font-medium text-[#132843] hover:bg-gray-50 disabled:opacity-40 sm:px-4 sm:py-2.5 sm:text-sm"
+                      className="rounded-lg border border-gray-200 bg-white px-2.5 py-2 text-xs font-medium text-[#132843] hover:bg-gray-50 disabled:opacity-40 sm:px-4 sm:py-2.5 sm:text-sm dark:border-white/10 dark:bg-[#1a2d45] dark:text-[#e7edf4] dark:hover:bg-white/10"
                     >
                       Sonraki →
                     </button>
@@ -1583,13 +1583,13 @@ export default function ListingsPage() {
       {/* ── Mobile Filter Modal ── */}
       {mobileFiltersOpen && (
         <div className="fixed inset-0 z-40 bg-black/40 lg:hidden">
-          <div className="absolute inset-y-0 right-0 w-full max-w-sm overflow-y-auto bg-white p-5 shadow-2xl">
+          <div className="absolute inset-y-0 right-0 w-full max-w-sm overflow-y-auto bg-white p-5 shadow-2xl dark:bg-[#1a2d45]">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-[#132843]">Filtreler</h2>
+              <h2 className="text-lg font-bold text-[#132843] dark:text-[#e7edf4]">Filtreler</h2>
               <button
                 type="button"
                 onClick={() => setMobileFiltersOpen(false)}
-                className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm text-gray-600"
+                className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm text-gray-600 dark:border-white/10 dark:text-gray-300"
               >
                 Kapat
               </button>

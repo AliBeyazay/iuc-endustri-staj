@@ -9,7 +9,7 @@ import UniversityLogo from '@/components/UniversityLogo'
 
 function DetailSkeleton() {
   return (
-    <div className="min-h-screen bg-[#f9f9ff]">
+    <div className="min-h-screen bg-[#f9f9ff] dark:bg-[#0e1e33]">
       <nav className="sticky top-0 z-50 bg-[#1A233A] shadow-md" style={{ borderBottom: '2px solid transparent', borderImage: 'linear-gradient(to right, #B8860B, #F3E5AB, #B8860B) 1' }}>
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-0 sm:px-6" style={{ height: '64px' }}>
           <Link href="/listings" className="flex items-center gap-4">
@@ -64,13 +64,13 @@ function DetailSkeleton() {
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-10">
           {/* Left Column Skeleton */}
           <div className="space-y-8 lg:col-span-8">
-            <section className="rounded-xl bg-white p-6 sm:p-8 space-y-4">
-              <div className="h-6 w-48 rounded-lg bg-[#132843]/10 campus-shimmer" />
-              <div className="h-4 w-full rounded-lg bg-[#132843]/6 campus-shimmer" />
-              <div className="h-4 w-full rounded-lg bg-[#132843]/6 campus-shimmer" />
-              <div className="h-4 w-5/6 rounded-lg bg-[#132843]/5 campus-shimmer" />
-              <div className="h-4 w-4/6 rounded-lg bg-[#132843]/4 campus-shimmer" />
-              <div className="h-4 w-full rounded-lg bg-[#132843]/6 campus-shimmer" />
+            <section className="rounded-xl bg-white p-6 sm:p-8 space-y-4 dark:bg-[#1a2d45]">
+              <div className="h-6 w-48 rounded-lg bg-[#132843]/10 campus-shimmer dark:bg-white/10" />
+              <div className="h-4 w-full rounded-lg bg-[#132843]/6 campus-shimmer dark:bg-white/6" />
+              <div className="h-4 w-full rounded-lg bg-[#132843]/6 campus-shimmer dark:bg-white/6" />
+              <div className="h-4 w-5/6 rounded-lg bg-[#132843]/5 campus-shimmer dark:bg-white/5" />
+              <div className="h-4 w-4/6 rounded-lg bg-[#132843]/4 campus-shimmer dark:bg-white/4" />
+              <div className="h-4 w-full rounded-lg bg-[#132843]/6 campus-shimmer dark:bg-white/6" />
             </section>
           </div>
 
@@ -81,10 +81,10 @@ function DetailSkeleton() {
               <div className="h-12 w-full rounded-lg bg-[#d8ad43]/20 campus-shimmer" />
               <div className="h-12 w-full rounded-lg bg-white/10 campus-shimmer" />
             </div>
-            <div className="rounded-xl bg-[#f0f3ff] p-6 space-y-3">
-              <div className="h-4 w-full rounded bg-[#132843]/8 campus-shimmer" />
-              <div className="h-4 w-full rounded bg-[#132843]/8 campus-shimmer" />
-              <div className="h-4 w-full rounded bg-[#132843]/8 campus-shimmer" />
+            <div className="rounded-xl bg-[#f0f3ff] p-6 space-y-3 dark:bg-[#132843]/50">
+              <div className="h-4 w-full rounded bg-[#132843]/8 campus-shimmer dark:bg-white/8" />
+              <div className="h-4 w-full rounded bg-[#132843]/8 campus-shimmer dark:bg-white/8" />
+              <div className="h-4 w-full rounded bg-[#132843]/8 campus-shimmer dark:bg-white/8" />
             </div>
           </div>
         </div>
@@ -103,9 +103,9 @@ export default function ListingDetailPageContent({ id }: { id: string }) {
   if (error) {
     return (
       <div className="campus-shell min-h-screen px-4 py-8">
-        <div className="mx-auto max-w-6xl rounded-[28px] border border-rose-200 bg-rose-50 p-8 text-center shadow-sm">
-          <p className="text-lg font-semibold text-rose-800">İlan detayları yüklenemedi</p>
-          <p className="mt-2 text-sm text-rose-700">Lutfen daha sonra tekrar dene.</p>
+        <div className="mx-auto max-w-6xl rounded-[28px] border border-rose-200 bg-rose-50 p-8 text-center shadow-sm dark:border-rose-800/30 dark:bg-rose-900/20">
+          <p className="text-lg font-semibold text-rose-800 dark:text-rose-300">İlan detayları yüklenemedi</p>
+          <p className="mt-2 text-sm text-rose-700 dark:text-rose-400">Lutfen daha sonra tekrar dene.</p>
         </div>
       </div>
     )
