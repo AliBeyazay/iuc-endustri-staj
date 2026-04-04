@@ -205,8 +205,9 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
   }
 
   return (
-    <div className="campus-shell min-h-screen pb-24 lg:pb-0">
-      <nav className="sticky top-0 z-10 bg-[#1A233A] shadow-md" style={{ borderBottom: '2px solid transparent', borderImage: 'linear-gradient(to right, #B8860B, #F3E5AB, #B8860B) 1' }}>
+    <div className="min-h-screen bg-[#f9f9ff]">
+      {/* ── Navbar ── */}
+      <nav className="sticky top-0 z-50 bg-[#1A233A] shadow-md" style={{ borderBottom: '2px solid transparent', borderImage: 'linear-gradient(to right, #B8860B, #F3E5AB, #B8860B) 1' }}>
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-0 sm:px-6" style={{ height: '64px' }}>
           <Link href="/listings" className="flex items-center gap-4">
             <UniversityLogo className="h-10 w-10 shrink-0 rounded border border-[#D4AF37] p-0.5" />
@@ -244,246 +245,222 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
         </div>
       </nav>
 
-      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-4 px-3 py-4 sm:px-4 sm:py-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-5">
-        <div className="space-y-4">
-          <section className="rounded-[28px] border border-[#d8ad43]/30 bg-[linear-gradient(115deg,#0f2744_0%,#12335b_58%,#0f2744_100%)] p-5 shadow-[0_18px_34px_rgba(7,20,36,0.26)] sm:p-6">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#d8ad43]/95">İLAN ÖZETİ</p>
-
-            <div className="mt-4 flex items-start gap-4">
-              {listing.company_logo_url && !detailLogoError ? (
-                <img
-                  src={listing.company_logo_url}
-                  alt={listing.company_name}
-                  referrerPolicy="no-referrer"
-                  onError={() => setDetailLogoError(true)}
-                  className="h-16 w-16 rounded-2xl border border-[#e6d3ad]/40 bg-[#f2e9da] object-contain p-2 ring-2 ring-[#d8ad43]/20 shadow-[0_8px_20px_rgba(0,0,0,0.15)]"
-                />
-              ) : (
-                <div className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-[#e6d3ad]/35 bg-[#f2e9da] ring-2 ring-[#d8ad43]/20 shadow-[0_8px_20px_rgba(0,0,0,0.15)] text-base font-semibold ${avatarColor}`}>
-                  {initials}
-                </div>
-              )}
-
-              <div className="min-w-0">
-                <h1 className="text-[28px] font-bold leading-[1.1] text-[#dbe6f4] sm:text-[40px]">
+      <main className="mx-auto max-w-7xl px-4 pb-20 pt-8 sm:px-6 lg:px-8">
+        {/* ── Hero Section ── */}
+        <section className="relative mb-10 overflow-hidden rounded-xl bg-[#00132b] text-white shadow-xl">
+          <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_top_right,_#785a00,_transparent)]" />
+          <div className="relative z-10 flex flex-col gap-8 p-6 sm:p-8 md:flex-row md:items-start md:justify-between md:p-12">
+            <div className="flex flex-col items-center gap-6 text-center md:flex-row md:items-start md:text-left">
+              {/* Company Logo */}
+              <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-xl bg-white p-4 shadow-lg">
+                {listing.company_logo_url && !detailLogoError ? (
+                  <img
+                    src={listing.company_logo_url}
+                    alt={listing.company_name}
+                    referrerPolicy="no-referrer"
+                    onError={() => setDetailLogoError(true)}
+                    className="h-full w-full object-contain"
+                  />
+                ) : (
+                  <div className={`flex h-full w-full items-center justify-center rounded-lg text-lg font-bold ${avatarColor}`}>
+                    {initials}
+                  </div>
+                )}
+              </div>
+              <div className="space-y-4">
+                <h1 className="max-w-2xl text-2xl font-bold tracking-tight sm:text-3xl md:text-4xl">
                   {listing.title}
                 </h1>
-                <p className="mt-2 text-sm font-medium text-[#9ab0c8]">{listing.company_name}</p>
-                <p className="mt-2 text-xs font-medium text-[#8ba2bd]">
-                  {timeAgoTurkish(listing.created_at)} yayınlandı
-                </p>
-              </div>
-            </div>
-
-            {false && <div className="mt-4 flex flex-wrap gap-2">
-              {listing.is_talent_program && (
-                <Badge label="Yetenek Programı" className="bg-purple-100 text-purple-800" />
-              )}
-              <Badge
-                label={FOCUS_AREA_LABELS[listing.em_focus_area]}
-                className={FOCUS_AREA_COLORS[listing.em_focus_area]}
-              />
-              <Badge
-                label={ORIGIN_LABEL[listing.company_origin]}
-                className="bg-slate-100 text-slate-700"
-              />
-              <Badge
-                label={INTERNSHIP_LABEL[listing.internship_type]}
-                className="bg-blue-100 text-blue-800"
-              />
-              <Badge
-                label={PLATFORM_LABELS[listing.source_platform]}
-                className="bg-gray-100 text-gray-600"
-              />
-              {deadline.label && <Badge label={deadline.label} className={deadlineBadgeClass} />}
-            </div>}
-          </section>
-
-          <section className="campus-card rounded-[28px] p-5 sm:p-6">
-            <h2 className="text-xs font-medium uppercase tracking-[0.22em] text-[#8f670b]/80 dark:text-[#f0cf7a]/70">
-              İlan Açıklaması
-            </h2>
-
-            <div className="mt-4 space-y-4">
-              {visibleBlocks.map((block, index) => {
-                const isSectionTitle =
-                  block.length < 50 && !/[.!?]/.test(block) && block.split(' ').length <= 6
-
-                const isNumberedItem = /^\d+\s*[.)-]/.test(block)
-
-                if (isSectionTitle) {
-                  return (
-                    <h3 key={`${block}-${index}`} className="text-sm font-semibold text-[#8f670b] pt-1 dark:text-[#f0cf7a]">
-                      {block}
-                    </h3>
-                  )
-                }
-
-                if (isNumberedItem) {
-                  return (
-                    <p key={`${block}-${index}`} className="text-sm leading-7 text-[#173156]/82 pl-3 border-l-2 border-[#d8ad43]/25 dark:text-[#e7edf4]/70">
-                      {block}
-                    </p>
-                  )
-                }
-
-                return (
-                  <p key={`${block}-${index}`} className="text-sm leading-7 text-[#173156]/82 dark:text-[#e7edf4]/70">
-                    {block}
-                  </p>
-                )
-              })}
-            </div>
-
-            {descriptionBlocksWithoutIntro.length > 4 && (
-              <button
-                onClick={() => setExpandDesc((prev) => !prev)}
-                className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-[#1E3A5F] transition-colors hover:text-[#d8ad43] dark:text-[#d8ad43] dark:hover:text-[#f0cf7a]"
-              >
-                {expandDesc ? '↑ Daha az göster' : 'Devamını gör ↓'}
-              </button>
-            )}
-          </section>
-
-          <section className="campus-card rounded-[28px] p-5 sm:p-6">
-            <div className="flex flex-col gap-3 border-b border-dashed border-[#d8ad43]/28 pb-5 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <h2 className="text-xs font-medium uppercase tracking-[0.22em] text-[#8f670b]/80 dark:text-[#f0cf7a]/70">
-                  Öğrenci Değerlendirmeleri
-                </h2>
-                <p className="mt-2 text-sm text-[#173156]/68 dark:text-[#e7edf4]/55">
-                  Bu ilan hakkında deneyim, süreç ve görüş paylaşabilirsin.
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-[#d8ad43]/16 bg-white/60 px-4 py-3 dark:bg-white/5">
-                <div className="flex items-center gap-3">
-                  <ReviewStars value={Math.round(averageRating)} />
-                  <div>
-                    <p className="text-lg font-semibold text-[#132843] dark:text-[#e7edf4]">
-                    </p>
-                    <p className="text-xs text-[#173156]/58 dark:text-[#e7edf4]/45">{reviews.length} değerlendirme</p>
-                  </div>
+                <div className="flex flex-wrap items-center justify-center gap-4 text-sm md:justify-start">
+                  <span className="inline-flex items-center gap-1.5 text-[#d4e3ff]/80">
+                    <svg className="h-4 w-4 text-[#fdce61]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    <span className="font-medium">{listing.location}</span>
+                  </span>
+                  {deadline.label && (
+                    <span className="inline-flex items-center gap-1.5 text-[#d4e3ff]/80">
+                      <svg className="h-4 w-4 text-[#fdce61]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+                      <span className="font-medium">{deadline.label}</span>
+                    </span>
+                  )}
+                  <span className="inline-flex items-center gap-1.5 text-[#d4e3ff]/80">
+                    <svg className="h-4 w-4 text-[#fdce61]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                    <span className="font-medium">{INTERNSHIP_LABEL[listing.internship_type]} / Staj</span>
+                  </span>
                 </div>
               </div>
             </div>
+            <div className="flex flex-col items-center gap-2 md:items-end">
+              <span className="text-xs font-bold uppercase tracking-widest text-[#fdce61]">
+                {PLATFORM_LABELS[listing.source_platform]}
+              </span>
+              <span className="rounded-full bg-[#785a00] px-4 py-1.5 text-xs font-bold tracking-wider text-white">
+                AKTİF İLAN
+              </span>
+            </div>
+          </div>
+        </section>
 
-            <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
-              <div className="space-y-3">
-                {reviewsLoading ? (
-                  <div className="rounded-2xl border border-[#d8ad43]/14 bg-white/45 px-4 py-4 text-sm text-[#173156]/60 dark:bg-white/5 dark:text-[#e7edf4]/50">
-                    Değerlendirmeler yükleniyor...
-                  </div>
-                ) : reviews.length === 0 ? (
-                  <div className="rounded-2xl border border-[#d8ad43]/14 bg-white/45 px-4 py-4 text-sm text-[#173156]/60 dark:bg-white/5 dark:text-[#e7edf4]/50">
-                    Henüz öğrenci değerlendirmesi yok. İlk yorumu sen paylaşabilirsin.
-                  </div>
-                ) : (
-                  reviews.map((review) => (
-                    <article
-                      key={review.id}
-                      className="rounded-2xl border border-[#d8ad43]/14 bg-white/55 px-4 py-4 transition-all duration-200 hover:border-[#d8ad43]/25 hover:shadow-campus-sm dark:bg-white/5 dark:hover:border-[#d8ad43]/22"
-                    >
-                      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <ReviewStars value={review.rating} />
-                            <span className="text-sm font-semibold text-[#132843] dark:text-[#e7edf4]">
-                            </span>
-                          </div>
-                          <p className="mt-2 text-xs text-[#173156]/58 dark:text-[#e7edf4]/45">
-                            {review.is_anonymous ? 'Anonim öğrenci' : 'Öğrenci'} - {review.internship_year}
-                          </p>
-                        </div>
-                        <span className="text-xs text-[#173156]/52 dark:text-[#e7edf4]/40">
-                          {formatDateTurkish(review.created_at)}
-                        </span>
-                      </div>
+        {/* ── Main Content Grid ── */}
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-10">
+          {/* ── Left Column ── */}
+          <div className="space-y-8 lg:col-span-8">
+            {/* Description */}
+            <section className="rounded-xl bg-white p-6 sm:p-8">
+              <h2 className="mb-6 flex items-center gap-3 text-xl font-bold text-[#00132b]">
+                <span className="block h-6 w-1.5 bg-[#785a00]" />
+                İLAN AÇIKLAMASI
+              </h2>
+              <div className="space-y-4">
+                {visibleBlocks.map((block, index) => {
+                  const isSectionTitle =
+                    block.length < 50 && !/[.!?]/.test(block) && block.split(' ').length <= 6
+                  const isNumberedItem = /^\d+\s*[.)-]/.test(block)
 
-                      <p className="mt-3 text-sm leading-7 text-[#173156]/82 dark:text-[#e7edf4]/70">
+                  if (isSectionTitle) {
+                    return (
+                      <h3 key={`${block}-${index}`} className="text-sm font-bold uppercase tracking-wider text-[#00132b]">
+                        {block}
+                      </h3>
+                    )
+                  }
+
+                  if (isNumberedItem) {
+                    return (
+                      <p key={`${block}-${index}`} className="border-l-2 border-[#d8ad43]/25 pl-3 text-sm leading-relaxed text-[#44474d]">
+                        {block}
                       </p>
-                    </article>
-                  ))
-                )}
+                    )
+                  }
+
+                  return (
+                    <p key={`${block}-${index}`} className="text-sm leading-relaxed text-[#44474d]">
+                      {block}
+                    </p>
+                  )
+                })}
+              </div>
+              {descriptionBlocksWithoutIntro.length > 4 && (
+                <button
+                  onClick={() => setExpandDesc((prev) => !prev)}
+                  className="mt-4 text-xs font-semibold text-[#785a00] transition-colors hover:text-[#d8ad43]"
+                >
+                  {expandDesc ? '↑ Daha az göster' : 'Devamını gör ↓'}
+                </button>
+              )}
+            </section>
+
+            {/* Requirements */}
+            {listing.requirements && (
+              <section className="rounded-xl bg-white p-6 sm:p-8">
+                <h2 className="mb-6 flex items-center gap-3 text-xl font-bold text-[#00132b]">
+                  <span className="block h-6 w-1.5 bg-[#785a00]" />
+                  ARANAN NİTELİKLER
+                </h2>
+                <ul className="space-y-2">
+                  {listing.requirements
+                    .split(/\n|-/)
+                    .map((item) => item.trim())
+                    .filter(Boolean)
+                    .map((item, index) => (
+                      <li key={`${item}-${index}`} className="flex items-start gap-2.5 text-sm leading-relaxed text-[#44474d]">
+                        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#785a00]" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                </ul>
+              </section>
+            )}
+
+            {/* Reviews */}
+            <section className="rounded-xl border border-[#c4c6ce]/15 bg-[#f0f3ff] p-6 sm:p-8">
+              <h2 className="mb-8 flex items-center gap-3 text-xl font-bold text-[#00132b]">
+                <span className="block h-6 w-1.5 bg-[#785a00]" />
+                ÖĞRENCİ DEĞERLENDİRMELERİ
+              </h2>
+
+              {/* Rating Summary */}
+              <div className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-3">
+                <div className="flex flex-col items-center justify-center rounded-xl bg-white p-6 text-center">
+                  <span className="text-4xl font-bold text-[#00132b]">{averageRating.toFixed(1)}</span>
+                  <div className="my-2">
+                    <ReviewStars value={Math.round(averageRating)} />
+                  </div>
+                  <span className="text-xs font-medium text-[#44474d]">{reviews.length} Değerlendirme</span>
+                </div>
+                <div className="flex flex-col justify-center space-y-2 md:col-span-2">
+                  {[5, 4, 3, 2, 1].map((star) => {
+                    const count = reviews.filter((r) => r.rating === star).length
+                    const pct = reviews.length ? (count / reviews.length) * 100 : 0
+                    return (
+                      <div key={star} className="flex items-center gap-3">
+                        <span className="w-14 text-xs font-bold text-[#00132b]">{star} Yıldız</span>
+                        <div className="h-2 flex-1 overflow-hidden rounded-full bg-white">
+                          <div className="h-full rounded-full bg-[#785a00] transition-all" style={{ width: `${pct}%` }} />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
 
+              {/* Review Form */}
               <form
                 onSubmit={handleReviewSubmit}
-                className="rounded-[24px] border border-[#d8ad43]/16 bg-white/65 p-4 dark:bg-white/5"
+                className="mb-8 rounded-xl border border-[#c4c6ce]/20 bg-white/50 p-6 backdrop-blur"
               >
-                <h3 className="text-sm font-semibold text-[#132843] dark:text-[#e7edf4]">Görüşünü Paylaş</h3>
-                <p className="mt-1 text-xs leading-6 text-[#173156]/62 dark:text-[#e7edf4]/50">
-                  Puan verip kısa bir yorum bırak. Bu alan diğer öğrenciler için yol gösterici olacak.
-                </p>
+                <h3 className="mb-4 text-sm font-bold text-[#00132b]">Bir Değerlendirme Bırakın</h3>
+                <div className="mb-4">
+                  <ReviewStars value={rating} onChange={setRating} interactive />
+                </div>
 
-                <div className="mt-4">
-                  <label className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8f670b]/80 dark:text-[#f0cf7a]/70">
-                    Puanın
-                  </label>
-                  <div className="mt-2">
-                    <ReviewStars value={rating} onChange={setRating} interactive />
+                <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="internship-year" className="mb-1 block text-xs font-medium text-[#44474d]">
+                      Staj Yılı
+                    </label>
+                    <input
+                      id="internship-year"
+                      type="number"
+                      value={internshipYear}
+                      onChange={(event) => setInternshipYear(Number(event.target.value))}
+                      min={2000}
+                      max={2100}
+                      className="w-full rounded-lg border-0 bg-white p-3 text-sm text-[#00132b] ring-1 ring-inset ring-[#c4c6ce]/30 focus:ring-2 focus:ring-[#785a00]/50"
+                    />
+                  </div>
+                  <div className="flex items-end">
+                    <label className="flex items-center gap-2 text-sm text-[#44474d]">
+                      <input
+                        type="checkbox"
+                        checked={isAnonymous}
+                        onChange={(event) => setIsAnonymous(event.target.checked)}
+                        className="h-4 w-4 rounded border-[#c4c6ce] text-[#00132b] focus:ring-[#785a00]/30"
+                      />
+                      Anonim paylaş
+                    </label>
                   </div>
                 </div>
 
-                <div className="mt-4">
-                  <label
-                    htmlFor="internship-year"
-                    className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8f670b]/80 dark:text-[#f0cf7a]/70"
-                  >
-                    Staj Yılı
-                  </label>
-                  <input
-                    id="internship-year"
-                    type="number"
-                    value={internshipYear}
-                    onChange={(event) => setInternshipYear(Number(event.target.value))}
-                    min={2000}
-                    max={2100}
-                    className="mt-2 w-full rounded-2xl border border-[#d8ad43]/18 bg-white px-4 py-3 text-sm text-[#132843] outline-none transition-colors focus:border-[#d8ad43]/40 dark:bg-[#0e1e33] dark:text-[#e7edf4]"
-                  />
-                </div>
-
-                <div className="mt-4">
-                  <label
-                    htmlFor="review-comment"
-                    className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8f670b]/80 dark:text-[#f0cf7a]/70"
-                  >
-                    Yorumun
-                  </label>
-                  <textarea
-                    id="review-comment"
-                    value={comment}
-                    onChange={(event) => setComment(event.target.value)}
-                    rows={5}
-                    placeholder="Başvuru süreci, mülakat deneyimi veya ilanın faydası hakkında kısa bir görüş yaz."
-                    className="mt-2 w-full rounded-2xl border border-[#d8ad43]/18 bg-white px-4 py-3 text-sm leading-7 text-[#132843] outline-none transition-colors placeholder:text-[#173156]/38 focus:border-[#d8ad43]/40 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:placeholder:text-[#e7edf4]/30"
-                  />
-                </div>
-
-                <label className="mt-4 flex items-center gap-2 text-sm text-[#173156]/70 dark:text-[#e7edf4]/60">
-                  <input
-                    type="checkbox"
-                    checked={isAnonymous}
-                    onChange={(event) => setIsAnonymous(event.target.checked)}
-                    className="h-4 w-4 rounded border-[#d8ad43]/30 text-[#1E3A5F] focus:ring-[#d8ad43]/30"
-                  />
-                  Adım görünmeden anonim paylaş
-                </label>
+                <textarea
+                  value={comment}
+                  onChange={(event) => setComment(event.target.value)}
+                  rows={4}
+                  placeholder="Deneyiminizi paylaşın..."
+                  className="mb-4 w-full rounded-lg border-0 bg-white p-4 text-sm text-[#00132b] ring-1 ring-inset ring-[#c4c6ce]/30 placeholder:text-[#44474d]/50 focus:ring-2 focus:ring-[#785a00]/50"
+                />
 
                 {!isAuthenticated && (
-                  <p className="mt-4 rounded-2xl border border-[#d8ad43]/16 bg-[#fff8e8] px-4 py-3 text-xs leading-6 text-[#173156]/70 dark:bg-[#d8ad43]/10 dark:text-[#e7edf4]/60">
-                    Değerlendirme bırakmak için önce giriş yapman gerekiyor.
+                  <p className="mb-4 rounded-lg border border-[#fdce61]/30 bg-[#fff8e8] px-4 py-3 text-xs text-[#44474d]">
+                    Değerlendirme bırakmak için önce giriş yapmalısın.
                   </p>
                 )}
-
                 {reviewError && (
-                  <p className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                     {reviewError}
                   </p>
                 )}
-
                 {reviewSuccess && (
-                  <p className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                  <p className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
                     {reviewSuccess}
                   </p>
                 )}
@@ -491,151 +468,240 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
                 <button
                   type="submit"
                   disabled={reviewSubmitting}
-                  className="mt-5 w-full rounded-2xl bg-[#1E3A5F] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#173156] disabled:cursor-not-allowed disabled:opacity-60 dark:bg-[#d8ad43] dark:text-[#10223b] dark:hover:bg-[#e4c05c]"
+                  className="rounded-lg bg-[#00132b] px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-[#132843] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {reviewSubmitting ? 'Gönderiliyor...' : 'Değerlendirmeyi Gönder'}
+                  {reviewSubmitting ? 'Gönderiliyor...' : 'Gönder'}
                 </button>
 
                 {isAuthenticated && session?.user && (
-                  <p className="mt-3 text-xs text-[#173156]/50 dark:text-[#e7edf4]/40">
+                  <p className="mt-3 text-xs text-[#44474d]/60">
                     Giriş yapan kullanıcı olarak yorumun hesabına bağlı kaydedilir.
                   </p>
                 )}
               </form>
-            </div>
-          </section>
 
-          {listing.requirements && (
-            <section className="campus-card rounded-[28px] p-5 sm:p-6">
-              <h2 className="text-xs font-medium uppercase tracking-[0.22em] text-[#8f670b]/80 dark:text-[#f0cf7a]/70">
-                Aranan Nitelikler
-              </h2>
-              <ul className="mt-4 space-y-2">
-                {listing.requirements
-                  .split(/\n|-/)
-                  .map((item) => item.trim())
-                  .filter(Boolean)
-                  .map((item, index) => (
-                    <li key={`${item}-${index}`} className="flex items-start gap-2.5 text-sm text-[#173156]/82 dark:text-[#e7edf4]/70">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#d8ad43]/60"></span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-              </ul>
-            </section>
-          )}
-
-          {similar && similar.length > 0 && (
-            <section className="campus-card rounded-[28px] p-5 sm:p-6">
-              <h2 className="text-xs font-medium uppercase tracking-[0.22em] text-[#8f670b]/80 dark:text-[#f0cf7a]/70">
-                Benzer İlanlar
-              </h2>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                {similar.map((item) => {
-                  const reasons = item.match_reasons || []
-                  return (
-                    <Link
-                      key={item.id}
-                      href={`/listings/${item.id}`}
-                      className="group rounded-2xl border border-[#d8ad43]/16 bg-white/55 px-4 py-4 transition-all duration-200 hover:border-[#d8ad43]/35 hover:bg-white/80 hover:-translate-y-0.5 hover:shadow-campus-sm dark:bg-white/5 dark:hover:bg-white/10"
+              {/* Individual Reviews */}
+              <div className="space-y-4">
+                {reviewsLoading ? (
+                  <div className="rounded-xl bg-white px-6 py-4 text-sm text-[#44474d]">
+                    Değerlendirmeler yükleniyor...
+                  </div>
+                ) : reviews.length === 0 ? (
+                  <div className="rounded-xl bg-white px-6 py-4 text-sm text-[#44474d]">
+                    Henüz öğrenci değerlendirmesi yok. İlk yorumu sen paylaşabilirsin.
+                  </div>
+                ) : (
+                  reviews.map((review) => (
+                    <article
+                      key={review.id}
+                      className="rounded-xl border-l-4 border-[#785a00]/30 bg-white p-6"
                     >
-                      <p className="text-sm font-semibold text-[#132843] group-hover:text-[#8f670b] dark:text-[#e7edf4] dark:group-hover:text-[#d8ad43] transition-colors">{item.title}</p>
-                      <p className="mt-1 text-xs text-[#173156]/62 dark:text-[#e7edf4]/50">{item.company_name}</p>
-                      {reasons.length > 0 && (
-                        <div className="mt-2 flex flex-wrap gap-1">
-                          {reasons.includes('company') && (
-                            <span className="inline-block rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700 dark:bg-blue-500/15 dark:text-blue-300">Aynı Şirket</span>
-                          )}
-                          {reasons.includes('focus_area') && (
-                            <span className="inline-block rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">Aynı Alan</span>
-                          )}
-                          {reasons.includes('secondary_focus') && (
-                            <span className="inline-block rounded-full bg-orange-50 px-2 py-0.5 text-[10px] font-medium text-orange-700 dark:bg-orange-500/15 dark:text-orange-300">Benzer Alan</span>
-                          )}
-                          {reasons.includes('location') && (
-                            <span className="inline-block rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-medium text-green-700 dark:bg-green-500/15 dark:text-green-300">Aynı Konum</span>
-                          )}
-                          {reasons.includes('title') && (
-                            <span className="inline-block rounded-full bg-purple-50 px-2 py-0.5 text-[10px] font-medium text-purple-700 dark:bg-purple-500/15 dark:text-purple-300">Benzer Başlık</span>
-                          )}
+                      <div className="mb-3 flex items-start justify-between">
+                        <div>
+                          <h4 className="text-sm font-bold text-[#00132b]">
+                            {review.is_anonymous ? 'Anonim Öğrenci' : 'Öğrenci'}
+                          </h4>
+                          <span className="text-[10px] font-medium text-[#44474d]">
+                            Staj Yılı: {review.internship_year}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-[#44474d]">
+                          {formatDateTurkish(review.created_at)}
+                        </span>
+                      </div>
+                      <div className="mb-2">
+                        <ReviewStars value={review.rating} />
+                      </div>
+                      <p className="text-xs italic leading-relaxed text-[#44474d]">
+                        &ldquo;{review.comment}&rdquo;
+                      </p>
+                    </article>
+                  ))
+                )}
+              </div>
+            </section>
+          </div>
+
+          {/* ── Right Sidebar ── */}
+          <div className="lg:col-span-4">
+            <aside className="sticky top-28 space-y-6">
+              {/* Apply Card */}
+              <div className="relative overflow-hidden rounded-xl bg-[#00132b] p-8 text-white shadow-2xl shadow-[#00132b]/20">
+                <div className="absolute -right-4 -top-4 text-[120px] leading-none opacity-10">★</div>
+                <h3 className="relative z-10 mb-6 text-xl font-bold">BAŞVURU</h3>
+                <div className="relative z-10 space-y-4">
+                  <a
+                    href={targetUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#fdce61] py-3.5 font-bold text-[#00132b] transition-all hover:brightness-110"
+                  >
+                    Kaynağa Git
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                  </a>
+                  <button
+                    onClick={() => toggle(listing.id)}
+                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/10 py-3.5 font-medium transition-all hover:bg-white/20"
+                  >
+                    {isBookmarked ? 'Kaydı Kaldır' : 'Kaydet'}
+                    <svg className="h-4 w-4" fill={isBookmarked ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>
+                  </button>
+
+                  {/* QR Code */}
+                  <div className="border-t border-white/10 pt-6">
+                    <div className="flex flex-col items-center">
+                      {showQrCode && (
+                        <div className="mb-4 rounded-lg bg-white p-3">
+                          <img
+                            src={qrCodeUrl}
+                            alt="İlan paylaşım QR kodu"
+                            loading="lazy"
+                            className="h-32 w-32"
+                          />
                         </div>
                       )}
-                    </Link>
-                  )
-                })}
+                      <button
+                        onClick={() => setShowQrCode((prev) => !prev)}
+                        className="flex items-center gap-2 text-sm font-medium text-[#fdce61]"
+                      >
+                        {showQrCode ? 'QR Kodunu Kapat' : 'QR Kodunu Göster'}
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" /></svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </section>
-          )}
+
+              {/* Meta Info Card */}
+              <div className="space-y-4 rounded-xl bg-[#f0f3ff] p-6">
+                <div className="flex items-center justify-between border-b border-[#c4c6ce]/10 py-2">
+                  <span className="text-xs font-medium text-[#44474d]">Yayınlanma Tarihi</span>
+                  <span className="text-xs font-bold text-[#00132b]">{formatDateTurkish(listing.created_at)}</span>
+                </div>
+                <div className="flex items-center justify-between border-b border-[#c4c6ce]/10 py-2">
+                  <span className="text-xs font-medium text-[#44474d]">Kategori</span>
+                  <span className="text-xs font-bold text-[#00132b]">{FOCUS_AREA_LABELS[listing.em_focus_area]}</span>
+                </div>
+                <div className="flex items-center justify-between border-b border-[#c4c6ce]/10 py-2">
+                  <span className="text-xs font-medium text-[#44474d]">Firma Kökeni</span>
+                  <span className="text-xs font-bold text-[#00132b]">{ORIGIN_LABEL[listing.company_origin]}</span>
+                </div>
+                <button
+                  onClick={handleShare}
+                  className="flex w-full items-center justify-center gap-2 py-2 text-xs font-bold text-[#785a00]"
+                >
+                  {copied ? 'Kopyalandı!' : 'Paylaş'}
+                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+                </button>
+              </div>
+            </aside>
+          </div>
         </div>
 
-        <aside className="space-y-4">
-          <section className="campus-card rounded-[28px] p-5">
-            <p className="campus-heading text-[11px] text-[#8f670b] dark:text-[#f0cf7a]">Başvuru</p>
-
-            <div className="mt-4 space-y-3">
-              <button
-                onClick={() => setShowQrCode((prev) => !prev)}
-                className="w-full rounded-2xl border border-[#d8ad43]/35 bg-[#fff8e8] px-4 py-3.5 text-sm font-semibold text-[#8f670b] transition-all duration-200 hover:bg-[#fff1ce] hover:shadow-campus-sm dark:bg-[#d8ad43]/12 dark:text-[#f0cf7a] dark:hover:bg-[#d8ad43]/18"
-              >
-                {showQrCode ? 'QR Kodunu Kapat' : 'QR Kodunu Goster'}
-              </button>
-              <a
-                href={targetUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="campus-button-primary hidden w-full items-center justify-center rounded-2xl px-4 py-3.5 text-sm font-semibold lg:flex"
-              >
-                Kaynağa Git
-              </a>
-
-              <button
-                onClick={() => toggle(listing.id)}
-                className="campus-button-secondary w-full rounded-2xl px-4 py-3.5 text-sm font-semibold"
-              >
-                {isBookmarked ? 'Kaydı Kaldır' : 'Kaydet'}
-              </button>
-
-              <button
-                onClick={handleShare}
-                className="w-full rounded-2xl border border-[#173156]/12 bg-white/55 px-4 py-3.5 text-sm font-semibold text-[#173156] transition-all duration-200 hover:bg-white/80 hover:border-[#d8ad43]/25 dark:border-[#e7edf4]/12 dark:bg-white/5 dark:text-[#e7edf4] dark:hover:bg-white/10"
-              >
-                {copied ? 'Bağlantı Kopyalandı' : 'Bağlantıyı Kopyala'}
-              </button>
+        {/* ── Similar Listings ── */}
+        {similar && similar.length > 0 && (
+          <section className="mt-16">
+            <h2 className="mb-8 flex items-center gap-3 text-2xl font-bold text-[#00132b]">
+              <span className="block h-8 w-2 bg-[#785a00]" />
+              BENZER İLANLAR
+            </h2>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {similar.map((item) => {
+                const reasons = item.match_reasons || []
+                return (
+                  <Link
+                    key={item.id}
+                    href={`/listings/${item.id}`}
+                    className="group rounded-xl border border-[#c4c6ce]/10 bg-white p-6 transition-all hover:shadow-xl"
+                  >
+                    <div className="mb-6 flex items-center gap-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-[#c4c6ce]/5 bg-[#f0f3ff] p-2">
+                        <span className="text-xs font-bold text-[#00132b]">{getInitials(item.company_name)}</span>
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="truncate text-sm font-bold text-[#00132b]">{item.title}</h4>
+                        <p className="text-[10px] font-medium text-[#44474d]">{item.company_name}</p>
+                      </div>
+                    </div>
+                    {reasons.length > 0 && (
+                      <div className="mb-6 flex flex-wrap gap-2">
+                        {reasons.includes('company') && (
+                          <span className="rounded-full bg-[#e7eeff] px-2 py-1 text-[10px] font-bold text-[#00132b]">AYNI ŞİRKET</span>
+                        )}
+                        {reasons.includes('focus_area') && (
+                          <span className="rounded-full bg-[#e7eeff] px-2 py-1 text-[10px] font-bold text-[#00132b]">AYNI ALAN</span>
+                        )}
+                        {reasons.includes('location') && (
+                          <span className="rounded-full bg-[#e7eeff] px-2 py-1 text-[10px] font-bold text-[#00132b]">AYNI KONUM</span>
+                        )}
+                        {reasons.includes('title') && (
+                          <span className="rounded-full bg-[#e7eeff] px-2 py-1 text-[10px] font-bold text-[#00132b]">BENZER BAŞLIK</span>
+                        )}
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between border-t border-[#c4c6ce]/10 pt-4">
+                      <span className="text-[10px] font-medium text-[#44474d]">
+                        {timeAgoTurkish(listing.created_at)}
+                      </span>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#785a00] group-hover:text-[#d8ad43]">
+                        İncele
+                      </span>
+                    </div>
+                  </Link>
+                )
+              })}
             </div>
-
-            {showQrCode && (
-              <div className="mt-4 rounded-2xl border border-[#d8ad43]/25 bg-white/60 p-3 dark:bg-white/5">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8f670b]/80 dark:text-[#f0cf7a]/70">
-                  QR Paylasim
-                </p>
-                <p className="mt-2 text-xs leading-5 text-[#173156]/65 dark:text-[#e7edf4]/55">
-                  Bu kodu telefondan okutunca ilan detay sayfasi acilir.
-                </p>
-                <img
-                  src={qrCodeUrl}
-                  alt="Ilan paylasim QR kodu"
-                  loading="lazy"
-                  className="mx-auto mt-3 h-44 w-44 rounded-xl border border-[#173156]/12 bg-white p-2 dark:border-[#e7edf4]/12 dark:bg-white"
-                />
-              </div>
-            )}
           </section>
+        )}
+      </main>
 
-        </aside>
-      </div>
+      {/* ── Footer ── */}
+      <footer className="mt-auto border-t border-[#c4c6ce]/15 bg-[#00132b]">
+        <div className="mx-auto flex max-w-7xl flex-col gap-10 px-8 py-12 md:flex-row md:items-start md:justify-between">
+          <div className="flex max-w-sm flex-col gap-4">
+            <div className="flex items-center gap-3">
+              <UniversityLogo className="h-12 w-12" />
+              <div>
+                <span className="block text-lg font-bold leading-tight text-[#f9f9ff]">İstanbul Üniversitesi-Cerrahpaşa</span>
+                <span className="text-xs uppercase tracking-[0.2em] text-[#d4e3ff]/60">Endüstri Mühendisliği</span>
+              </div>
+            </div>
+            <p className="text-sm leading-relaxed text-[#d4e3ff]/60">
+              Endüstri Mühendisliği öğrencileri için staj ve yetenek programı ilanlarını tek bir platformda toplayan akademik kaynak.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-12">
+            <div className="flex flex-col gap-3">
+              <h4 className="text-sm font-bold uppercase tracking-widest text-[#fdce61]">Platform</h4>
+              <Link href="/listings" className="text-sm text-[#d4e3ff]/60 transition-colors hover:text-[#f9f9ff]">İlanlar</Link>
+              <Link href="/dashboard" className="text-sm text-[#d4e3ff]/60 transition-colors hover:text-[#f9f9ff]">Başvurular</Link>
+              <Link href="/profile" className="text-sm text-[#d4e3ff]/60 transition-colors hover:text-[#f9f9ff]">Profil</Link>
+            </div>
+            <div className="flex flex-col gap-3">
+              <h4 className="text-sm font-bold uppercase tracking-widest text-[#fdce61]">İletişim</h4>
+              <span className="text-sm text-[#d4e3ff]/60">info@iuc.edu.tr</span>
+              <span className="text-sm text-[#d4e3ff]/60">+90 (212) 473 70 70</span>
+              <span className="text-xs text-[#d4e3ff]/60">Avcılar Yerleşkesi, 34320 İstanbul</span>
+            </div>
+          </div>
+        </div>
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 border-t border-[#c4c6ce]/10 px-8 py-6 md:flex-row">
+          <span className="text-[10px] uppercase tracking-[0.1em] text-[#d4e3ff]/40">© 2025 İstanbul Üniversitesi-Cerrahpaşa. Tüm hakları saklıdır.</span>
+        </div>
+      </footer>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#d8ad43]/20 bg-[#10223b]/95 px-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-10px_28px_rgba(7,16,28,0.24)] backdrop-blur lg:hidden">
+      {/* ── Mobile Bottom Bar ── */}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#d8ad43]/20 bg-[#00132b]/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 backdrop-blur lg:hidden">
         <a
           href={targetUrl}
           target="_blank"
           rel="noreferrer"
-          className="campus-button-primary flex w-full items-center justify-center rounded-2xl px-4 py-3 text-sm font-semibold"
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#fdce61] py-3 text-sm font-bold text-[#00132b]"
         >
-          Basvur
+          Başvur
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
         </a>
       </div>
-
-
     </div>
   )
 }

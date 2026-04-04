@@ -9,8 +9,8 @@ import UniversityLogo from '@/components/UniversityLogo'
 
 function DetailSkeleton() {
   return (
-    <div className="campus-shell min-h-screen pb-24 lg:pb-0">
-      <nav className="sticky top-0 z-10 bg-[#1A233A] shadow-md" style={{ borderBottom: '2px solid transparent', borderImage: 'linear-gradient(to right, #B8860B, #F3E5AB, #B8860B) 1' }}>
+    <div className="min-h-screen bg-[#f9f9ff]">
+      <nav className="sticky top-0 z-50 bg-[#1A233A] shadow-md" style={{ borderBottom: '2px solid transparent', borderImage: 'linear-gradient(to right, #B8860B, #F3E5AB, #B8860B) 1' }}>
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-0 sm:px-6" style={{ height: '64px' }}>
           <Link href="/listings" className="flex items-center gap-4">
             <UniversityLogo className="h-10 w-10 shrink-0 rounded border border-[#D4AF37] p-0.5" />
@@ -48,39 +48,47 @@ function DetailSkeleton() {
         </div>
       </nav>
 
-      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-4 px-3 py-4 sm:px-4 sm:py-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-5">
-        <div className="space-y-4">
-          <section className="rounded-[28px] border border-[#d8ad43]/20 bg-[linear-gradient(115deg,#0f2744_0%,#12335b_58%,#0f2744_100%)] p-5 sm:p-6">
-            <div className="h-3 w-16 rounded-lg bg-[#d8ad43]/20 campus-shimmer" />
-            <div className="mt-4 flex items-start gap-4">
-              <div className="h-16 w-16 rounded-2xl bg-white/10 campus-shimmer" />
-              <div className="min-w-0 flex-1 space-y-3">
-                <div className="h-8 w-3/4 rounded-lg bg-white/10 campus-shimmer" />
-                <div className="h-4 w-1/2 rounded-lg bg-white/8 campus-shimmer" />
-                <div className="h-3 w-1/3 rounded-lg bg-white/6 campus-shimmer" />
-              </div>
+      <main className="mx-auto max-w-7xl px-4 pb-20 pt-8 sm:px-6 lg:px-8">
+        {/* Hero Skeleton */}
+        <section className="relative mb-10 overflow-hidden rounded-xl bg-[#00132b] p-6 sm:p-8 md:p-12">
+          <div className="flex flex-col gap-6 md:flex-row md:items-start">
+            <div className="h-24 w-24 shrink-0 rounded-xl bg-white/10 campus-shimmer" />
+            <div className="flex-1 space-y-4">
+              <div className="h-10 w-3/4 rounded-lg bg-white/10 campus-shimmer" />
+              <div className="h-5 w-1/2 rounded-lg bg-white/8 campus-shimmer" />
+              <div className="h-4 w-1/3 rounded-lg bg-white/6 campus-shimmer" />
             </div>
-          </section>
+          </div>
+        </section>
 
-          <section className="campus-card rounded-[28px] p-5 sm:p-6 space-y-3">
-            <div className="h-3 w-20 rounded-lg bg-[#d8ad43]/20 campus-shimmer" />
-            <div className="h-3 w-full rounded-lg bg-[#173156]/6 campus-shimmer" />
-            <div className="h-3 w-full rounded-lg bg-[#173156]/6 campus-shimmer" />
-            <div className="h-3 w-5/6 rounded-lg bg-[#173156]/5 campus-shimmer" />
-            <div className="h-3 w-4/6 rounded-lg bg-[#173156]/4 campus-shimmer" />
-            <div className="h-3 w-full rounded-lg bg-[#173156]/6 campus-shimmer" />
-            <div className="h-3 w-3/4 rounded-lg bg-[#173156]/5 campus-shimmer" />
-          </section>
-        </div>
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-10">
+          {/* Left Column Skeleton */}
+          <div className="space-y-8 lg:col-span-8">
+            <section className="rounded-xl bg-white p-6 sm:p-8 space-y-4">
+              <div className="h-6 w-48 rounded-lg bg-[#00132b]/10 campus-shimmer" />
+              <div className="h-4 w-full rounded-lg bg-[#00132b]/6 campus-shimmer" />
+              <div className="h-4 w-full rounded-lg bg-[#00132b]/6 campus-shimmer" />
+              <div className="h-4 w-5/6 rounded-lg bg-[#00132b]/5 campus-shimmer" />
+              <div className="h-4 w-4/6 rounded-lg bg-[#00132b]/4 campus-shimmer" />
+              <div className="h-4 w-full rounded-lg bg-[#00132b]/6 campus-shimmer" />
+            </section>
+          </div>
 
-        <div className="space-y-4">
-          <div className="campus-card rounded-[28px] p-5 space-y-3">
-            <div className="h-12 w-full rounded-2xl bg-[#d8ad43]/12 campus-shimmer" />
-            <div className="h-12 w-full rounded-2xl bg-[#173156]/6 campus-shimmer" />
-            <div className="h-12 w-full rounded-2xl bg-[#173156]/5 campus-shimmer" />
+          {/* Right Column Skeleton */}
+          <div className="lg:col-span-4 space-y-6">
+            <div className="rounded-xl bg-[#00132b] p-8 space-y-4">
+              <div className="h-6 w-24 rounded-lg bg-white/15 campus-shimmer" />
+              <div className="h-12 w-full rounded-lg bg-[#fdce61]/20 campus-shimmer" />
+              <div className="h-12 w-full rounded-lg bg-white/10 campus-shimmer" />
+            </div>
+            <div className="rounded-xl bg-[#f0f3ff] p-6 space-y-3">
+              <div className="h-4 w-full rounded bg-[#00132b]/8 campus-shimmer" />
+              <div className="h-4 w-full rounded bg-[#00132b]/8 campus-shimmer" />
+              <div className="h-4 w-full rounded bg-[#00132b]/8 campus-shimmer" />
+            </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   )
 }
