@@ -655,41 +655,6 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
         )}
       </main>
 
-      {/* ── Footer ── */}
-      <footer className="mt-auto border-t border-[#c4c6ce]/15 bg-[#00132b]">
-        <div className="mx-auto flex max-w-7xl flex-col gap-10 px-8 py-12 md:flex-row md:items-start md:justify-between">
-          <div className="flex max-w-sm flex-col gap-4">
-            <div className="flex items-center gap-3">
-              <UniversityLogo className="h-12 w-12" />
-              <div>
-                <span className="block text-lg font-bold leading-tight text-[#f9f9ff]">İstanbul Üniversitesi-Cerrahpaşa</span>
-                <span className="text-xs uppercase tracking-[0.2em] text-[#d4e3ff]/60">Endüstri Mühendisliği</span>
-              </div>
-            </div>
-            <p className="text-sm leading-relaxed text-[#d4e3ff]/60">
-              Endüstri Mühendisliği öğrencileri için staj ve yetenek programı ilanlarını tek bir platformda toplayan akademik kaynak.
-            </p>
-          </div>
-          <div className="grid grid-cols-2 gap-12">
-            <div className="flex flex-col gap-3">
-              <h4 className="text-sm font-bold uppercase tracking-widest text-[#fdce61]">Platform</h4>
-              <Link href="/listings" className="text-sm text-[#d4e3ff]/60 transition-colors hover:text-[#f9f9ff]">İlanlar</Link>
-              <Link href="/dashboard" className="text-sm text-[#d4e3ff]/60 transition-colors hover:text-[#f9f9ff]">Başvurular</Link>
-              <Link href="/profile" className="text-sm text-[#d4e3ff]/60 transition-colors hover:text-[#f9f9ff]">Profil</Link>
-            </div>
-            <div className="flex flex-col gap-3">
-              <h4 className="text-sm font-bold uppercase tracking-widest text-[#fdce61]">İletişim</h4>
-              <span className="text-sm text-[#d4e3ff]/60">info@iuc.edu.tr</span>
-              <span className="text-sm text-[#d4e3ff]/60">+90 (212) 473 70 70</span>
-              <span className="text-xs text-[#d4e3ff]/60">Avcılar Yerleşkesi, 34320 İstanbul</span>
-            </div>
-          </div>
-        </div>
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 border-t border-[#c4c6ce]/10 px-8 py-6 md:flex-row">
-          <span className="text-[10px] uppercase tracking-[0.1em] text-[#d4e3ff]/40">© 2025 İstanbul Üniversitesi-Cerrahpaşa. Tüm hakları saklıdır.</span>
-        </div>
-      </footer>
-
       {/* ── Mobile Bottom Bar ── */}
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#d8ad43]/20 bg-[#00132b]/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 backdrop-blur lg:hidden">
         <a
