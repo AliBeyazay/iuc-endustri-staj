@@ -93,18 +93,29 @@ def run_single_spider(self, spider_name: str):
 
 @shared_task(name='apps.scraper.tasks.deactivate_expired_listings')
 def deactivate_expired_listings():
-    """Set is_active=False and deadline_status='expired' for past deadlines."""
-    from datetime import date
+    """Set is_active=False and deadline_status='expired' for past deadlines
+    and for old listings with unknown deadlines (>90 days)."""
+    from datetime import date, timedelta
     from apps.listings.models import Listing
 
     today = date.today()
-    count = Listing.objects.filter(
+
+    # 1. Deactivate listings with known expired deadlines
+    expired_count = Listing.objects.filter(
         application_deadline__lt=today,
         is_active=True,
     ).update(is_active=False, deadline_status='expired')
 
-    logger.info(f'DEACTIVATED {count} expired listings (today={today})')
-    return {'deactivated': count}
+    # 2. Deactivate old listings with unknown/missing deadlines (>90 days old)
+    cutoff = today - timedelta(days=90)
+    stale_count = Listing.objects.filter(
+        application_deadline__isnull=True,
+        is_active=True,
+        created_at__lt=cutoff,
+    ).update(is_active=False, deadline_status='expired')
+
+    logger.info(f'DEACTIVATED {expired_count} expired + {stale_count} stale listings (today={today})')
+    return {'deactivated_expired': expired_count, 'deactivated_stale': stale_count}
 
 
 @shared_task(name='apps.scraper.tasks.mark_upcoming_programs')

@@ -499,7 +499,13 @@ class KariyerSpider(BaseEMSpider):
         else:
             description = text[:3000]
 
-        deadline = self.parse_deadline(page_title.rsplit("-", 1)[-1].strip())
+        raw_dl = page_title.rsplit("-", 1)[-1].strip()
+        deadline = self.parse_deadline(raw_dl)
+
+        if raw_dl and deadline is None:
+            self.logger.info("KARIYER_SKIPPED_EXPIRED: %s", title)
+            return
+
         location_match = re.search(r"Kaydet Basvur (.+?) \d+ gun once guncellendi", self.normalize_turkish(text))
         location = location_match.group(1).strip().title() if location_match else ""
 
@@ -619,6 +625,10 @@ class LinkedInSpider(BaseEMSpider):
         )
         raw_dl = response.css("span.closing-time::text, span[class*='deadline']::text").get()
         deadline = self.parse_deadline(raw_dl)
+
+        if raw_dl and deadline is None:
+            self.logger.info("LINKEDIN_SKIPPED_EXPIRED: %s", title)
+            return
 
         if not has_listing_keywords(self, title, company, desc):
             self.logger.info("LINKEDIN_SKIPPED_NON_INTERNSHIP: %s", title)
