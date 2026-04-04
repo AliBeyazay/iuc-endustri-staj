@@ -10,20 +10,39 @@ import UniversityLogo from '@/components/UniversityLogo'
 function DetailSkeleton() {
   return (
     <div className="campus-shell min-h-screen pb-24 lg:pb-0">
-      <nav className="campus-nav sticky top-0 z-10 px-4 py-3 sm:px-5">
-        <div className="flex items-center justify-between gap-3">
-          <Link href="/listings" className="flex min-w-0 items-center gap-3">
-            <UniversityLogo className="h-11 w-11 shrink-0 sm:h-12 sm:w-12" />
-            <div className="min-w-0">
-              <span className="campus-brand block text-[11px] leading-tight xs:text-xs sm:text-2xl sm:leading-none whitespace-nowrap">
-                {'İstanbul Üniversitesi-Cerrahpaşa'}
+      <nav className="sticky top-0 z-10 bg-[#1A233A] shadow-md" style={{ borderBottom: '2px solid transparent', borderImage: 'linear-gradient(to right, #B8860B, #F3E5AB, #B8860B) 1' }}>
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-0 sm:px-6" style={{ height: '64px' }}>
+          <Link href="/listings" className="flex items-center gap-4">
+            <UniversityLogo className="h-10 w-10 shrink-0 rounded border border-[#D4AF37] p-0.5" />
+            <div className="hidden sm:block">
+              <span className="text-sm font-semibold uppercase tracking-wide text-[#D4AF37]">
+                İSTANBUL ÜNİVERSİTESİ-CERRAHPAŞA
               </span>
-              <p className="text-[7px] uppercase tracking-[0.12em] text-[#f4e3b3]/80 xs:text-[8px] sm:text-[10px] sm:tracking-[0.28em] whitespace-nowrap">
-                {'Endüstri Mühendisliği Staj Platformu'}
+              <p className="text-xs tracking-wider text-gray-300">
+                ENDÜSTRİ MÜHENDİSLİĞİ STAJ PLATFORMU
               </p>
             </div>
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-8">
+            <div className="hidden items-center gap-8 sm:flex">
+              {[
+                { label: 'İlanlar', href: '/listings' },
+                { label: 'Başvurular', href: '/dashboard' },
+                { label: 'Profil', href: '/profile' },
+              ].map((nav) => (
+                <Link
+                  key={nav.href}
+                  href={nav.href}
+                  className={`text-sm font-medium transition-colors ${
+                    nav.href === '/listings'
+                      ? 'border-b-2 border-[#D4AF37] pb-1 text-white'
+                      : 'text-gray-300 hover:text-white'
+                  }`}
+                >
+                  {nav.label}
+                </Link>
+              ))}
+            </div>
             <ProfileDropdown />
           </div>
         </div>
