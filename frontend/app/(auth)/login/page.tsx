@@ -241,7 +241,7 @@ function LoginPageContent() {
             disabled={isResendingCode}
             className="mt-3 text-[11px] font-medium text-[#051c38] hover:underline disabled:opacity-50"
           >
-            {isResendingCode ? 'Kod olusturuluyor...' : 'Kodu yeniden olustur'}
+            {isResendingCode ? 'Kod oluşturuluyor...' : 'Kodu yeniden oluştur'}
           </button>
         </div>
       ) : null}

@@ -129,8 +129,8 @@ function BookmarkCard({
 }
 
 const APPLICATION_STATUSES: Array<{ key: ApplicationStatus; label: string }> = [
-  { key: 'basvurdum', label: 'Basvurdum' },
-  { key: 'mulakat', label: 'Mulakat' },
+  { key: 'basvurdum', label: 'Başvurdum' },
+  { key: 'mulakat', label: 'Mülakat' },
   { key: 'kabul', label: 'Kabul' },
   { key: 'ret', label: 'Ret' },
 ]
