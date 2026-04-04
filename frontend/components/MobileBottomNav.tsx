@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Menu, SlidersHorizontal, X } from 'lucide-react'
 
 interface Props {
-  current: 'listings' | 'saved' | 'profile' | 'detail'
+  current: 'listings' | 'profile' | 'detail'
   onFilterToggle?: () => void
   filterActive?: boolean
 }
@@ -48,8 +48,6 @@ export default function MobileBottomNav({ current, onFilterToggle, filterActive 
 
   const currentLabel = useMemo(() => {
     switch (current) {
-      case 'saved':
-        return 'Kaydedilenler'
       case 'profile':
         return 'Profil'
       case 'detail':
@@ -125,8 +123,8 @@ export default function MobileBottomNav({ current, onFilterToggle, filterActive 
               {onFilterToggle ? (
                 <Item label="Filtre" active={filterActive} onClick={handleFilterClick} />
               ) : null}
-              <Item label="Kaydedilenler" href="/dashboard#saved" active={current === 'saved'} />
-              <Item label="Profil" href="/dashboard#profile" active={current === 'profile'} />
+              <Item label="Başvurular" href="/dashboard" />
+              <Item label="Profil" href="/profile" active={current === 'profile'} />
             </div>
           </div>
         ) : null}
