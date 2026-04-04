@@ -66,13 +66,19 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
     @classmethod
     def _get_negative_keywords(cls):
         cache_key = 'negative_keywords_list'
-        keywords = cache.get(cache_key)
+        try:
+            keywords = cache.get(cache_key)
+        except Exception:
+            keywords = None
         if keywords is None:
             try:
                 keywords = list(NegativeKeyword.objects.values_list('keyword', flat=True))
             except Exception:
                 keywords = []
-            cache.set(cache_key, keywords, timeout=cls.NEGATIVE_KEYWORDS_CACHE_TTL)
+            try:
+                cache.set(cache_key, keywords, timeout=cls.NEGATIVE_KEYWORDS_CACHE_TTL)
+            except Exception:
+                pass
         return keywords
 
     def get_serializer_class(self):
