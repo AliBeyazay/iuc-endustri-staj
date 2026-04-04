@@ -8,7 +8,6 @@ import { useSession } from 'next-auth/react'
 import { BriefcaseBusiness, Clock3, MapPin, History } from 'lucide-react'
 import UniversityLogo from '@/components/UniversityLogo'
 import ProfileDropdown from '@/components/ProfileDropdown'
-import ThemeToggle from '@/components/ThemeToggle'
 import { useRecentlyViewed } from '@/hooks'
 
 type RawListing = {
@@ -1139,7 +1138,6 @@ export default function ListingsPage() {
               </Link>
             ))}
           </div>
-          <ThemeToggle />
           <ProfileDropdown />
         </div>
       </nav>

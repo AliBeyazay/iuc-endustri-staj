@@ -23,7 +23,6 @@ import {
 } from '@/types'
 import { getAvatarColor, getDeadlineDisplay, getInitials, FOCUS_AREA_LABELS, FOCUS_AREA_COLORS, PLATFORM_LABELS, timeAgoTurkish } from '@/lib/helpers'
 import ProfileDropdown from '@/components/ProfileDropdown'
-import ThemeToggle from '@/components/ThemeToggle'
 import UniversityLogo from '@/components/UniversityLogo'
 function BookmarkCard({
   listing,
@@ -258,7 +257,6 @@ export default function DashboardPage() {
               </Link>
             ))}
           </div>
-          <ThemeToggle />
           <ProfileDropdown />
         </div>
       </nav>

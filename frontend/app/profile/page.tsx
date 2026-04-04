@@ -146,7 +146,6 @@ export default function ProfilePage() {
               </Link>
             ))}
           </div>
-          <ThemeToggle />
           <ProfileDropdown />
         </div>
       </nav>
@@ -256,6 +255,17 @@ export default function ProfilePage() {
               ) : null}
             </>
           ) : null}
+        </div>
+
+        {/* ── Görünüm ── */}
+        <div className="campus-card mt-4 rounded-2xl p-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-base font-bold text-[#132843] dark:text-[#e7edf4]">Gece Modu</h2>
+              <p className="mt-0.5 text-xs text-gray-400 dark:text-[#e7edf4]/40">Koyu temayı aç veya kapat</p>
+            </div>
+            <ThemeToggle />
+          </div>
         </div>
 
         {/* ── Bildirim Ayarları ── */}

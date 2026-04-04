@@ -20,7 +20,6 @@ import {
 import { createReview, fetchSimilarListings, SimilarListing } from '@/lib/api'
 import { useBookmarks, useRecentlyViewed, useReviews } from '@/hooks'
 import ProfileDropdown from '@/components/ProfileDropdown'
-import ThemeToggle from '@/components/ThemeToggle'
 import UniversityLogo from '@/components/UniversityLogo'
 
 const INTERNSHIP_LABEL: Record<string, string> = {
@@ -222,7 +221,6 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
           </Link>
 
           <div className="flex items-center gap-2">
-            <ThemeToggle />
             <ProfileDropdown />
           </div>
         </div>

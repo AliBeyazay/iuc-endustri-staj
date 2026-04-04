@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { fetchListingById } from '@/lib/api'
 import ListingDetailClient from './ListingDetailClient'
 import ProfileDropdown from '@/components/ProfileDropdown'
-import ThemeToggle from '@/components/ThemeToggle'
 import UniversityLogo from '@/components/UniversityLogo'
 
 function DetailSkeleton() {
@@ -25,7 +24,6 @@ function DetailSkeleton() {
             </div>
           </Link>
           <div className="flex items-center gap-2">
-            <ThemeToggle />
             <ProfileDropdown />
           </div>
         </div>
