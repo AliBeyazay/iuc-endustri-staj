@@ -107,17 +107,6 @@ export default function ProfileDropdown() {
               </Link>
 
               <Link
-                href="/paylasimlar"
-                onClick={() => setOpen(false)}
-                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-[#f7ecd0] transition-all duration-150 hover:bg-white/10 hover:pl-4"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#d8ad43]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M7 8h10M7 12h6m-6 4h10M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                Paylasimlar
-              </Link>
-
-              <Link
                 href="/saved"
                 onClick={() => setOpen(false)}
                 className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-[#f7ecd0] transition-all duration-150 hover:bg-white/10 hover:pl-4"
