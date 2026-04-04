@@ -320,570 +320,295 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="campus-shell min-h-screen">
-      <nav className="campus-nav sticky top-0 z-10 flex items-center justify-between gap-3 px-4 py-3 sm:px-5">
-        <Link href="/listings" className="relative z-10 flex min-w-0 items-center gap-3">
-          <UniversityLogo className="h-11 w-11 shrink-0 sm:h-12 sm:w-12" />
-          <div className="min-w-0">
-            <span className="campus-brand block text-[11px] leading-tight xs:text-xs sm:text-2xl sm:leading-none whitespace-nowrap">
-              {'\u0130stanbul \u00dcniversitesi-Cerrahpa\u015fa'}
+    <div className="flex min-h-screen flex-col bg-[#f9f9ff]">
+      {/* ── Navbar ── */}
+      <nav className="sticky top-0 z-30 flex items-center justify-between bg-[#132843] px-4 py-3 shadow-md sm:px-6">
+        <Link href="/listings" className="flex items-center gap-3">
+          <UniversityLogo className="h-10 w-10 shrink-0 sm:h-11 sm:w-11" />
+          <div className="hidden sm:block">
+            <span className="campus-brand block text-sm leading-tight sm:text-lg">
+              {'İstanbul Üniversitesi-Cerrahpaşa'}
             </span>
-            <p className="text-[7px] uppercase tracking-[0.12em] text-[#f4e3b3]/80 xs:text-[8px] sm:text-[10px] sm:tracking-[0.28em] whitespace-nowrap">
-              {'End\u00fcstri M\u00fchendisli\u011fi Staj Platformu'}
+            <p className="text-[8px] uppercase tracking-[0.15em] text-[#f4e3b3]/80 sm:text-[10px]">
+              {'Endüstri Mühendisliği Staj Platformu'}
             </p>
           </div>
         </Link>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
+          <div className="hidden items-center gap-1 sm:flex">
+            {[
+              { label: 'Dashboard', href: '/dashboard' },
+              { label: 'İlanlar', href: '/listings' },
+              { label: 'Başvurularım', href: '/dashboard#applications' },
+            ].map((nav) => (
+              <Link
+                key={nav.href}
+                href={nav.href}
+                className="rounded-lg px-3 py-1.5 text-xs font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+              >
+                {nav.label}
+              </Link>
+            ))}
+          </div>
           <ThemeToggle />
           <ProfileDropdown />
         </div>
       </nav>
 
-      <div className="mx-auto grid max-w-5xl grid-cols-1 gap-4 px-3 py-4 sm:px-4 sm:py-5 lg:grid-cols-[1fr_260px] lg:gap-5">
-        <div className="space-y-4">
-          <div id="saved" className="campus-card scroll-mt-24 rounded-2xl p-4">
-            <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="min-w-0">
-                <h1 className="text-base font-medium text-gray-900 dark:text-[#e7edf4]">Hoş geldin, {firstName}</h1>
-                <p className="mt-0.5 text-xs text-gray-400 dark:text-[#e7edf4]/40">
-                  {new Date().toLocaleDateString('tr-TR', {
-                    weekday: 'long',
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric',
-                  })}
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-1">
-                {profile?.is_verified ? (
-                  <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[9px] font-medium text-blue-800">
-                    Doğrulandı
-                  </span>
-                ) : null}
-                {profile?.department_year ? (
-                  <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[9px] font-medium text-gray-600">
-                    {profile.department_year}. Sınıf
-                  </span>
-                ) : null}
-              </div>
-            </div>
+      {/* ── Main Content ── */}
+      <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6">
 
-            <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
-              {[
-                {
-                  label: 'Aktif İlan',
-                  value: stats?.total_active_listings ?? '-',
-                  cls: 'text-[#1E3A5F]',
-                },
-                {
-                  label: 'Kayıtlı İlan',
-                  value: stats?.bookmarks_count ?? '-',
-                  cls: 'text-[#1E3A5F]',
-                },
-                {
-                  label: 'Bugün Yeni',
-                  value: stats?.new_listings_today ?? '-',
-                  cls: stats?.new_listings_today ? 'text-green-700' : 'text-[#1E3A5F]',
-                },
-                {
-                  label: 'Süresi Dolacak',
-                  value: stats?.listings_expiring_soon ?? '-',
-                  cls: stats?.listings_expiring_soon ? 'text-red-600' : 'text-[#1E3A5F]',
-                },
-              ].map(({ label, value, cls }) => (
-                <div key={label} className="rounded-lg bg-gray-50 p-2.5 text-center transition-all duration-200 hover:-translate-y-0.5 hover:shadow-campus-sm dark:bg-white/5">
-                  <p className={`text-2xl font-semibold ${cls} dark:text-[#d8ad43]`}>{value}</p>
-                  <p className="mt-0.5 text-[9px] text-gray-400 dark:text-[#e7edf4]/40">{label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div id="profile" className="campus-card scroll-mt-24 rounded-2xl p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <div>
-                <h2 className="text-sm font-medium text-gray-800 dark:text-[#e7edf4]">
-                  Kaydedilen İlanlar
-                  {bookmarks.length > 0 ? (
-                    <span className="ml-1.5 text-xs text-gray-400">({bookmarks.length})</span>
-                  ) : null}
-                </h2>
-                {bookmarks.length > 0 && (() => {
-                  const urgentCount = bookmarks.filter(
-                    (b) => b.deadline_status === 'urgent'
-                  ).length
-                  return urgentCount > 0 ? (
-                    <p className="mt-0.5 text-[10px] text-red-500">
-                      {urgentCount} ilanın son başvuru tarihi yaklaşıyor
-                    </p>
-                  ) : null
-                })()}
-              </div>
-              <button
-                onClick={() => router.push('/listings')}
-                className="rounded-full border border-[#1E3A5F]/20 px-3 py-1 text-[10px] font-medium text-[#1E3A5F] hover:bg-blue-50 dark:border-[#d8ad43]/25 dark:text-[#d8ad43] dark:hover:bg-[#d8ad43]/10"
-              >
-                + İlan Keşfet
-              </button>
-            </div>
-
-            {!bookmarks || bookmarks.length === 0 ? (
-              <div className="py-10 text-center">
-                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-50 dark:bg-white/5">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                  </svg>
-                </div>
-                <p className="mb-1 text-sm font-medium text-gray-500 dark:text-[#e7edf4]/60">Henüz kaydettiğin ilan yok</p>
-                <p className="mb-3 text-xs text-gray-400 dark:text-[#e7edf4]/40">
-                  İlanlara göz at ve beğendiklerini kaydet
-                </p>
-                <button
-                  onClick={() => router.push('/listings')}
-                  className="rounded-lg bg-[#1E3A5F] px-4 py-2 text-xs text-white hover:bg-[#15304f] dark:bg-[#d8ad43] dark:text-[#10223b] dark:hover:bg-[#e4c05c]"
-                >
-                  İlanlara Göz At
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {visibleBookmarks.map((bookmark) => (
-                  <BookmarkCard
-                    key={bookmark.id}
-                    listing={bookmark}
-                    onRemove={() => handleRemove(bookmark.id)}
-                    onTrack={() => handleTrackApplication(bookmark.id)}
-                    isTracked={trackedListingIds.has(bookmark.id)}
-                  />
-                ))}
-                {!showAll && bookmarks.length > 5 ? (
-                  <button
-                    onClick={() => setShowAll(true)}
-                    className="w-full py-1.5 text-xs text-gray-400 hover:text-gray-600 dark:text-[#e7edf4]/40 dark:hover:text-[#e7edf4]/70"
-                  >
-                    {bookmarks.length - 5} ilan daha göster
-                  </button>
-                ) : null}
-              </div>
-            )}
-          </div>
-
-          <div id="applications" className="campus-card scroll-mt-24 rounded-2xl p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-sm font-medium text-gray-800 dark:text-[#e7edf4]">Başvuru Takip Panosu</h2>
-              <span className="text-[10px] text-gray-400 dark:text-[#e7edf4]/45">
-                {applications.length} kayit
-              </span>
-            </div>
-
-            {applications.length === 0 ? (
-              <p className="rounded-lg bg-gray-50 px-3 py-2 text-xs text-gray-500 dark:bg-white/5 dark:text-[#e7edf4]/55">
-                Henüz takipte bir başvuru yok. Kaydedilen ilanlardan "Takibe Al" ile ekleyebilirsin.
-              </p>
-            ) : (
-              <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-4">
-                {APPLICATION_STATUSES.map((column) => {
-                  const columnItems = applications.filter((item) => item.status === column.key)
-                  return (
-                    <div key={column.key} className={`rounded-xl border border-gray-100 bg-gray-50/70 p-2.5 dark:border-[#d8ad43]/12 dark:bg-white/5 border-t-[3px] ${
-                      column.key === 'basvurdum' ? 'border-t-blue-400' :
-                      column.key === 'mulakat' ? 'border-t-yellow-400' :
-                      column.key === 'kabul' ? 'border-t-green-400' :
-                      'border-t-red-400'
-                    }`}>
-                      <div className="mb-2 flex items-center justify-between">
-                        <p className="text-xs font-semibold text-[#1E3A5F] dark:text-[#d8ad43]">{column.label}</p>
-                        <span className="rounded-full bg-white px-1.5 py-0.5 text-[10px] text-gray-500 dark:bg-[#0e1e33] dark:text-[#e7edf4]/60">
-                          {columnItems.length}
-                        </span>
-                      </div>
-
-                      <div className="space-y-2">
-                        {columnItems.length === 0 ? (
-                          <p className="rounded-md bg-white px-2 py-2 text-[11px] text-gray-400 dark:bg-[#0e1e33] dark:text-[#e7edf4]/35">
-                            Bu kolonda kayit yok.
-                          </p>
-                        ) : (
-                          columnItems.map((item) => (
-                            <div key={item.id} className="rounded-lg bg-white p-2 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-campus-sm dark:bg-[#0e1e33]">
-                              <button
-                                type="button"
-                                onClick={() => router.push(`/listings/${item.listing.id}`)}
-                                className="w-full text-left"
-                              >
-                                <p className="line-clamp-2 text-xs font-medium text-gray-800 dark:text-[#e7edf4]">
-                                  {item.listing.title}
-                                </p>
-                                <p className="mt-0.5 text-[10px] text-gray-500 dark:text-[#e7edf4]/45">
-                                  {item.listing.company_name}
-                                </p>
-                              </button>
-
-                              <div className="mt-2">
-                                <select
-                                  value={item.status}
-                                  onChange={(event) =>
-                                    handleUpdateApplication(item.id, {
-                                      status: event.target.value as ApplicationStatus,
-                                    })
-                                  }
-                                  className="h-7 w-full rounded border border-gray-200 bg-white px-2 text-[11px] focus:border-[#1E3A5F] focus:outline-none dark:border-[#d8ad43]/18 dark:bg-[#132843] dark:text-[#e7edf4]"
-                                >
-                                  {APPLICATION_STATUSES.map((status) => (
-                                    <option key={status.key} value={status.key}>
-                                      {status.label}
-                                    </option>
-                                  ))}
-                                </select>
-                              </div>
-
-                              <textarea
-                                value={item.notes ?? ''}
-                                onChange={(event) =>
-                                  handleUpdateApplication(item.id, { notes: event.target.value })
-                                }
-                                placeholder="Not ekle..."
-                                rows={2}
-                                className="mt-2 w-full rounded border border-gray-200 bg-white px-2 py-1.5 text-[11px] focus:border-[#1E3A5F] focus:outline-none dark:border-[#d8ad43]/18 dark:bg-[#132843] dark:text-[#e7edf4] dark:placeholder:text-[#e7edf4]/35"
-                              />
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
+        {/* ── Welcome + Stats ── */}
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-[#132843]">
+            Hoş geldin, <span className="text-[#d8ad43]">{firstName}</span>
+          </h1>
+          <p className="mt-1 text-sm text-gray-500">
+            {new Date().toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+          </p>
         </div>
 
-        <div className="space-y-4">
-          <div className="campus-card rounded-2xl p-4">
-            <div className="mb-4 flex items-center gap-3">
-              <div
-                className={`flex h-12 w-12 items-center justify-center rounded-full text-sm font-semibold ring-2 ring-[#d8ad43]/15 transition-all duration-200 hover:ring-[#d8ad43]/35 ${
-                  profile ? getAvatarColor(profile.full_name) : 'bg-gray-100 text-gray-400'
-                }`}
-              >
-                {profile ? getInitials(profile.full_name) : '??'}
-              </div>
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-gray-800 dark:text-[#e7edf4]">{profile?.full_name ?? '-'}</p>
-                <p className="truncate text-[11px] text-gray-400 dark:text-[#e7edf4]/40">{profile?.iuc_email ?? '-'}</p>
-              </div>
-            </div>
-
-            {profile ? (
-              <>
-                <div className="mb-3 space-y-2.5">
-                  <div className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 dark:bg-white/5">
-                    <span className="text-[11px] text-gray-500 dark:text-[#e7edf4]/50">Öğrenci No</span>
-                    <span className="text-[11px] font-medium text-gray-800 dark:text-[#e7edf4]">
-                      {profile.student_no ?? <span className="text-gray-300">Belirtilmedi</span>}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 dark:bg-white/5">
-                    <span className="text-[11px] text-gray-500 dark:text-[#e7edf4]/50">Sınıf</span>
-                    <span className="text-[11px] font-medium text-gray-800 dark:text-[#e7edf4]">
-                      {profile.department_year
-                        ? `${profile.department_year}. Sınıf`
-                        : <span className="text-gray-300">Belirtilmedi</span>}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 dark:bg-white/5">
-                    <span className="text-[11px] text-gray-500 dark:text-[#e7edf4]/50">LinkedIn</span>
-                    {profile.linkedin_url ? (
-                      <a
-                        href={profile.linkedin_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="truncate text-[11px] font-medium text-[#1E3A5F] hover:underline"
-                      >
-                        Profili Gör
-                      </a>
-                    ) : (
-                      <span className="text-[11px] text-gray-300">Belirtilmedi</span>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 dark:bg-white/5">
-                    <span className="text-[11px] text-gray-500 dark:text-[#e7edf4]/50">CV</span>
-                    {profile.cv_url ? (
-                      <a
-                        href={profile.cv_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-[11px] font-medium text-[#1E3A5F] hover:underline"
-                      >
-                        Görüntüle
-                      </a>
-                    ) : (
-                      <span className="text-[11px] text-gray-300">Yüklenmedi</span>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 dark:bg-white/5">
-                    <span className="text-[11px] text-gray-500 dark:text-[#e7edf4]/50">Durum</span>
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-[9px] font-medium ${
-                        profile.is_verified
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-yellow-100 text-yellow-700'
-                      }`}
-                    >
-                      {profile.is_verified ? 'Doğrulandı' : 'Doğrulanmadı'}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="mb-1 flex justify-between text-xs">
-                  <span className="text-gray-500 dark:text-[#e7edf4]/50">Profil tamamlanma</span>
-                  <span className="font-medium text-[#1E3A5F] dark:text-[#d8ad43]">%{profile.completion_percentage}</span>
-                </div>
-                <div className="mb-3 h-1.5 rounded-full bg-gray-100 dark:bg-white/10">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-[#1E3A5F] to-[#2a5585] transition-all dark:from-[#d8ad43] dark:to-[#e4c05c]"
-                    style={{ width: `${profile.completion_percentage}%` }}
-                  />
-                </div>
-              </>
-            ) : null}
-
-            <button
-              onClick={() => setEditOpen(!editOpen)}
-              className="mt-3 w-full rounded-lg border border-gray-200 py-1.5 text-xs text-gray-500 hover:bg-gray-50 dark:border-[#d8ad43]/18 dark:text-[#e7edf4]/50 dark:hover:bg-white/5"
+        <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {[
+            { label: 'AKTİF İLAN', value: stats?.total_active_listings ?? '-', accent: false },
+            { label: 'KAYITLI İLAN', value: stats?.bookmarks_count ?? '-', accent: false },
+            { label: 'BUGÜN YENİ', value: stats?.new_listings_today ?? '-', accent: false },
+            { label: 'SÜRESİ DOLACAK', value: stats?.listings_expiring_soon ?? '-', accent: true },
+          ].map(({ label, value, accent }) => (
+            <div
+              key={label}
+              className={`rounded-xl border p-5 text-center transition-all hover:shadow-sm ${
+                accent ? 'border-red-200 bg-red-50' : 'border-gray-200 bg-white'
+              }`}
             >
-              {editOpen ? 'Kapat' : 'Profili Düzenle'}
-            </button>
-            {editOpen && profile ? (
-              <ProfileEdit
-                profile={profile}
-                onSaved={() => {
-                  mutateProfile()
-                  setEditOpen(false)
-                }}
-              />
-            ) : null}
-          </div>
-
-          <div className="campus-card rounded-2xl p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-sm font-medium text-gray-800 dark:text-[#e7edf4]">Bugün Yeni</h3>
-              <button
-                onClick={() => router.push('/listings?ordering=-created_at')}
-                className="text-xs text-[#1E3A5F] hover:underline dark:text-[#d8ad43]"
-              >
-                Tümü
-              </button>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">{label}</p>
+              <p className={`mt-1 text-3xl font-bold ${accent ? 'text-red-600' : 'text-[#132843]'}`}>{value}</p>
             </div>
-            <p className="text-xs text-gray-400 dark:text-[#e7edf4]/40">
-              Bugün {stats?.new_listings_today ?? 0} yeni ilan eklendi.{' '}
-              <button
-                onClick={() => router.push('/listings')}
-                className="text-[#1E3A5F] hover:underline"
-              >
-                Göz at
-              </button>
+          ))}
+        </div>
+
+        {/* ── Başvuru Takip Panosu ── */}
+        <div id="applications" className="mb-8">
+          <h2 className="mb-4 text-lg font-bold text-[#132843]">Başvuru Takip Panosu</h2>
+
+          {applications.length === 0 ? (
+            <p className="rounded-xl border border-gray-200 bg-white px-4 py-6 text-center text-sm text-gray-500">
+              Henüz takipte bir başvuru yok. Kaydedilen ilanlardan &quot;Takibe Al&quot; ile ekleyebilirsin.
             </p>
-          </div>
-
-          {/* Bildirim Ayarları */}
-          <div className="campus-card rounded-2xl p-4">
-            <h3 className="text-sm font-medium text-gray-800 dark:text-[#e7edf4]">Sistem İzleme</h3>
-            <div className="mt-3 grid grid-cols-1 gap-2">
-              <button
-                onClick={() => router.push('/dashboard/scraper-health')}
-                className="rounded-lg border border-[#1E3A5F]/20 px-3 py-2 text-left text-xs font-medium text-[#1E3A5F] transition-all duration-200 hover:bg-[#1E3A5F]/5 hover:pl-4 dark:border-[#d8ad43]/30 dark:text-[#d8ad43]"
-              >
-                Scraper Health Dashboard
-              </button>
-              <button
-                onClick={() => router.push('/dashboard/encoding-quality')}
-                className="rounded-lg border border-[#1E3A5F]/20 px-3 py-2 text-left text-xs font-medium text-[#1E3A5F] transition-all duration-200 hover:bg-[#1E3A5F]/5 hover:pl-4 dark:border-[#d8ad43]/30 dark:text-[#d8ad43]"
-              >
-                Encoding Kalitesi Monitoring
-              </button>
-            </div>
-          </div>
-
-          <div className="campus-card rounded-2xl p-4">
-            <h3 className="text-sm font-medium text-gray-800 dark:text-[#e7edf4]">Sistem İzleme</h3>
-            <div className="mt-3 grid grid-cols-1 gap-2">
-              <button
-                onClick={() => router.push('/dashboard/admin')}
-                className="rounded-lg border border-[#1E3A5F]/20 px-3 py-2 text-left text-xs font-medium text-[#1E3A5F] transition-all duration-200 hover:bg-[#1E3A5F]/5 hover:pl-4 dark:border-[#d8ad43]/30 dark:text-[#d8ad43]"
-              >
-                Admin Dashboard (Moderasyon)
-              </button>
-              <button
-                onClick={() => router.push('/dashboard/scraper-health')}
-                className="rounded-lg border border-[#1E3A5F]/20 px-3 py-2 text-left text-xs font-medium text-[#1E3A5F] transition-all duration-200 hover:bg-[#1E3A5F]/5 hover:pl-4 dark:border-[#d8ad43]/30 dark:text-[#d8ad43]"
-              >
-                Scraper Health Dashboard
-              </button>
-              <button
-                onClick={() => router.push('/dashboard/encoding-quality')}
-                className="rounded-lg border border-[#1E3A5F]/20 px-3 py-2 text-left text-xs font-medium text-[#1E3A5F] transition-all duration-200 hover:bg-[#1E3A5F]/5 hover:pl-4 dark:border-[#d8ad43]/30 dark:text-[#d8ad43]"
-              >
-                Encoding Kalitesi Monitoring
-              </button>
-            </div>
-          </div>
-
-          <div id="notifications" className="campus-card scroll-mt-24 rounded-2xl p-4">
-            <button
-              onClick={() => setNotifOpen(!notifOpen)}
-              className="flex w-full items-center justify-between"
-            >
-              <h3 className="text-sm font-medium text-gray-800 dark:text-[#e7edf4]">Bildirim Ayarları</h3>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className={`h-4 w-4 text-gray-400 transition-transform ${notifOpen ? 'rotate-180' : ''}`}
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            <p className="mt-1 text-[10px] text-gray-400 dark:text-[#e7edf4]/40">
-              Haftalık e-posta ile yeni ilanlardan haberdar ol
-            </p>
-
-            {notifOpen && (
-              <div className="mt-3 space-y-3">
-                {/* Enabled toggle */}
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-600 dark:text-[#e7edf4]/70">E-posta bildirimleri</span>
-                  <button
-                    onClick={async () => {
-                      const current = notifPrefs ?? { enabled: false, sectors: [], locations: [] }
-                      const updated = { ...current, enabled: !current.enabled }
-                      await updateNotificationPreferences(updated)
-                      mutateNotifPrefs(updated, false)
-                    }}
-                    className={`relative flex h-5 w-9 shrink-0 items-center overflow-hidden rounded-full p-0.5 transition-colors ${
-                      notifPrefs?.enabled
-                        ? 'bg-[#1E3A5F] dark:bg-[#d8ad43]'
-                        : 'bg-gray-200 dark:bg-white/10'
-                    }`}
-                  >
-                    <span
-                      className={`h-4 w-4 rounded-full bg-white shadow transition-transform ${
-                        notifPrefs?.enabled ? 'translate-x-4' : 'translate-x-0'
-                      }`}
-                    />
-                  </button>
-                </div>
-
-                {/* Sektör tercihleri */}
-                <div>
-                  <p className="mb-1.5 text-[11px] font-medium text-gray-500 dark:text-[#e7edf4]/50">Sektörler</p>
-                  <div className="space-y-1">
-                    {Object.entries(FOCUS_AREA_LABELS).map(([key, label]) => {
-                      const selected = notifPrefs?.sectors?.includes(key as EMFocusArea) ?? false
-                      return (
-                        <button
-                          key={key}
-                          onClick={async () => {
-                            const current = notifPrefs ?? { enabled: false, sectors: [], locations: [] }
-                            const sectors = selected
-                              ? current.sectors.filter((s) => s !== key)
-                              : [...current.sectors, key as EMFocusArea]
-                            const updated = { ...current, sectors }
-                            await updateNotificationPreferences(updated)
-                            mutateNotifPrefs(updated, false)
-                          }}
-                          className={`w-full rounded-lg px-2 py-1 text-left text-[10px] transition-colors ${
-                            selected
-                              ? 'bg-[#1E3A5F] text-white dark:bg-[#d8ad43] dark:text-[#10223b]'
-                              : 'bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-white/5 dark:text-[#e7edf4]/50 dark:hover:bg-white/10'
-                          }`}
-                        >
-                          {label}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-
-                {false && (
-                <div>
-                  <p className="mb-1.5 text-[11px] font-medium text-gray-500 dark:text-[#e7edf4]/50">Konumlar</p>
-                  {(notifPrefs?.locations?.length ?? 0) > 0 && (
-                    <div className="mb-1.5 flex flex-wrap gap-1">
-                      {notifPrefs!.locations.map((loc) => (
-                        <span
-                          key={loc}
-                          className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[9px] text-gray-600 dark:bg-white/5 dark:text-[#e7edf4]/60"
-                        >
-                          {loc}
-                          <button
-                            onClick={async () => {
-                              const current = notifPrefs!
-                              const updated = {
-                                ...current,
-                                locations: current.locations.filter((l) => l !== loc),
-                              }
-                              await updateNotificationPreferences(updated)
-                              mutateNotifPrefs(updated, false)
-                            }}
-                            className="hover:text-red-500"
-                          >
-                            ×
-                          </button>
-                        </span>
-                      ))}
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {APPLICATION_STATUSES.map((column) => {
+                const columnItems = applications.filter((item) => item.status === column.key)
+                const borderColor =
+                  column.key === 'basvurdum' ? 'border-t-blue-500' :
+                  column.key === 'mulakat' ? 'border-t-yellow-500' :
+                  column.key === 'kabul' ? 'border-t-green-500' :
+                  'border-t-red-500'
+                const badgeColor =
+                  column.key === 'basvurdum' ? 'bg-blue-100 text-blue-700' :
+                  column.key === 'mulakat' ? 'bg-yellow-100 text-yellow-700' :
+                  column.key === 'kabul' ? 'bg-green-100 text-green-700' :
+                  'bg-red-100 text-red-700'
+                return (
+                  <div key={column.key} className={`rounded-xl border border-gray-200 border-t-[3px] bg-white p-3 ${borderColor}`}>
+                    <div className="mb-3 flex items-center justify-between">
+                      <p className="text-xs font-bold uppercase tracking-wider text-[#132843]">{column.label}</p>
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${badgeColor}`}>
+                        {columnItems.length}
+                      </span>
                     </div>
-                  )}
-                  <div className="flex gap-1">
-                    <input
-                      value={locationInput}
-                      onChange={(e) => setLocationInput(e.target.value)}
-                      onKeyDown={async (e) => {
-                        if (e.key === 'Enter' && locationInput.trim()) {
+                    <div className="space-y-2">
+                      {columnItems.length === 0 ? (
+                        <p className="rounded-lg bg-gray-50 px-3 py-3 text-center text-[11px] text-gray-400">Kayıt yok</p>
+                      ) : (
+                        columnItems.map((item) => (
+                          <div key={item.id} className="rounded-lg border border-gray-100 bg-gray-50 p-2.5">
+                            <button type="button" onClick={() => router.push(`/listings/${item.listing.id}`)} className="w-full text-left">
+                              <p className="line-clamp-2 text-xs font-semibold text-[#132843]">{item.listing.title}</p>
+                              <p className="mt-0.5 text-[10px] text-gray-500">{item.listing.company_name}</p>
+                            </button>
+                            {item.notes && (
+                              <p className="mt-1 rounded bg-yellow-50 px-2 py-1 text-[10px] text-yellow-700">{item.notes}</p>
+                            )}
+                            <select
+                              value={item.status}
+                              onChange={(event) => handleUpdateApplication(item.id, { status: event.target.value as ApplicationStatus })}
+                              className="mt-2 h-7 w-full rounded-lg border border-gray-200 bg-white px-2 text-[11px] text-[#132843] outline-none"
+                            >
+                              {APPLICATION_STATUSES.map((s) => (
+                                <option key={s.key} value={s.key}>{s.label}</option>
+                              ))}
+                            </select>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* ── Kaydedilen İlanlar ── */}
+        <div id="saved" className="mb-8">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-bold text-[#132843]">
+              Kaydedilen İlanlar
+              {bookmarks.length > 0 && <span className="ml-2 text-gray-400">({bookmarks.length})</span>}
+            </h2>
+            <div className="flex items-center gap-3">
+              <button onClick={() => router.push('/listings')} className="rounded-lg bg-[#d8ad43] px-4 py-2 text-xs font-bold text-[#132843] hover:bg-[#c79828]">
+                + İlan Keşfet
+              </button>
+              {bookmarks.length > 0 && (() => {
+                const urgentCount = bookmarks.filter((b) => b.deadline_status === 'urgent').length
+                return urgentCount > 0 ? (
+                  <span className="text-xs text-red-500">{urgentCount} ilanın son başvuru tarihi yaklaşıyor</span>
+                ) : null
+              })()}
+            </div>
+          </div>
+
+          {!bookmarks || bookmarks.length === 0 ? (
+            <div className="rounded-xl border border-gray-200 bg-white py-12 text-center">
+              <p className="mb-2 text-sm font-medium text-gray-500">Henüz kaydettiğin ilan yok</p>
+              <p className="mb-4 text-xs text-gray-400">İlanlara göz at ve beğendiklerini kaydet</p>
+              <button onClick={() => router.push('/listings')} className="rounded-lg bg-[#132843] px-5 py-2.5 text-xs font-bold text-white">
+                İlanlara Göz At
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {visibleBookmarks.map((bookmark) => {
+                const deadline = getDeadlineDisplay(bookmark)
+                const initials = getInitials(bookmark.company_name)
+                const isTracked = trackedListingIds.has(bookmark.id)
+                return (
+                  <div
+                    key={bookmark.id}
+                    onClick={() => router.push(`/listings/${bookmark.id}`)}
+                    className="group flex cursor-pointer items-center gap-4 rounded-xl border border-gray-200 bg-white px-5 py-3 transition-all hover:shadow-sm"
+                  >
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-bold text-[#132843]">
+                      {initials}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-[#132843] group-hover:text-[#1E3A5F]">{bookmark.title}</p>
+                      <p className="truncate text-xs text-gray-500">{bookmark.company_name}</p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-3" onClick={(e) => e.stopPropagation()}>
+                      {deadline.label && (
+                        <span className={`rounded-full px-3 py-1 text-[10px] font-bold ${
+                          deadline.color === 'red' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-700'
+                        }`}>
+                          {deadline.label}
+                        </span>
+                      )}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleRemove(bookmark.id) }}
+                        className="rounded-lg border border-gray-200 px-4 py-1.5 text-xs font-medium text-[#132843] hover:bg-gray-50"
+                      >
+                        İlanı Çıkar
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
+              {!showAll && bookmarks.length > 5 && (
+                <button onClick={() => setShowAll(true)} className="w-full py-2 text-xs text-gray-400 hover:text-gray-600">
+                  {bookmarks.length - 5} ilan daha göster
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* ── Bildirim Ayarları ── */}
+        <div id="notifications" className="mb-8 scroll-mt-24 rounded-xl border border-gray-200 bg-white p-6">
+          <button onClick={() => setNotifOpen(!notifOpen)} className="flex w-full items-center justify-between">
+            <h2 className="text-lg font-bold text-[#132843]">Bildirim Ayarları</h2>
+            <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 text-gray-400 transition-transform ${notifOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <p className="mt-1 text-xs text-gray-400">Haftalık e-posta ile yeni ilanlardan haberdar ol</p>
+
+          {notifOpen && (
+            <div className="mt-5 space-y-5">
+              <div className="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3">
+                <span className="text-sm font-medium text-[#132843]">E-posta bildirimleri</span>
+                <button
+                  onClick={async () => {
+                    const current = notifPrefs ?? { enabled: false, sectors: [], locations: [] }
+                    const updated = { ...current, enabled: !current.enabled }
+                    await updateNotificationPreferences(updated)
+                    mutateNotifPrefs(updated, false)
+                  }}
+                  className={`relative flex h-6 w-11 shrink-0 items-center rounded-full p-0.5 transition-colors ${
+                    notifPrefs?.enabled ? 'bg-[#132843]' : 'bg-gray-300'
+                  }`}
+                >
+                  <span className={`h-5 w-5 rounded-full bg-white shadow transition-transform ${notifPrefs?.enabled ? 'translate-x-5' : 'translate-x-0'}`} />
+                </button>
+              </div>
+
+              <div>
+                <p className="mb-3 text-sm font-bold text-[#132843]">Sektörler</p>
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(FOCUS_AREA_LABELS).map(([key, label]) => {
+                    const selected = notifPrefs?.sectors?.includes(key as EMFocusArea) ?? false
+                    return (
+                      <button
+                        key={key}
+                        onClick={async () => {
                           const current = notifPrefs ?? { enabled: false, sectors: [], locations: [] }
-                          if (!current.locations.includes(locationInput.trim())) {
-                            const updated = {
-                              ...current,
-                              locations: [...current.locations, locationInput.trim()],
-                            }
-                            await updateNotificationPreferences(updated)
-                            mutateNotifPrefs(updated, false)
-                          }
-                          setLocationInput('')
-                        }
-                      }}
-                      placeholder="Şehir ekle..."
-                      className="h-7 flex-1 rounded border border-gray-200 px-2 text-[10px] focus:border-[#1E3A5F] focus:outline-none dark:border-[#d8ad43]/18 dark:bg-[#0e1e33] dark:text-[#e7edf4] dark:placeholder:text-[#e7edf4]/30 dark:focus:border-[#d8ad43]/40"
-                    />
-                    <button
-                      onClick={async () => {
-                        if (!locationInput.trim()) return
-                        const current = notifPrefs ?? { enabled: false, sectors: [], locations: [] }
-                        if (!current.locations.includes(locationInput.trim())) {
-                          const updated = {
-                            ...current,
-                            locations: [...current.locations, locationInput.trim()],
-                          }
+                          const sectors = selected
+                            ? current.sectors.filter((s) => s !== key)
+                            : [...current.sectors, key as EMFocusArea]
+                          const updated = { ...current, sectors }
                           await updateNotificationPreferences(updated)
                           mutateNotifPrefs(updated, false)
-                        }
-                        setLocationInput('')
-                      }}
-                      className="h-7 rounded bg-[#1E3A5F] px-2 text-[10px] text-white hover:bg-[#15304f] dark:bg-[#d8ad43] dark:text-[#10223b] dark:hover:bg-[#e4c05c]"
-                    >
-                      Ekle
-                    </button>
-                  </div>
+                        }}
+                        className={`rounded-lg px-3 py-2 text-xs font-medium transition-all ${
+                          selected ? 'bg-[#132843] text-white' : 'border border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    )
+                  })}
                 </div>
-                )}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
 
+      {/* ── Footer ── */}
+      <footer className="mt-auto bg-[#132843] px-4 py-10 sm:px-6">
+        <div className="mx-auto grid max-w-7xl gap-8 sm:grid-cols-2">
+          <div>
+            <h3 className="campus-heading text-lg text-[#d8ad43]">İLETİŞİM</h3>
+            <div className="mt-4 space-y-2 text-sm text-white/70">
+              <p><span className="font-semibold text-white">Adres:</span> İstanbul Üniversitesi-Cerrahpaşa Mühendislik Fakültesi Endüstri Mühendisliği Bölümü, Üniversite Mahallesi Üniversite Caddesi No:7, 34320 Avcılar/İstanbul</p>
+              <p><span className="font-semibold text-white">Bölüm Telefonu:</span> +90 212 404 03 00 / 20204</p>
+              <p><span className="font-semibold text-white">Bölüm E-postası:</span> endustri.muhendisligi@iuc.edu.tr</p>
+            </div>
+          </div>
+          <div>
+            <h3 className="campus-heading text-lg text-[#d8ad43]">BAĞLANTILAR</h3>
+            <div className="mt-4 space-y-2">
+              <a href="https://endustriiuc.com" target="_blank" rel="noreferrer" className="block text-sm text-white/70 hover:text-white transition-colors">
+                Bölüm Web Sitesi
+              </a>
+            </div>
+          </div>
+        </div>
+        <div className="mx-auto mt-8 max-w-7xl border-t border-white/10 pt-6 text-center text-xs text-white/40">
+          © {new Date().getFullYear()} Her hakkı İstanbul Üniversitesi-Cerrahpaşa Endüstri Mühendisliğine aittir.
+        </div>
+      </footer>
     </div>
   )
 }
