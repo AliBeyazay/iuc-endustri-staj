@@ -43,8 +43,28 @@ class Command(BaseCommand):
         self.stdout.write(f'ADMIN_EMAIL={repr(admin_email)}')
         self._reset(admin_email, admin_password)
 
-        # Reset student account
+        # Reset student account (ensure it is NOT staff/superuser)
         student_email = os.environ.get('STUDENT_EMAIL', '').strip().lower()
         student_password = os.environ.get('STUDENT_PASSWORD', '').strip()
         self.stdout.write(f'STUDENT_EMAIL={repr(student_email)}')
         self._reset(student_email, student_password)
+        if student_email:
+            try:
+                stu = Student.objects.get(iuc_email=student_email)
+                changed = False
+                if stu.is_staff or stu.is_superuser:
+                    stu.is_staff = False
+                    stu.is_superuser = False
+                    changed = True
+                if stu.first_name == 'Admin':
+                    stu.first_name = student_email.split('@')[0].split('.')[0].title()
+                    stu.last_name = student_email.split('@')[0].split('.')[-1].title() if '.' in student_email.split('@')[0] else ''
+                    changed = True
+                if changed:
+                    stu.save(update_fields=['is_staff', 'is_superuser', 'first_name', 'last_name'])
+                    self.stdout.write(self.style.SUCCESS(
+                        f'Fixed student account: {student_email} → '
+                        f'is_staff={stu.is_staff}, name={stu.first_name} {stu.last_name}'
+                    ))
+            except Student.DoesNotExist:
+                pass
