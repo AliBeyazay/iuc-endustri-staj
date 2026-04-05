@@ -1,4 +1,4 @@
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 
 from .cache_keys import bump_listing_list_cache_version
 
@@ -31,3 +31,32 @@ def suppress_listing_source(listing, *, reason: str = 'manual_delete') -> bool:
         },
     )
     return True
+
+
+def get_listing_group_queryset(queryset: QuerySet) -> QuerySet:
+    from .models import Listing
+
+    selected_ids: list[str] = []
+    canonical_ids: list[str] = []
+    for listing in queryset.only('id', 'canonical_listing_id'):
+        selected_ids.append(str(listing.id))
+        canonical_ids.append(str(listing.canonical_listing_id or listing.id))
+
+    if not selected_ids:
+        return Listing.objects.none()
+
+    return Listing.objects.filter(
+        Q(id__in=selected_ids)
+        | Q(id__in=canonical_ids)
+        | Q(canonical_listing_id__in=canonical_ids)
+    )
+
+
+def delete_listing_groups(queryset: QuerySet) -> int:
+    group_queryset = get_listing_group_queryset(queryset)
+    group_ids = list(group_queryset.values_list('id', flat=True))
+    if not group_ids:
+        return 0
+
+    group_queryset.model.objects.filter(id__in=group_ids).delete()
+    return len(group_ids)

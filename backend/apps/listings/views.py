@@ -23,6 +23,7 @@ from rest_framework.views import APIView
 from .cache_keys import get_listing_list_cache_version
 from .filters import ListingFilter
 from .models import Application, Bookmark, InternshipJournal, JournalComment, Listing, NegativeKeyword, Review, ScraperLog, Student
+from .sync import delete_listing_groups
 from .serializers import (
     AdminListingListSerializer,
     AdminListingUpdateSerializer,
@@ -728,7 +729,7 @@ class AdminListingModerationDetailView(APIView):
         listing = Listing.objects.filter(id=listing_id).first()
         if not listing:
             return Response({'error': 'İlan bulunamadı.'}, status=404)
-        listing.delete()
+        delete_listing_groups(Listing.objects.filter(id=listing.id))
         return Response(status=204)
 
 
@@ -740,8 +741,7 @@ class AdminListingBulkDeleteView(APIView):
         if not isinstance(ids, list) or not ids:
             return Response({'error': 'Silinecek ilan ID listesi gerekli.'}, status=400)
 
-        deleted_count = Listing.objects.filter(id__in=ids).count()
-        Listing.objects.filter(id__in=ids).delete()
+        deleted_count = delete_listing_groups(Listing.objects.filter(id__in=ids))
         return Response({'deleted_count': deleted_count})
 
 

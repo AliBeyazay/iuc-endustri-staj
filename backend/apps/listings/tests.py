@@ -7,6 +7,7 @@ from apps.listings.admin import ListingAdmin
 from apps.listings.cache_keys import get_listing_list_cache_version
 from apps.listings.models import Listing, SuppressedListingSource
 from apps.listings.runtime import get_admin_runtime_info
+from apps.listings.sync import delete_listing_groups
 from apps.scraper.pipelines import DjangoORMPipeline
 
 
@@ -37,6 +38,51 @@ class ListingDeletionProtectionTests(TestCase):
         self.assertEqual(suppressed.listing_title, 'Test Listing')
         self.assertEqual(suppressed.company_name, 'Test Company')
         self.assertEqual(suppressed.suppressed_reason, 'manual_delete')
+
+    def test_deleting_canonical_listing_removes_duplicate_group(self):
+        canonical = self.create_listing(
+            title='Shared Listing',
+            company_name='Shared Company',
+            source_url='https://example.com/listing/shared-canonical',
+        )
+        duplicate = self.create_listing(
+            title='Shared Listing Copy',
+            company_name='Shared Company',
+            source_url='https://example.com/listing/shared-duplicate',
+            source_platform='anbea',
+            canonical_listing=canonical,
+        )
+
+        deleted_count = delete_listing_groups(Listing.objects.filter(id=canonical.id))
+
+        self.assertEqual(deleted_count, 2)
+        self.assertFalse(Listing.objects.filter(id__in=[canonical.id, duplicate.id]).exists())
+        self.assertEqual(
+            set(SuppressedListingSource.objects.values_list('source_url', flat=True)),
+            {
+                'https://example.com/listing/shared-canonical',
+                'https://example.com/listing/shared-duplicate',
+            },
+        )
+
+    def test_deleting_duplicate_listing_removes_canonical_group(self):
+        canonical = self.create_listing(
+            title='Shared Listing',
+            company_name='Shared Company',
+            source_url='https://example.com/listing/shared-canonical-2',
+        )
+        duplicate = self.create_listing(
+            title='Shared Listing Copy',
+            company_name='Shared Company',
+            source_url='https://example.com/listing/shared-duplicate-2',
+            source_platform='anbea',
+            canonical_listing=canonical,
+        )
+
+        deleted_count = delete_listing_groups(Listing.objects.filter(id=duplicate.id))
+
+        self.assertEqual(deleted_count, 2)
+        self.assertFalse(Listing.objects.filter(id__in=[canonical.id, duplicate.id]).exists())
 
     def test_listing_cache_version_bumps_after_create_and_delete(self):
         initial_version = get_listing_list_cache_version()

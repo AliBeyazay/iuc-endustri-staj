@@ -4,6 +4,7 @@ import unicodedata
 from django.core.management.base import BaseCommand
 
 from apps.listings.models import Listing
+from apps.listings.sync import delete_listing_groups
 
 
 def _normalize(text: str) -> str:
@@ -47,5 +48,5 @@ class Command(BaseCommand):
 
         for listing in qs:
             self.stdout.write(f'  Deleting: {listing.title} ({listing.company_name}) [{listing.id}]')
-        qs.delete()
-        self.stdout.write(self.style.SUCCESS(f'Deleted {count} listing(s).'))
+        deleted_count = delete_listing_groups(qs)
+        self.stdout.write(self.style.SUCCESS(f'Deleted {deleted_count} listing(s).'))

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .sync import update_listing_queryset
+from .sync import delete_listing_groups, update_listing_queryset
 from .models import (
     Application,
     Bookmark,
@@ -47,6 +47,13 @@ class ListingAdmin(admin.ModelAdmin):
         updated = update_listing_queryset(queryset, is_active=False)
         self.message_user(request, f'{updated} ilan pasifleştirildi.')
     deactivate_listings.short_description = 'Seçili ilanları pasifleştir'
+
+
+    def delete_model(self, request, obj):
+        delete_listing_groups(Listing.objects.filter(id=obj.id))
+
+    def delete_queryset(self, request, queryset):
+        delete_listing_groups(queryset)
 
 
 @admin.register(Review)
