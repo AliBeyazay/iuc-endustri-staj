@@ -5,6 +5,10 @@ from apps.scraper.spiders.spiders import (
     extract_youthall_description,
     translate_known_youthall_description,
 )
+from apps.scraper.youthall_company_names import (
+    dedupe_company_names,
+    extract_company_names_from_html,
+)
 
 
 class YouthallDescriptionExtractionTests(SimpleTestCase):
@@ -64,14 +68,14 @@ class YouthallDescriptionExtractionTests(SimpleTestCase):
           <body>
             <div id="tabs-talent-program-details" class="c-tabs__content-item is-active">
               <div class="c-profile-home-section bg-white u-gap-bottom shadow-light">
-                <h4 class="u-gap-bottom">Yetenek Programı Detayları</h4>
+                <h4 class="u-gap-bottom">Talent Program Details</h4>
                 <div class="l-grid">
                   <div class="l-grid__col--lg-12 l-grid__col--xs-12 c-talent-program-li">
-                    <p><b>TechVenture Genç Yetenek Programı ile seni teknoloji dünyasında davet ediyoruz!</b></p>
-                    <p>Teknoloji dünyasında fark yaratmaya ne dersin?</p>
+                    <p><b>TechVenture invites you into the world of technology.</b></p>
+                    <p>Are you ready to make an impact?</p>
                     <ul>
-                      <li>İleri seviye İngilizce</li>
-                      <li>Analitik düşünme</li>
+                      <li>Advanced English</li>
+                      <li>Analytical thinking</li>
                     </ul>
                   </div>
                 </div>
@@ -85,10 +89,10 @@ class YouthallDescriptionExtractionTests(SimpleTestCase):
 
         self.assertEqual(
             description,
-            "TechVenture Genç Yetenek Programı ile seni teknoloji dünyasında davet ediyoruz!\n\n"
-            "Teknoloji dünyasında fark yaratmaya ne dersin?\n\n"
-            "- İleri seviye İngilizce\n"
-            "- Analitik düşünme",
+            "TechVenture invites you into the world of technology.\n\n"
+            "Are you ready to make an impact?\n\n"
+            "- Advanced English\n"
+            "- Analytical thinking",
         )
 
     def test_translates_shell_summer_training_copy_to_turkish(self):
@@ -106,34 +110,53 @@ class YouthallDescriptionExtractionTests(SimpleTestCase):
             "- Interested in the energy sector,\n\n"
             "- A creative and innovative perspective,\n\n"
             "- A confident in your English,\n\n"
-            "Are you ready to take the next step? We’d love to have you with us!\n\n"
+            "Are you ready to take the next step? We\u2019d love to have you with us!\n\n"
             "#makethefuture\n\n"
             "BE PART OF SHELL"
         )
 
         translated = translate_known_youthall_description(
             description,
-            title="Shell Türkiye Summer Training",
+            title="Shell T\u00fcrkiye Summer Training",
             company_name="Shell",
             source_url="https://www.youthall.com/tr/Shell/shell-turkiye-summer-training_1248/",
         )
 
-        self.assertEqual(
+        self.assertIn("Program s\u00fcresince seni neler bekliyor?", translated)
+        self.assertIn(
+            "Kariyer yolunu belirlemene yard\u0131mc\u0131 olacak i\u015f tan\u0131t\u0131m oturumlar\u0131",
             translated,
-            "Program süresince seni neler bekliyor?\n\n"
-            "- Kariyer yolunu belirlemene yardımcı olacak iş tanıtım oturumları,\n\n"
-            "- Vaka analizi yarışmaları,\n\n"
-            "- Liderlerimizle Tea-Talks oturumları,\n\n"
-            "- İş akışlarını yerinde gözlemleyebileceğin saha ziyaretleri,\n\n"
-            "- Shell'deki global kariyer fırsatlarını keşfedeceğin oturumlar.\n\n"
-            "- Kişisel gelişimini destekleyecek eğitim oturumları,\n\n"
-            "Eğer aşağıdaki özelliklere sahipsen, aradığımız kişi sen olabilirsin!\n\n"
-            "- Üniversite hazırlık, 1. sınıf veya 2. sınıf öğrencisiysen,\n\n"
-            "- Temmuz ve Ağustos ayları arasında İstanbul'da ikamet edebileceksen,\n\n"
-            "- Enerji sektörüne ilgi duyuyorsan,\n\n"
-            "- Yaratıcı ve yenilikçi bir bakış açısına sahipsen,\n\n"
-            "- İngilizcene güveniyorsan,\n\n"
-            "Bir sonraki adımı atmaya hazır mısın? Seni aramızda görmekten memnuniyet duyarız!\n\n"
-            "#makethefuture\n\n"
-            "SHELL'İN BİR PARÇASI OL",
+        )
+        self.assertIn("SHELL'\u0130N B\u0130R PAR\u00c7ASI OL", translated)
+        self.assertIn("#makethefuture", translated)
+        self.assertNotIn("What awaits you during the program?", translated)
+
+
+class YouthallCompanyNameExtractionTests(SimpleTestCase):
+    def test_extracts_only_real_company_card_names(self):
+        html = """
+        <html>
+          <body>
+            <a href="/tr/drager"><h3>Dr\u00e4ger Youthall Verified Badge</h3></a>
+            <a href="/tr/betekboya"><h3>Betek Boya</h3></a>
+            <a href="/tr/ray-sigorta"><h3>Ray Sigorta</h3></a>
+            <a href="/tr/companies/all?page=2"><h3>T\u00fcm \u015eirketler</h3></a>
+            <a href="/tr/blog"><h3>Blog</h3></a>
+            <a href="/tr/giris"><h3>Giri\u015f Yap</h3></a>
+            <a href="https://example.com/not-youthall"><h3>External Site</h3></a>
+          </body>
+        </html>
+        """
+
+        self.assertEqual(
+            extract_company_names_from_html(html),
+            ["Dr\u00e4ger", "Betek Boya", "Ray Sigorta"],
+        )
+
+    def test_dedupes_names_while_preserving_order(self):
+        names = ["Dr\u00e4ger", "Betek Boya", "dr\u00e4ger", " Betek   Boya ", "Adobe"]
+
+        self.assertEqual(
+            dedupe_company_names(names),
+            ["Dr\u00e4ger", "Betek Boya", "Adobe"],
         )

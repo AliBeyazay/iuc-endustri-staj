@@ -26,6 +26,7 @@ backend/db.sqlite3
 backend/media/
 backend/.pgdata/
 backend/.tmp/
+backend/youthall_sirketler.txt
 
 # Node / Next.js
 frontend/node_modules/
