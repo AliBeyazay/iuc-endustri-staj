@@ -58,6 +58,39 @@ class YouthallDescriptionExtractionTests(SimpleTestCase):
             "About this Position\n\nStructured growth opportunity.",
         )
 
+    def test_extracts_talent_program_detail_body(self):
+        html = """
+        <html>
+          <body>
+            <div id="tabs-talent-program-details" class="c-tabs__content-item is-active">
+              <div class="c-profile-home-section bg-white u-gap-bottom shadow-light">
+                <h4 class="u-gap-bottom">Yetenek Programı Detayları</h4>
+                <div class="l-grid">
+                  <div class="l-grid__col--lg-12 l-grid__col--xs-12 c-talent-program-li">
+                    <p><b>TechVenture Genç Yetenek Programı ile seni teknoloji dünyasında davet ediyoruz!</b></p>
+                    <p>Teknoloji dünyasında fark yaratmaya ne dersin?</p>
+                    <ul>
+                      <li>İleri seviye İngilizce</li>
+                      <li>Analitik düşünme</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </body>
+        </html>
+        """
+
+        description = extract_youthall_description(BeautifulSoup(html, "html.parser"))
+
+        self.assertEqual(
+            description,
+            "TechVenture Genç Yetenek Programı ile seni teknoloji dünyasında davet ediyoruz!\n\n"
+            "Teknoloji dünyasında fark yaratmaya ne dersin?\n\n"
+            "- İleri seviye İngilizce\n"
+            "- Analitik düşünme",
+        )
+
     def test_translates_shell_summer_training_copy_to_turkish(self):
         description = (
             "What awaits you during the program?\n\n"

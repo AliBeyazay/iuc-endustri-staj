@@ -114,6 +114,20 @@ def extract_youthall_description(soup: BeautifulSoup) -> str:
         if description:
             return description
 
+    talent_program_content = soup.select_one(
+        "#tabs-talent-program-details .c-talent-program-li, "
+        "#tabs-talent-program-details .c-profile-home-section"
+    )
+    if talent_program_content:
+        content_soup = BeautifulSoup(str(talent_program_content), "html.parser")
+        for node in content_soup.select(
+            "script, style, noscript, h4, .c-job_detail_content, .c-job_detail_content_list"
+        ):
+            node.decompose()
+        description = html_fragment_to_text(content_soup.decode_contents())
+        if description:
+            return description
+
     description = extract_jobposting_description_from_schema(soup)
     if description:
         return description
