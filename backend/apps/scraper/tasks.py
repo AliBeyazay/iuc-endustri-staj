@@ -62,7 +62,7 @@ def run_single_spider(self, spider_name: str):
         # Ensure Scrapy can always resolve project settings when called from Celery.
         env.setdefault('SCRAPY_SETTINGS_MODULE', 'apps.scraper.settings')
         env.setdefault('PYTHONPATH', str(settings.BASE_DIR))
-        env.setdefault('USE_SQLITE', os.environ.get('USE_SQLITE', 'True'))
+        env.setdefault('USE_SQLITE', os.environ.get('USE_SQLITE', 'False'))
 
         proc = subprocess.run(
             [sys.executable, '-m', 'scrapy', 'crawl', spider_name],
@@ -97,22 +97,31 @@ def deactivate_expired_listings():
     and for old listings with unknown deadlines (>90 days)."""
     from datetime import date, timedelta
     from apps.listings.models import Listing
+    from apps.listings.sync import update_listing_queryset
 
     today = date.today()
 
     # 1. Deactivate listings with known expired deadlines
-    expired_count = Listing.objects.filter(
-        application_deadline__lt=today,
-        is_active=True,
-    ).update(is_active=False, deadline_status='expired')
+    expired_count = update_listing_queryset(
+        Listing.objects.filter(
+            application_deadline__lt=today,
+            is_active=True,
+        ),
+        is_active=False,
+        deadline_status='expired',
+    )
 
     # 2. Deactivate old listings with unknown/missing deadlines (>90 days old)
     cutoff = today - timedelta(days=90)
-    stale_count = Listing.objects.filter(
-        application_deadline__isnull=True,
-        is_active=True,
-        created_at__lt=cutoff,
-    ).update(is_active=False, deadline_status='expired')
+    stale_count = update_listing_queryset(
+        Listing.objects.filter(
+            application_deadline__isnull=True,
+            is_active=True,
+            created_at__lt=cutoff,
+        ),
+        is_active=False,
+        deadline_status='expired',
+    )
 
     logger.info(f'DEACTIVATED {expired_count} expired + {stale_count} stale listings (today={today})')
     return {'deactivated_expired': expired_count, 'deactivated_stale': stale_count}
@@ -125,6 +134,7 @@ def mark_upcoming_programs():
     Prevents showing them as stale/unknown.
     """
     from apps.listings.models import Listing
+    from apps.listings.sync import update_listing_queryset
 
     KNOWN_ANNUAL_KEYWORDS = [
         'gelecek tasarımcıları',
@@ -136,11 +146,14 @@ def mark_upcoming_programs():
     ]
     total = 0
     for kw in KNOWN_ANNUAL_KEYWORDS:
-        count = Listing.objects.filter(
-            title__icontains=kw,
-            application_deadline__isnull=True,
-            is_active=True,
-        ).update(deadline_status='upcoming')
+        count = update_listing_queryset(
+            Listing.objects.filter(
+                title__icontains=kw,
+                application_deadline__isnull=True,
+                is_active=True,
+            ),
+            deadline_status='upcoming',
+        )
         total += count
 
     logger.info(f'MARKED {total} listings as upcoming')

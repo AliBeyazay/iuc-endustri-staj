@@ -119,12 +119,17 @@ class Command(BaseCommand):
 
     def _deactivate_expired(self):
         from apps.listings.models import Listing
+        from apps.listings.sync import update_listing_queryset
 
         today = date.today()
-        count = Listing.objects.filter(
-            application_deadline__lt=today,
-            is_active=True,
-        ).update(is_active=False, deadline_status='expired')
+        count = update_listing_queryset(
+            Listing.objects.filter(
+                application_deadline__lt=today,
+                is_active=True,
+            ),
+            is_active=False,
+            deadline_status='expired',
+        )
 
         self.stdout.write(self.style.SUCCESS(
             f'  Deactivated {count} expired listings'

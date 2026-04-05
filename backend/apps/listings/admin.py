@@ -1,4 +1,6 @@
 from django.contrib import admin
+
+from .sync import update_listing_queryset
 from .models import (
     Application,
     Bookmark,
@@ -37,12 +39,12 @@ class ListingAdmin(admin.ModelAdmin):
     actions = ['activate_listings', 'deactivate_listings']
 
     def activate_listings(self, request, queryset):
-        updated = queryset.update(is_active=True)
+        updated = update_listing_queryset(queryset, is_active=True)
         self.message_user(request, f'{updated} ilan aktifleştirildi.')
     activate_listings.short_description = 'Seçili ilanları aktifleştir'
 
     def deactivate_listings(self, request, queryset):
-        updated = queryset.update(is_active=False)
+        updated = update_listing_queryset(queryset, is_active=False)
         self.message_user(request, f'{updated} ilan pasifleştirildi.')
     deactivate_listings.short_description = 'Seçili ilanları pasifleştir'
 

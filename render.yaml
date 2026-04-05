@@ -13,6 +13,8 @@ services:
     dockerContext: ./backend
     healthCheckPath: /health
     envVars:
+      - key: APP_ENV
+        value: prod
       - key: DJANGO_SETTINGS_MODULE
         value: config.settings.prod
       - key: SECRET_KEY

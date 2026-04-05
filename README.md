@@ -181,3 +181,21 @@ run_all_scrapers.delay()
 | POST | `/api/auth/verify-otp/` | OTP doğrula |
 | POST | `/api/auth/login/` | Giriş (JWT) |
 | POST | `/api/auth/refresh/` | Token yenile |
+ 
+---
+ 
+## Environment Sync Notes
+ 
+- Docker local development defaults to PostgreSQL through `backend/.env` with `USE_SQLITE=False`.
+- Keep `APP_ENV=dev` in `backend/.env` so the Django admin runtime banner clearly shows the local environment.
+- `frontend/.env.production` points to `https://iuc-staj-backend.onrender.com/api`.
+- If Vercel defines `NEXT_PUBLIC_API_URL`, that platform value is the source of truth.
+- Local admin affects the local site, production admin affects the production site.
+ 
+### Production Deploy Checklist
+ 
+1. Deploy backend changes.
+2. Run Django migrations on the production backend.
+3. Open Django admin and confirm the runtime banner shows `prod` and the expected database host.
+4. Confirm the production frontend is pointing to the production backend URL.
+5. Verify that a listing edited or deleted in production admin is reflected on the production site.

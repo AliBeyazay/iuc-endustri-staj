@@ -16,7 +16,7 @@ from itemadapter import ItemAdapter
 BASE_DIR = Path(__file__).resolve().parents[3]
 load_dotenv(BASE_DIR / '.env')
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.dev')
-os.environ.setdefault('USE_SQLITE', os.environ.get('USE_SQLITE', 'True'))
+os.environ.setdefault('USE_SQLITE', os.environ.get('USE_SQLITE', 'False'))
 # Scrapy 2.13+ runs item pipelines in async-aware context; allow sync ORM calls here.
 os.environ.setdefault('DJANGO_ALLOW_ASYNC_UNSAFE', 'true')
 django.setup()

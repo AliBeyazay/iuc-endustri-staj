@@ -12,9 +12,23 @@ except ImportError:
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 USE_SQLITE = os.environ.get('USE_SQLITE', 'False').lower() == 'true'
 
+
+def _resolve_environment() -> str:
+    explicit_environment = os.environ.get('APP_ENV') or os.environ.get('ENVIRONMENT')
+    if explicit_environment:
+        return explicit_environment.lower()
+
+    settings_module = os.environ.get('DJANGO_SETTINGS_MODULE', '')
+    if settings_module.endswith('.prod'):
+        return 'prod'
+    if settings_module.endswith('.dev'):
+        return 'dev'
+    return 'dev' if os.environ.get('DEBUG', 'False').lower() == 'true' else 'prod'
+
 SECRET_KEY = os.environ.get('SECRET_KEY', 'change-me-in-production')
 DEBUG      = False
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost').split(',')
+ENVIRONMENT = _resolve_environment()
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -51,7 +65,7 @@ AUTH_USER_MODEL  = 'listings.Student'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

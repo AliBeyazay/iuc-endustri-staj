@@ -4,7 +4,7 @@ from django.db.models.signals import post_delete, post_save, pre_delete
 from django.dispatch import receiver
 import uuid
 
-from .cache_keys import bump_listing_list_cache_version
+from .sync import invalidate_listing_list_cache, suppress_listing_source
 
 
 class Student(AbstractUser):
@@ -12,9 +12,9 @@ class Student(AbstractUser):
     student_no = models.CharField(max_length=10, unique=True, null=True, blank=True)
     iuc_email = models.EmailField(unique=True)
     department_year = models.IntegerField(null=True, blank=True)
-    linkedin_url = models.URLField(null=True, blank=True)
-    cv_url = models.URLField(null=True, blank=True)
-    avatar_url = models.URLField(null=True, blank=True)
+    linkedin_url = models.URLField(max_length=500, null=True, blank=True)
+    cv_url = models.URLField(max_length=500, null=True, blank=True)
+    avatar_url = models.URLField(max_length=500, null=True, blank=True)
     is_verified = models.BooleanField(default=False)
     notification_preferences = models.JSONField(default=dict, blank=True)
 
@@ -120,9 +120,9 @@ class Listing(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=255)
     company_name = models.CharField(max_length=255)
-    company_logo_url = models.URLField(null=True, blank=True)
-    source_url = models.URLField(unique=True, db_index=True)
-    application_url = models.URLField(null=True, blank=True)
+    company_logo_url = models.URLField(max_length=500, null=True, blank=True)
+    source_url = models.URLField(max_length=500, unique=True, db_index=True)
+    application_url = models.URLField(max_length=500, null=True, blank=True)
     source_platform = models.CharField(max_length=20, choices=SOURCE_PLATFORM_CHOICES)
     em_focus_area = models.CharField(max_length=30, choices=EM_FOCUS_CHOICES, default='diger')
     secondary_em_focus_area = models.CharField(max_length=30, choices=EM_FOCUS_CHOICES, null=True, blank=True)
@@ -167,7 +167,7 @@ class Listing(models.Model):
 
 
 class SuppressedListingSource(models.Model):
-    source_url = models.URLField(unique=True, db_index=True)
+    source_url = models.URLField(max_length=500, unique=True, db_index=True)
     source_platform = models.CharField(max_length=20, choices=SOURCE_PLATFORM_CHOICES, blank=True, default='')
     listing_title = models.CharField(max_length=255, blank=True, default='')
     company_name = models.CharField(max_length=255, blank=True, default='')
@@ -317,25 +317,14 @@ class NegativeKeyword(models.Model):
 
 @receiver(pre_delete, sender=Listing)
 def suppress_listing_source_before_delete(sender, instance, **kwargs):
-    if not instance.source_url:
-        return
-
-    SuppressedListingSource.objects.update_or_create(
-        source_url=instance.source_url,
-        defaults={
-            'source_platform': instance.source_platform or '',
-            'listing_title': instance.title or '',
-            'company_name': instance.company_name or '',
-            'suppressed_reason': 'manual_delete',
-        },
-    )
+    suppress_listing_source(instance, reason='manual_delete')
 
 
 @receiver(post_save, sender=Listing)
 def invalidate_listing_cache_after_save(sender, **kwargs):
-    bump_listing_list_cache_version()
+    invalidate_listing_list_cache()
 
 
 @receiver(post_delete, sender=Listing)
 def invalidate_listing_cache_after_delete(sender, **kwargs):
-    bump_listing_list_cache_version()
+    invalidate_listing_list_cache()

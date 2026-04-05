@@ -1,8 +1,12 @@
+from django.contrib.admin.sites import AdminSite
+from django.contrib.auth import get_user_model
 from django.core.cache import cache
-from django.test import TestCase
+from django.test import RequestFactory, TestCase, override_settings
 
+from apps.listings.admin import ListingAdmin
 from apps.listings.cache_keys import get_listing_list_cache_version
 from apps.listings.models import Listing, SuppressedListingSource
+from apps.listings.runtime import get_admin_runtime_info
 from apps.scraper.pipelines import DjangoORMPipeline
 
 
@@ -44,6 +48,46 @@ class ListingDeletionProtectionTests(TestCase):
 
         self.assertGreater(after_create_version, initial_version)
         self.assertGreater(after_delete_version, after_create_version)
+
+    def test_admin_deactivate_action_bumps_cache_version(self):
+        listing = self.create_listing()
+        initial_version = get_listing_list_cache_version()
+        request = RequestFactory().post('/admin/listings/listing/')
+        model_admin = ListingAdmin(Listing, AdminSite())
+        model_admin.message_user = lambda *args, **kwargs: None
+
+        model_admin.deactivate_listings(request, Listing.objects.filter(id=listing.id))
+
+        listing.refresh_from_db()
+        self.assertFalse(listing.is_active)
+        self.assertGreater(get_listing_list_cache_version(), initial_version)
+
+    @override_settings(ENVIRONMENT='dev', FRONTEND_URL='http://localhost:3000')
+    def test_admin_index_shows_runtime_banner(self):
+        admin_user = get_user_model().objects.create_superuser(
+            username='admin',
+            iuc_email='admin@iuc.edu.tr',
+            email='admin@iuc.edu.tr',
+            password='test-pass-123',
+        )
+        self.client.force_login(admin_user)
+
+        response = self.client.get('/admin/')
+
+        self.assertContains(response, 'Environment')
+        self.assertContains(response, 'DEV')
+        self.assertContains(response, 'Database')
+        self.assertContains(response, 'Frontend')
+        self.assertContains(response, 'http://localhost:3000')
+        self.assertContains(response, 'Backend')
+        self.assertContains(response, 'http://testserver')
+
+    @override_settings(ENVIRONMENT='prod', FRONTEND_URL='https://iuc-endustri-staj.vercel.app')
+    def test_runtime_info_prefers_explicit_environment_setting(self):
+        runtime_info = get_admin_runtime_info()
+
+        self.assertEqual(runtime_info['environment'], 'prod')
+        self.assertEqual(runtime_info['frontend_url'], 'https://iuc-endustri-staj.vercel.app')
 
 
 class DummyLogger:

@@ -8,7 +8,9 @@ Usage:
     python manage.py fix_encoding --apply  # apply changes
 """
 from django.core.management.base import BaseCommand
+
 from apps.listings.models import Listing
+from apps.listings.sync import update_listing_queryset
 
 
 class Command(BaseCommand):
@@ -39,7 +41,7 @@ class Command(BaseCommand):
             )
 
         if apply:
-            corrupted.update(is_active=False)
+            update_listing_queryset(corrupted, is_active=False)
             self.stdout.write(self.style.SUCCESS(f'Deactivated {count} corrupted listings'))
         else:
             self.stdout.write(self.style.WARNING('Dry run — use --apply to deactivate these listings'))

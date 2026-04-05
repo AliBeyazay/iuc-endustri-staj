@@ -1,0 +1,58 @@
+<style>
+  .admin-runtime-banner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 12px 16px 0;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.08);
+    color: #f7f7f7;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .admin-runtime-banner__item {
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+  }
+
+  .admin-runtime-banner__label {
+    opacity: 0.72;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 11px;
+  }
+
+  .admin-runtime-banner__value {
+    font-weight: 700;
+    word-break: break-word;
+  }
+
+  .admin-runtime-banner__value--warning {
+    color: #ffd27d;
+  }
+</style>
+
+<div class="admin-runtime-banner">
+  <div class="admin-runtime-banner__item">
+    <span class="admin-runtime-banner__label">Environment</span>
+    <span class="admin-runtime-banner__value">{{ runtime_info.environment|upper }}</span>
+  </div>
+  <div class="admin-runtime-banner__item">
+    <span class="admin-runtime-banner__label">Database</span>
+    <span class="admin-runtime-banner__value{% if runtime_info.database_engine == 'sqlite' %} admin-runtime-banner__value--warning{% endif %}">
+      {{ runtime_info.database_engine }} / {{ runtime_info.database_host }} / {{ runtime_info.database_name }}
+    </span>
+  </div>
+  <div class="admin-runtime-banner__item">
+    <span class="admin-runtime-banner__label">Frontend</span>
+    <span class="admin-runtime-banner__value">{{ runtime_info.frontend_url }}</span>
+  </div>
+  <div class="admin-runtime-banner__item">
+    <span class="admin-runtime-banner__label">Backend</span>
+    <span class="admin-runtime-banner__value">{{ runtime_info.backend_base_url }}</span>
+  </div>
+</div>
