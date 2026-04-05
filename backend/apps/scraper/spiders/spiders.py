@@ -726,43 +726,149 @@ class KariyerSpider(BaseEMSpider):
 class LinkedInSpider(BaseEMSpider):
     name = "linkedin"
     SEARCH_ENDPOINT = "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search"
-    PAGE_STARTS = [0, 25, 50, 75]
-    PRIORITY_ROLE_KEYWORDS = [
-        "staj",
-        "stajyer",
-        "uzun donem stajyer",
-        "management trainee",
-        "genc yetenek",
+    custom_settings = {
+        "CONCURRENT_REQUESTS": 1,
+        "DOWNLOAD_DELAY": 3.5,
+        "RANDOMIZE_DOWNLOAD_DELAY": True,
+        "AUTOTHROTTLE_ENABLED": True,
+        "AUTOTHROTTLE_START_DELAY": 3,
+        "AUTOTHROTTLE_MAX_DELAY": 20,
+        "AUTOTHROTTLE_TARGET_CONCURRENCY": 1.0,
+    }
+    HIGH_PRIORITY_PAGE_STARTS = list(range(0, 200, 25))
+    SECONDARY_PAGE_STARTS = list(range(0, 100, 25))
+    SEARCH_QUERY_GROUPS = (
+        {
+            "page_starts": HIGH_PRIORITY_PAGE_STARTS,
+            "queries": [
+                "endustri muhendisligi staj",
+                "endustri muhendisligi stajyer",
+                "industrial engineering intern turkey",
+                "supply chain intern turkey",
+                "production planning intern turkey",
+                "operations intern turkey",
+                "quality intern turkey",
+                "management trainee turkey",
+            ],
+        },
+        {
+            "page_starts": SECONDARY_PAGE_STARTS,
+            "queries": [
+                "tedarik zinciri stajyer",
+                "lojistik stajyer",
+                "uretim planlama stajyer",
+                "quality assurance intern turkey",
+                "long term intern turkey",
+                "uzun donem stajyer",
+                "process improvement intern turkey",
+                "lean manufacturing intern turkey",
+                "genc yetenek programi",
+            ],
+        },
+    )
+    EM_SCORE_WEIGHTS = {
+        "high": 3,
+        "medium": 2,
+        "low": 1,
+        "negative": -4,
+    }
+    EM_HIGH_SIGNAL_KEYWORDS = [
         "endustri muhendisligi",
         "endustri muhendisi",
-        "endustri muhendisligi staj",
-        "endustri muhendisligi stajyer",
-        "industrial engineering intern",
-        "supply chain intern",
-        "logistics intern",
-        "production planning intern",
-        "quality assurance intern",
-        "ar-ge stajyer",
+        "industrial engineering",
+        "industrial engineer",
+        "supply chain",
+        "tedarik zinciri",
+        "production planning",
+        "uretim planlama",
+        "quality assurance",
+        "quality",
+        "kalite",
+        "process improvement",
+        "surec iyilestirme",
+        "continuous improvement",
+        "lean",
+        "yalin",
     ]
+    EM_MEDIUM_SIGNAL_KEYWORDS = [
+        "operations",
+        "operasyon",
+        "logistics",
+        "lojistik",
+        "erp",
+        "sap",
+        "inventory",
+        "stok",
+        "planning",
+        "planlama",
+        "procurement",
+        "satin alma",
+    ]
+    EM_LOW_SIGNAL_KEYWORDS = [
+        "analysis",
+        "analiz",
+        "reporting",
+        "raporlama",
+        "excel",
+        "data",
+        "veri",
+        "forecast",
+        "demand",
+    ]
+    EM_NEGATIVE_SIGNAL_KEYWORDS = [
+        "human resources",
+        "ik",
+        "marketing",
+        "sales",
+        "graphic design",
+        "tasarim",
+        "law",
+        "hukuk",
+        "finance intern",
+        "accounting",
+        "muhasebe",
+        "audit",
+        "tax",
+    ]
+    MIN_EM_RELEVANCE_SCORE = 3
 
     def build_search_urls(self) -> list[str]:
         seen = set()
         urls = []
-        for query in self.PRIORITY_ROLE_KEYWORDS:
-            cleaned = self.clean_text(query)
-            if not cleaned:
-                continue
-            normalized = self.normalize_turkish(cleaned)
-            if normalized in seen:
-                continue
-            seen.add(normalized)
-            for start in self.PAGE_STARTS:
-                urls.append(
-                    f"{self.SEARCH_ENDPOINT}?keywords={quote_plus(cleaned)}&location=Turkey&start={start}"
-                )
+        for group in self.SEARCH_QUERY_GROUPS:
+            page_starts = group.get("page_starts", self.SECONDARY_PAGE_STARTS)
+            for query in group.get("queries", []):
+                cleaned = self.clean_text(query)
+                if not cleaned:
+                    continue
+                normalized = self.normalize_turkish(cleaned)
+                if normalized in seen:
+                    continue
+                seen.add(normalized)
+                for start in page_starts:
+                    urls.append(
+                        f"{self.SEARCH_ENDPOINT}?keywords={quote_plus(cleaned)}&location=Turkey&start={start}"
+                    )
 
         self.logger.info("LINKEDIN_QUERY_COUNT: %s", len(urls))
         return urls
+
+    def score_em_relevance(self, title: str, description: str) -> int:
+        combined = self.normalize_turkish(f"{title} {description}")
+        score = 0
+        for keyword in self.EM_HIGH_SIGNAL_KEYWORDS:
+            if self.normalize_turkish(keyword) in combined:
+                score += self.EM_SCORE_WEIGHTS["high"]
+        for keyword in self.EM_MEDIUM_SIGNAL_KEYWORDS:
+            if self.normalize_turkish(keyword) in combined:
+                score += self.EM_SCORE_WEIGHTS["medium"]
+        for keyword in self.EM_LOW_SIGNAL_KEYWORDS:
+            if self.normalize_turkish(keyword) in combined:
+                score += self.EM_SCORE_WEIGHTS["low"]
+        for keyword in self.EM_NEGATIVE_SIGNAL_KEYWORDS:
+            if self.normalize_turkish(keyword) in combined:
+                score += self.EM_SCORE_WEIGHTS["negative"]
+        return score
 
     def start_requests(self):
         for url in self.build_search_urls():
@@ -788,10 +894,11 @@ class LinkedInSpider(BaseEMSpider):
             logo = card.css(
                 "img.artdeco-entity-image::attr(data-delayed-url), img.artdeco-entity-image::attr(src)"
             ).get()
+            is_remote_or_hybrid = self.is_remote_or_hybrid_location(location)
 
             if not url or not title:
                 continue
-            if not self.is_turkiye_location(location):
+            if not is_remote_or_hybrid and not self.is_turkiye_location(location):
                 self.logger.info("LINKEDIN_SKIPPED_NON_TR: %s | %s", title, location)
                 continue
 
@@ -803,6 +910,7 @@ class LinkedInSpider(BaseEMSpider):
                     "company": company,
                     "location": location,
                     "logo": logo,
+                    "requires_turkiye_context": is_remote_or_hybrid,
                 },
                 errback=self.handle_error,
             )
@@ -826,8 +934,17 @@ class LinkedInSpider(BaseEMSpider):
             self.logger.info("LINKEDIN_SKIPPED_NON_INTERNSHIP: %s", title)
             return
 
-        if not self.filter_by_keywords(title, desc):
-            self.logger.info("LINKEDIN_SKIPPED_NON_EM: %s", title)
+        if response.meta.get("requires_turkiye_context") and not self.has_turkiye_context(
+            response.meta.get("location", ""),
+            desc,
+            company,
+        ):
+            self.logger.info("LINKEDIN_SKIPPED_REMOTE_NON_TR: %s | %s", title, response.meta.get("location", ""))
+            return
+
+        relevance_score = self.score_em_relevance(title, desc)
+        if relevance_score < self.MIN_EM_RELEVANCE_SCORE:
+            self.logger.info("LINKEDIN_SKIPPED_LOW_EM_SCORE: %s | score=%s", title, relevance_score)
             return
 
         if self.targets_associate_degree(title, desc):
@@ -840,7 +957,7 @@ class LinkedInSpider(BaseEMSpider):
             company_logo_url=response.meta.get("logo"),
             source_url=response.url,
             source_platform="linkedin",
-            em_focus_area=self.detect_em_focus_area(title, desc, company),
+            em_focus_area=self.detect_em_focus_area(title, desc, company, "linkedin"),
             internship_type=self.detect_internship_type(title, desc),
             company_origin=self.detect_company_origin(company),
             location=response.meta.get("location", ""),

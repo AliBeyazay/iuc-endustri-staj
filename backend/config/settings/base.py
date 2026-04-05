@@ -126,12 +126,16 @@ CELERY_BEAT_SCHEDULER    = 'django_celery_beat.schedulers:DatabaseScheduler'
 if crontab is not None:
     CELERY_BEAT_SCHEDULE = {
         'morning-scrape': {
-            'task': 'apps.scraper.tasks.run_all_scrapers',
+            'task': 'apps.scraper.tasks.run_non_linkedin_scrapers',
             'schedule': crontab(hour=8, minute=0),
         },
         'evening-scrape': {
-            'task': 'apps.scraper.tasks.run_all_scrapers',
+            'task': 'apps.scraper.tasks.run_non_linkedin_scrapers',
             'schedule': crontab(hour=20, minute=0),
+        },
+        'linkedin-night-scrape': {
+            'task': 'apps.scraper.tasks.run_linkedin_scraper',
+            'schedule': crontab(hour=2, minute=0),
         },
         'expire-check': {
             'task': 'apps.scraper.tasks.deactivate_expired_listings',
@@ -145,8 +149,12 @@ if crontab is not None:
 else:
     CELERY_BEAT_SCHEDULE = {
         'morning-scrape': {
-            'task': 'apps.scraper.tasks.run_all_scrapers',
+            'task': 'apps.scraper.tasks.run_non_linkedin_scrapers',
             'schedule': 28800,
+        },
+        'linkedin-night-scrape': {
+            'task': 'apps.scraper.tasks.run_linkedin_scraper',
+            'schedule': 86400,
         },
         'expire-check': {
             'task': 'apps.scraper.tasks.deactivate_expired_listings',

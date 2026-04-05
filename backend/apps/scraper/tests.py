@@ -1,6 +1,12 @@
 from bs4 import BeautifulSoup
 from django.test import SimpleTestCase
 
+from apps.scraper.tasks import (
+    _count_rate_limit_signals,
+    _linkedin_retry_delay,
+    _should_retry_linkedin_rate_limit,
+)
+from apps.scraper.spiders.spiders import LinkedInSpider
 from apps.scraper.spiders.spiders import (
     extract_youthall_description,
     translate_known_youthall_description,
@@ -159,4 +165,106 @@ class YouthallCompanyNameExtractionTests(SimpleTestCase):
         self.assertEqual(
             dedupe_company_names(names),
             ["Dr\u00e4ger", "Betek Boya", "Adobe"],
+        )
+
+
+class LinkedInSpiderTests(SimpleTestCase):
+    def setUp(self):
+        self.spider = LinkedInSpider()
+
+    def test_build_search_urls_uses_priority_depths_without_duplicates(self):
+        urls = self.spider.build_search_urls()
+        high_priority_count = len(self.spider.SEARCH_QUERY_GROUPS[0]["queries"])
+        secondary_count = len(self.spider.SEARCH_QUERY_GROUPS[1]["queries"])
+
+        self.assertEqual(
+            len(urls),
+            (high_priority_count * len(self.spider.HIGH_PRIORITY_PAGE_STARTS))
+            + (secondary_count * len(self.spider.SECONDARY_PAGE_STARTS)),
+        )
+        self.assertEqual(len(urls), len(set(urls)))
+        self.assertIn(
+            "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search"
+            "?keywords=industrial+engineering+intern+turkey&location=Turkey&start=175",
+            urls,
+        )
+        self.assertIn(
+            "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search"
+            "?keywords=long+term+intern+turkey&location=Turkey&start=75",
+            urls,
+        )
+
+    def test_scores_relevant_em_internships_above_threshold(self):
+        score = self.spider.score_em_relevance(
+            "Industrial Engineering Intern",
+            "Support supply chain planning, SAP reporting and process improvement projects.",
+        )
+
+        self.assertGreaterEqual(score, self.spider.MIN_EM_RELEVANCE_SCORE)
+
+    def test_scores_non_em_internships_below_threshold(self):
+        score = self.spider.score_em_relevance(
+            "HR Intern",
+            "Support human resources onboarding, recruitment reporting and employer branding.",
+        )
+
+        self.assertLess(score, self.spider.MIN_EM_RELEVANCE_SCORE)
+
+    def test_remote_locations_need_turkiye_context(self):
+        self.assertTrue(self.spider.is_remote_or_hybrid_location("Remote"))
+        self.assertTrue(
+            self.spider.has_turkiye_context(
+                "Remote",
+                "Open to candidates based in Turkey and Istanbul.",
+                "Global Company",
+            )
+        )
+        self.assertTrue(
+            self.spider.has_turkiye_context(
+                "Hybrid",
+                "Coordinate improvement projects across teams.",
+                "TEI",
+            )
+        )
+        self.assertFalse(
+            self.spider.has_turkiye_context(
+                "Remote",
+                "Role supports operations in Germany and Poland.",
+                "Global Company",
+            )
+        )
+
+
+class LinkedInTaskHelperTests(SimpleTestCase):
+    def test_counts_rate_limit_lines_once_per_log_line(self):
+        output = "\n".join(
+            [
+                "RATE_LIMITED (429): https://linkedin.example/1",
+                "Service Unavailable (503): https://linkedin.example/2",
+                "ordinary info log line",
+            ]
+        )
+
+        self.assertEqual(_count_rate_limit_signals(output), 2)
+
+    def test_linkedin_retry_helpers_only_retry_on_repeated_empty_rate_limit(self):
+        self.assertEqual(_linkedin_retry_delay(0), 60)
+        self.assertEqual(_linkedin_retry_delay(2), 240)
+        self.assertTrue(
+            _should_retry_linkedin_rate_limit(
+                3,
+                {'new_count': 0, 'updated_count': 0, 'skipped_count': 10, 'error_count': 0},
+            )
+        )
+        self.assertFalse(
+            _should_retry_linkedin_rate_limit(
+                1,
+                {'new_count': 0, 'updated_count': 0, 'skipped_count': 0, 'error_count': 0},
+            )
+        )
+        self.assertFalse(
+            _should_retry_linkedin_rate_limit(
+                3,
+                {'new_count': 2, 'updated_count': 0, 'skipped_count': 0, 'error_count': 0},
+            )
         )

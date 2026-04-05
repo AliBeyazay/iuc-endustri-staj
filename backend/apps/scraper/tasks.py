@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 from pathlib import Path
 from celery import shared_task
 from django.conf import settings
@@ -22,6 +23,7 @@ SPIDER_MAP = {
     'ytu_orkam': 'apps.scraper.spiders.spiders.YtuOrkamSpider',
     'kariyer':   'apps.scraper.spiders.spiders.KariyerSpider',
 }
+NON_LINKEDIN_SPIDERS = tuple(name for name in SPIDER_MAP if name != 'linkedin')
 
 
 # ─── Tasks ────────────────────────────────────────────────────────────────────
@@ -29,8 +31,26 @@ SPIDER_MAP = {
 @shared_task(name='apps.scraper.tasks.run_all_scrapers')
 def run_all_scrapers():
     """Trigger all spiders sequentially (avoids Twisted reactor conflicts)."""
+    return _dispatch_spiders(SPIDER_MAP.keys())
+
+
+@shared_task(name='apps.scraper.tasks.run_non_linkedin_scrapers')
+def run_non_linkedin_scrapers():
+    """Trigger all non-LinkedIn spiders for routine daytime scrapes."""
+    return _dispatch_spiders(NON_LINKEDIN_SPIDERS)
+
+
+@shared_task(name='apps.scraper.tasks.run_linkedin_scraper')
+def run_linkedin_scraper():
+    """Run LinkedIn on its own schedule to reduce shared crawl pressure."""
+    result = run_single_spider.delay('linkedin')
+    logger.info('Dispatched dedicated LinkedIn spider task: %s', result.id)
+    return {'linkedin': result.id}
+
+
+def _dispatch_spiders(spider_names):
     results = {}
-    for name in SPIDER_MAP:
+    for name in spider_names:
         result = run_single_spider.delay(name)
         results[name] = result.id
     logger.info(f'Dispatched {len(results)} spider tasks: {list(results.keys())}')
@@ -40,7 +60,7 @@ def run_all_scrapers():
 @shared_task(
     name='apps.scraper.tasks.run_single_spider',
     bind=True,
-    max_retries=2,
+    max_retries=3,
     default_retry_delay=120,
 )
 def run_single_spider(self, spider_name: str):
@@ -71,14 +91,35 @@ def run_single_spider(self, spider_name: str):
             env=env,
         )
         finished_at = datetime.utcnow()
+        combined_output = "\n".join(chunk for chunk in (proc.stdout, proc.stderr) if chunk)
+        stats = _parse_scrapy_stats(proc.stdout)
+        rate_limit_hits = _count_rate_limit_signals(combined_output)
 
         if proc.returncode != 0:
+            if spider_name == 'linkedin' and rate_limit_hits:
+                countdown = _linkedin_retry_delay(self.request.retries)
+                logger.warning(
+                    'LINKEDIN_RATE_LIMIT_RETRY [%s]: signals=%s countdown=%ss',
+                    spider_name,
+                    rate_limit_hits,
+                    countdown,
+                )
+                raise self.retry(exc=Exception('LinkedIn rate limit'), countdown=countdown)
             logger.error(f'SPIDER_FAILED [{spider_name}]: {proc.stderr[-500:]}')
             _log_scraper(spider_name, started_at, finished_at, error_log=proc.stderr)
             return {'spider': spider_name, 'status': 'error'}
 
-        # Parse Scrapy stats from stdout
-        stats = _parse_scrapy_stats(proc.stdout)
+        if spider_name == 'linkedin' and _should_retry_linkedin_rate_limit(rate_limit_hits, stats):
+            countdown = _linkedin_retry_delay(self.request.retries)
+            logger.warning(
+                'LINKEDIN_SOFT_RATE_LIMIT_RETRY [%s]: signals=%s stats=%s countdown=%ss',
+                spider_name,
+                rate_limit_hits,
+                stats,
+                countdown,
+            )
+            raise self.retry(exc=Exception('LinkedIn repeated rate limit'), countdown=countdown)
+
         _log_scraper(spider_name, started_at, finished_at, **stats)
         logger.info(f'SPIDER_OK [{spider_name}]: {stats}')
         return {'spider': spider_name, 'status': 'ok', **stats}
@@ -161,6 +202,33 @@ def mark_upcoming_programs():
 
 
 # ─── Helpers ─────────────────────────────────────────────────────────────────
+
+RATE_LIMIT_SIGNAL_PATTERNS = (
+    re.compile(r'(?i)rate_limited'),
+    re.compile(r'(?i)too many requests'),
+    re.compile(r'(?i)service unavailable'),
+    re.compile(r'(?i)\b429\b'),
+    re.compile(r'(?i)\b503\b'),
+)
+
+
+def _count_rate_limit_signals(output: str) -> int:
+    hits = 0
+    for line in (output or '').splitlines():
+        if any(pattern.search(line) for pattern in RATE_LIMIT_SIGNAL_PATTERNS):
+            hits += 1
+    return hits
+
+
+def _linkedin_retry_delay(retries: int) -> int:
+    return max(60, (2 ** max(retries, 0)) * 60)
+
+
+def _should_retry_linkedin_rate_limit(rate_limit_hits: int, stats: dict) -> bool:
+    if rate_limit_hits < 2:
+        return False
+    return (stats.get('new_count', 0) + stats.get('updated_count', 0)) == 0
+
 
 def _parse_scrapy_stats(stdout: str) -> dict:
     """Extract new/updated/skipped counts from Scrapy log output."""

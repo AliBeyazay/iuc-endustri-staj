@@ -224,6 +224,10 @@ class BaseEMSpider(scrapy.Spider):
         "berlin", "paris", "milan", "warsaw", "bucharest", "prague",
     ]
 
+    REMOTE_LOCATION_KEYWORDS = [
+        "remote", "uzaktan", "hybrid", "hibrit",
+    ]
+
     PROGRAM_TYPE_RULES = {
         "yaz_staj_programi": ["yaz ", "summer", "yaz staj", "yaz donemi"],
         "rotasyon": ["rotasyon", "rotation"],
@@ -277,6 +281,10 @@ class BaseEMSpider(scrapy.Spider):
     def normalize_location(self, text: str) -> str:
         return self.clean_text(text or "")
 
+    def contains_any_keyword(self, text: str, keywords: list[str]) -> bool:
+        normalized = self.normalize_turkish(text or "")
+        return any(self.normalize_turkish(keyword) in normalized for keyword in keywords)
+
     def is_turkiye_location(self, location: str) -> bool:
         normalized = self.normalize_turkish(self.normalize_location(location))
         if not normalized:
@@ -284,6 +292,33 @@ class BaseEMSpider(scrapy.Spider):
         if any(keyword in normalized for keyword in self.FOREIGN_LOCATION_KEYWORDS):
             return False
         return any(keyword in normalized for keyword in self.TURKIYE_LOCATION_KEYWORDS)
+
+    def is_remote_or_hybrid_location(self, location: str) -> bool:
+        return self.contains_any_keyword(self.normalize_location(location), self.REMOTE_LOCATION_KEYWORDS)
+
+    def has_turkiye_context(self, location: str, description: str = "", company_name: str = "") -> bool:
+        if self.is_turkiye_location(location):
+            return True
+
+        normalized_description = self.normalize_turkish(description or "")
+        normalized_company = self.normalize_turkish(company_name or "")
+        company_hints = set(self.KNOWN_TURKISH_COMPANIES)
+        for hints in self.COMPANY_SECTOR_HINTS.values():
+            company_hints.update(hints)
+
+        has_turkiye_keyword = any(keyword in normalized_description for keyword in self.TURKIYE_LOCATION_KEYWORDS)
+        has_known_turkish_company = any(
+            self.normalize_turkish(company_hint) in normalized_company
+            for company_hint in company_hints
+        )
+
+        if has_turkiye_keyword or has_known_turkish_company:
+            return True
+
+        if any(keyword in normalized_description for keyword in self.FOREIGN_LOCATION_KEYWORDS):
+            return False
+
+        return False
 
     def filter_by_keywords(self, title: str, description: str) -> bool:
         combined = self.normalize_turkish(f"{title} {description}")
