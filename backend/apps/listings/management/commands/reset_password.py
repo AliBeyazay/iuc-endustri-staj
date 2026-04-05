@@ -15,7 +15,9 @@ class Command(BaseCommand):
 
     def _reset(self, email, password):
         if not email or not password:
+            self.stdout.write(f'Skipping reset: email={repr(email)} password_len={len(password) if password else 0}')
             return
+        self.stdout.write(f'Attempting reset for: {email}')
         try:
             user = Student.objects.get(iuc_email=email)
         except Student.DoesNotExist:
@@ -38,9 +40,11 @@ class Command(BaseCommand):
         # Reset admin account
         admin_email = os.environ.get('ADMIN_EMAIL', '').strip().lower()
         admin_password = os.environ.get('ADMIN_PASSWORD', '').strip()
+        self.stdout.write(f'ADMIN_EMAIL={repr(admin_email)}')
         self._reset(admin_email, admin_password)
 
         # Reset student account
         student_email = os.environ.get('STUDENT_EMAIL', '').strip().lower()
         student_password = os.environ.get('STUDENT_PASSWORD', '').strip()
+        self.stdout.write(f'STUDENT_EMAIL={repr(student_email)}')
         self._reset(student_email, student_password)
