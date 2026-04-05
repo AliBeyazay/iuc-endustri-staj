@@ -1,7 +1,10 @@
 from bs4 import BeautifulSoup
 from django.test import SimpleTestCase
 
-from apps.scraper.spiders.spiders import extract_youthall_description
+from apps.scraper.spiders.spiders import (
+    extract_youthall_description,
+    translate_known_youthall_description,
+)
 
 
 class YouthallDescriptionExtractionTests(SimpleTestCase):
@@ -53,4 +56,51 @@ class YouthallDescriptionExtractionTests(SimpleTestCase):
         self.assertEqual(
             description,
             "About this Position\n\nStructured growth opportunity.",
+        )
+
+    def test_translates_shell_summer_training_copy_to_turkish(self):
+        description = (
+            "What awaits you during the program?\n\n"
+            "- Job introduction sessions to help you determine your career path,\n\n"
+            "- Case analysis competitions,\n\n"
+            "- Tea-Talks session with our leaders,\n\n"
+            "- Site visits where you can observe workflows on site,\n\n"
+            "- Sessions to explore Global career opportunities at Shell.\n\n"
+            "- Training sessions for your personal development,\n\n"
+            "You can be the one! If you are...\n\n"
+            "- A university preparatory, 1st or 2nd year student,\n\n"
+            "- Reside in Istanbul between July and August,\n\n"
+            "- Interested in the energy sector,\n\n"
+            "- A creative and innovative perspective,\n\n"
+            "- A confident in your English,\n\n"
+            "Are you ready to take the next step? We’d love to have you with us!\n\n"
+            "#makethefuture\n\n"
+            "BE PART OF SHELL"
+        )
+
+        translated = translate_known_youthall_description(
+            description,
+            title="Shell Türkiye Summer Training",
+            company_name="Shell",
+            source_url="https://www.youthall.com/tr/Shell/shell-turkiye-summer-training_1248/",
+        )
+
+        self.assertEqual(
+            translated,
+            "Program süresince seni neler bekliyor?\n\n"
+            "- Kariyer yolunu belirlemene yardımcı olacak iş tanıtım oturumları,\n\n"
+            "- Vaka analizi yarışmaları,\n\n"
+            "- Liderlerimizle Tea-Talks oturumları,\n\n"
+            "- İş akışlarını yerinde gözlemleyebileceğin saha ziyaretleri,\n\n"
+            "- Shell'deki global kariyer fırsatlarını keşfedeceğin oturumlar.\n\n"
+            "- Kişisel gelişimini destekleyecek eğitim oturumları,\n\n"
+            "Eğer aşağıdaki özelliklere sahipsen, aradığımız kişi sen olabilirsin!\n\n"
+            "- Üniversite hazırlık, 1. sınıf veya 2. sınıf öğrencisiysen,\n\n"
+            "- Temmuz ve Ağustos ayları arasında İstanbul'da ikamet edebileceksen,\n\n"
+            "- Enerji sektörüne ilgi duyuyorsan,\n\n"
+            "- Yaratıcı ve yenilikçi bir bakış açısına sahipsen,\n\n"
+            "- İngilizcene güveniyorsan,\n\n"
+            "Bir sonraki adımı atmaya hazır mısın? Seni aramızda görmekten memnuniyet duyarız!\n\n"
+            "#makethefuture\n\n"
+            "SHELL'İN BİR PARÇASI OL",
         )

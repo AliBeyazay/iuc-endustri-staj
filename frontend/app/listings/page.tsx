@@ -1465,22 +1465,11 @@ export default function ListingsPage() {
               <>
                 <div className="grid gap-4 sm:grid-cols-2">
                   {listings.map((item) => {
-                    const sectorLabel = item.sector ?? null
                     return (
                       <article
                         key={item.id}
                         className="group relative flex flex-col rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md dark:border-white/10 dark:bg-[#1a2d45]"
                       >
-                        {/* Sector Tag */}
-                        {sectorLabel && (
-                          <span className={classNames(
-                            'absolute right-3 top-3 rounded-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider',
-                            getSectorTagColor(sectorLabel),
-                          )}>
-                            {getSectorShortLabel(sectorLabel)}
-                          </span>
-                        )}
-
                         <div className="flex-1 p-5">
                           {/* Company + Title */}
                           <div className="flex items-start gap-4">

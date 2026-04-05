@@ -125,6 +125,81 @@ def extract_youthall_description(soup: BeautifulSoup) -> str:
     return ""
 
 
+def translate_known_youthall_description(
+    description: str,
+    *,
+    title: str = "",
+    company_name: str = "",
+    source_url: str = "",
+) -> str:
+    if not description:
+        return ""
+
+    normalized_title = normalize_multiline_text(title).casefold()
+    normalized_company = normalize_multiline_text(company_name).casefold()
+    normalized_source_url = (source_url or "").strip().casefold()
+
+    is_shell_summer_training = (
+        "shell türkiye summer training" in normalized_title
+        or "shell turkiye summer training" in normalized_title
+        or normalized_company == "shell"
+        and "shell-turkiye-summer-training_" in normalized_source_url
+    )
+    if not is_shell_summer_training:
+        return description
+
+    replacements = (
+        ("What awaits you during the program?", "Program süresince seni neler bekliyor?"),
+        (
+            "- Job introduction sessions to help you determine your career path,",
+            "- Kariyer yolunu belirlemene yardımcı olacak iş tanıtım oturumları,",
+        ),
+        ("- Case analysis competitions,", "- Vaka analizi yarışmaları,"),
+        ("- Tea-Talks session with our leaders,", "- Liderlerimizle Tea-Talks oturumları,"),
+        (
+            "- Site visits where you can observe workflows on site,",
+            "- İş akışlarını yerinde gözlemleyebileceğin saha ziyaretleri,",
+        ),
+        (
+            "- Sessions to explore Global career opportunities at Shell.",
+            "- Shell'deki global kariyer fırsatlarını keşfedeceğin oturumlar.",
+        ),
+        (
+            "- Training sessions for your personal development,",
+            "- Kişisel gelişimini destekleyecek eğitim oturumları,",
+        ),
+        (
+            "You can be the one! If you are...",
+            "Eğer aşağıdaki özelliklere sahipsen, aradığımız kişi sen olabilirsin!",
+        ),
+        (
+            "- A university preparatory, 1st or 2nd year student,",
+            "- Üniversite hazırlık, 1. sınıf veya 2. sınıf öğrencisiysen,",
+        ),
+        (
+            "- Reside in Istanbul between July and August,",
+            "- Temmuz ve Ağustos ayları arasında İstanbul'da ikamet edebileceksen,",
+        ),
+        ("- Interested in the energy sector,", "- Enerji sektörüne ilgi duyuyorsan,"),
+        (
+            "- A creative and innovative perspective,",
+            "- Yaratıcı ve yenilikçi bir bakış açısına sahipsen,",
+        ),
+        ("- A confident in your English,", "- İngilizcene güveniyorsan,"),
+        (
+            "Are you ready to take the next step? We’d love to have you with us!",
+            "Bir sonraki adımı atmaya hazır mısın? Seni aramızda görmekten memnuniyet duyarız!",
+        ),
+        ("BE PART OF SHELL", "SHELL'İN BİR PARÇASI OL"),
+    )
+
+    translated = description
+    for source, target in replacements:
+        translated = translated.replace(source, target)
+
+    return translated
+
+
 def absolute_logo(base_url: str, value: str | None) -> str | None:
     if not value:
         return None
@@ -931,6 +1006,12 @@ class YouthallSpider(BaseEMSpider):
         title = page_title
         if company and page_title.startswith(company):
             title = page_title[len(company):].strip() or page_title
+        description = translate_known_youthall_description(
+            description,
+            title=title,
+            company_name=company,
+            source_url=response.url,
+        )
         logo_url = extract_logo_url_from_html(response.url, response.text, company_name=company)
 
         deadline, has_deadline = self.extract_deadline(response.text, text)

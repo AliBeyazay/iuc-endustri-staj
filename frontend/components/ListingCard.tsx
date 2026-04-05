@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ArrowUpRight, Bookmark, BookmarkCheck, Clock, MapPin, Share2, Sparkles } from 'lucide-react'
 import { Listing } from '@/types'
 import {
-  FOCUS_AREA_LABELS, FOCUS_AREA_COLORS, PLATFORM_LABELS,
+  PLATFORM_LABELS,
   getInitials, getAvatarColor, timeAgoTurkish, getDeadlineDisplay,
 } from '@/lib/helpers'
 
@@ -105,9 +105,6 @@ export default function ListingCard({ listing, isBookmarked, onBookmark }: Props
             {listing.company_name}
           </p>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] text-[#173156]/58 dark:text-[#e7edf4]/50">
-            <span className={`rounded-full px-2.5 py-[3px] text-[10px] font-semibold ${FOCUS_AREA_COLORS[listing.em_focus_area]}`}>
-              {FOCUS_AREA_LABELS[listing.em_focus_area]}
-            </span>
             <span className="inline-flex items-center gap-1">
               <MapPin size={12} />
               {listing.location}
