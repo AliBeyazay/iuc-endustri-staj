@@ -1,6 +1,16 @@
 from django.contrib import admin
-from django.utils.html import format_html
-from .models import Application, InternshipJournal, JournalComment, Listing, NegativeKeyword, Review, Bookmark, Student, ScraperLog
+from .models import (
+    Application,
+    Bookmark,
+    InternshipJournal,
+    JournalComment,
+    Listing,
+    NegativeKeyword,
+    Review,
+    ScraperLog,
+    Student,
+    SuppressedListingSource,
+)
 
 
 @admin.register(Student)
@@ -89,3 +99,12 @@ class ScraperLogAdmin(admin.ModelAdmin):
 class NegativeKeywordAdmin(admin.ModelAdmin):
     list_display = ['keyword', 'created_at']
     search_fields = ['keyword']
+
+
+@admin.register(SuppressedListingSource)
+class SuppressedListingSourceAdmin(admin.ModelAdmin):
+    list_display = ['source_url', 'source_platform', 'listing_title', 'company_name', 'suppressed_reason', 'suppressed_at']
+    search_fields = ['source_url', 'listing_title', 'company_name']
+    list_filter = ['source_platform', 'suppressed_reason']
+    readonly_fields = ['source_url', 'source_platform', 'listing_title', 'company_name', 'suppressed_reason', 'suppressed_at']
+    ordering = ['-suppressed_at']

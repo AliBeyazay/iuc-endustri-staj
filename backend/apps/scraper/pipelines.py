@@ -365,7 +365,7 @@ class DjangoORMPipeline:
     }
 
     def process_item(self, item, spider):
-        from apps.listings.models import Listing
+        from apps.listings.models import Listing, SuppressedListingSource
 
         adapter = ItemAdapter(item)
         classification = spider.get_sector_classification(
@@ -381,6 +381,10 @@ class DjangoORMPipeline:
 
         if not url:
             spider.logger.warning('SKIPPED: No source_url')
+            return item
+
+        if SuppressedListingSource.objects.filter(source_url=url).exists():
+            spider.logger.info(f'SUPPRESSED_SOURCE_SKIPPED: {url}')
             return item
 
         defaults = {

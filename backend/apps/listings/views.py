@@ -20,6 +20,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .cache_keys import get_listing_list_cache_version
 from .filters import ListingFilter
 from .models import Application, Bookmark, InternshipJournal, JournalComment, Listing, NegativeKeyword, Review, ScraperLog, Student
 from .serializers import (
@@ -145,7 +146,8 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
     def _get_list_cache_key(self, request) -> str:
         fingerprint = request.get_full_path()
         digest = hashlib.md5(fingerprint.encode('utf-8')).hexdigest()
-        return f'listing-list:v1:{digest}'
+        cache_version = get_listing_list_cache_version()
+        return f'listing-list:v{cache_version}:{digest}'
 
     def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)
