@@ -137,7 +137,11 @@ export function formatListingDescription(raw: string): string[] {
     .replace(/\bDevamını gör\b/gi, '')
 
   text = text
-    .replace(/\s+/g, ' ')
+    .replace(/\r/g, '\n')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n[ \t]+/g, '\n')
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
     .replace(/\s([:;,.!?])/g, '$1')
     .trim()
 
@@ -176,6 +180,8 @@ export function formatListingDescription(raw: string): string[] {
   const relevantStarts = [
     /join\s+nestle\s+team\s+and\s+be\s+a\s+force\s+for\s+good/i,
     /talent\s+nest\s+is\s+now\s+accepting\s+applications/i,
+    /about this position/i,
+    /what you(?:'|’)ll do/i,
     /which\s+profile\s+are\s+we\s+looking\s+for\?/i,
     /who\s+are\s+we\s+looking\s+for\?/i,
     /location:\s*[a-zçğıöşü]/i,
@@ -200,6 +206,13 @@ export function formatListingDescription(raw: string): string[] {
   const sectionTitles = [
     'Location',
     'Type of contract',
+    'About this Position',
+    "What You'll Do",
+    'What makes you a good fit',
+    'Some perks of joining',
+    'Responsibilities',
+    'Requirements',
+    'Qualifications',
     'Which profile are we looking for?',
     'Who are we looking for?',
     'İlan Hakkında',
@@ -234,6 +247,7 @@ export function formatListingDescription(raw: string): string[] {
 
     return block
       .replace(/(\d+\s*[.)-]\s+)/g, '\n$1')
+      .replace(/\s+-\s+/g, '\n- ')
       .replace(
         /\s+(?=(Kimler Başvurabilir|Başvuru Süreci|Başvuru Dönemi|Staj Dönemi|Genel Yetenek Testi|Video Mülakat|Mülakat|Teklif|Program Hakkında|Seçim Süreci|Peki seni neler bekliyor|Senin de başvurunu bekliyoruz))/gi,
         '\n'

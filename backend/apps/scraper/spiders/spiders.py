@@ -8,6 +8,7 @@ entry points over brittle client-side selectors.
 import json
 import re
 from datetime import date, datetime, timedelta
+from html import unescape
 from urllib.parse import quote_plus, urlparse, urljoin
 
 import requests
@@ -20,6 +21,108 @@ from .base_spider import BaseEMSpider
 
 def extract_text(html: str) -> str:
     return BeautifulSoup(html or "", "html.parser").get_text(" ", strip=True)
+
+
+def normalize_multiline_text(text: str) -> str:
+    if not text:
+        return ""
+    text = unescape(text).replace("\xa0", " ").replace("\r", "")
+    text = re.sub(r"[ \t]+\n", "\n", text)
+    text = re.sub(r"\n[ \t]+", "\n", text)
+    text = re.sub(r"[ \t]{2,}", " ", text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text.strip()
+
+
+def html_fragment_to_text(html: str) -> str:
+    if not html:
+        return ""
+    normalized_html = re.sub(r"<br\s*/?>", "\n", html, flags=re.I)
+    normalized_html = re.sub(
+        r"</(p|div|section|article|h1|h2|h3|h4|h5|h6|ul|ol)>\s*",
+        "\n\n",
+        normalized_html,
+        flags=re.I,
+    )
+    normalized_html = re.sub(r"<li\b[^>]*>", "\n- ", normalized_html, flags=re.I)
+    normalized_html = re.sub(r"</li>\s*", "\n", normalized_html, flags=re.I)
+    raw_text = BeautifulSoup(normalized_html, "html.parser").get_text("\n")
+
+    lines: list[str] = []
+    for segment in raw_text.splitlines():
+        line = segment.strip()
+        if not line:
+            if lines and lines[-1] != "":
+                lines.append("")
+            continue
+        if (
+            lines
+            and lines[-1] != ""
+            and not line.startswith("-")
+            and not lines[-1].startswith("-")
+            and not re.search(r"[.!?:;]$", lines[-1])
+        ):
+            lines[-1] = f"{lines[-1]} {line}"
+        else:
+            lines.append(line)
+
+    return normalize_multiline_text("\n".join(lines))
+
+
+def iter_json_objects(value):
+    if isinstance(value, dict):
+        yield value
+        return
+    if isinstance(value, list):
+        for item in value:
+            yield from iter_json_objects(item)
+
+
+def extract_jobposting_description_from_schema(soup: BeautifulSoup) -> str:
+    for script in soup.select("script[type='application/ld+json']"):
+        raw_json = script.string or script.get_text("\n", strip=True)
+        if not raw_json:
+            continue
+        try:
+            payload = json.loads(raw_json)
+        except json.JSONDecodeError:
+            continue
+
+        for item in iter_json_objects(payload):
+            if not isinstance(item, dict):
+                continue
+            item_type = item.get("@type")
+            is_job_posting = item_type == "JobPosting" or (
+                isinstance(item_type, list) and "JobPosting" in item_type
+            )
+            if not is_job_posting:
+                continue
+
+            description = html_fragment_to_text(str(item.get("description") or ""))
+            if description:
+                return description
+    return ""
+
+
+def extract_youthall_description(soup: BeautifulSoup) -> str:
+    content = soup.select_one(".c-job_post_content")
+    if content:
+        content_soup = BeautifulSoup(str(content), "html.parser")
+        for node in content_soup.select("script, style, noscript"):
+            node.decompose()
+        description = html_fragment_to_text(content_soup.decode_contents())
+        if description:
+            return description
+
+    description = extract_jobposting_description_from_schema(soup)
+    if description:
+        return description
+
+    meta_description = soup.find("meta", attrs={"name": "description"})
+    if meta_description:
+        return normalize_multiline_text(meta_description.get("content", ""))
+
+    return ""
 
 
 def absolute_logo(base_url: str, value: str | None) -> str | None:
@@ -822,6 +925,7 @@ class YouthallSpider(BaseEMSpider):
     def parse_detail(self, response):
         soup = BeautifulSoup(response.text, "html.parser")
         text = self.clean_text(soup.get_text(" ", strip=True))
+        description = extract_youthall_description(soup) or text[:4000]
         company = self.clean_text((soup.find("h1") or {}).get_text(" ", strip=True) if soup.find("h1") else "")
         page_title = soup.title.get_text(strip=True).replace(" - Youthall", "") if soup.title else company
         title = page_title
@@ -840,17 +944,17 @@ class YouthallSpider(BaseEMSpider):
             company_logo_url=logo_url,
             source_url=response.url,
             source_platform="youthall",
-            em_focus_area=self.detect_em_focus_area(title, text, company),
-            internship_type=self.detect_internship_type(title, text),
+            em_focus_area=self.detect_em_focus_area(title, description, company),
+            internship_type=self.detect_internship_type(title, description),
             company_origin=self.detect_company_origin(company),
             location="Turkiye",
-            description=text[:4000],
+            description=description,
             requirements="",
             application_deadline=deadline,
             deadline_status=self.compute_deadline_status(deadline),
             is_active=deadline is None or deadline >= date.today(),
-            is_talent_program="program" in self.normalize_turkish(f"{title} {text}"),
-            program_type=self.detect_program_type(title, text),
+            is_talent_program="program" in self.normalize_turkish(f"{title} {description}"),
+            program_type=self.detect_program_type(title, description),
             duration_weeks=None,
             scraped_at=datetime.utcnow(),
         )

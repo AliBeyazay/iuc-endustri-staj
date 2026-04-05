@@ -34,6 +34,14 @@ const ORIGIN_LABEL: Record<string, string> = {
   belirsiz: 'Belirsiz',
 }
 
+function normalizeDescriptionMeta(value: string): string {
+  return value
+    .toLocaleLowerCase('tr-TR')
+    .replace(/[^a-z0-9çğıöşü\s]+/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 function Badge({ label, className }: { label: string; className: string }) {
   return (
     <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold ${className}`}>
@@ -119,7 +127,21 @@ export default function ListingDetailClient({ listing }: { listing: Listing }) {
   const avatarColor = getAvatarColor(listing.company_name)
   const isBookmarked = bookmarks.has(listing.id)
   const descriptionBlocks = formatListingDescription(listing.description)
-  const descriptionBlocksWithoutIntro = descriptionBlocks.slice(1)
+  const firstDescriptionBlock = descriptionBlocks[0] ?? ''
+  const normalizedFirstDescriptionBlock = normalizeDescriptionMeta(firstDescriptionBlock)
+  const normalizedTitle = normalizeDescriptionMeta(listing.title)
+  const normalizedCompany = normalizeDescriptionMeta(listing.company_name)
+  const normalizedPlatform = normalizeDescriptionMeta(PLATFORM_LABELS[listing.source_platform] ?? '')
+  const shouldHideIntroBlock =
+    descriptionBlocks.length > 1 &&
+    !!normalizedFirstDescriptionBlock &&
+    (
+      normalizedFirstDescriptionBlock === normalizedTitle ||
+      normalizedFirstDescriptionBlock === normalizedCompany ||
+      normalizedFirstDescriptionBlock === `${normalizedCompany} ${normalizedTitle}`.trim() ||
+      normalizedFirstDescriptionBlock.includes(normalizedPlatform)
+    )
+  const descriptionBlocksWithoutIntro = shouldHideIntroBlock ? descriptionBlocks.slice(1) : descriptionBlocks
   const visibleBlocks = expandDesc
     ? descriptionBlocksWithoutIntro
     : descriptionBlocksWithoutIntro.slice(0, 4)
