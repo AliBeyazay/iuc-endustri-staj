@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     ListingViewSet, ReviewViewSet, BookmarkViewSet, ApplicationViewSet, InternshipJournalViewSet, JournalCommentViewSet,
     ProfileView, CVUploadView, DashboardStatsView, EncodingQualityReportView, ScraperHealthReportView,
+    HomepageFeaturedListingsView,
     AdminListingModerationListView, AdminListingModerationDetailView, AdminListingBulkDeleteView,
     NotificationPreferencesView,
     CheckEmailView, AccountStatusView, RegisterView, VerifyOTPView,
@@ -19,6 +20,7 @@ router.register('journal-comments', JournalCommentViewSet, basename='journal-com
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('homepage/featured-listings/', HomepageFeaturedListingsView.as_view()),
 
     # Profile
     path('profile/',     ProfileView.as_view()),

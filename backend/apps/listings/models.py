@@ -138,6 +138,26 @@ class Listing(models.Model):
     is_talent_program = models.BooleanField(default=False, db_index=True)
     program_type = models.CharField(max_length=20, choices=PROGRAM_TYPE_CHOICES, null=True, blank=True)
     duration_weeks = models.IntegerField(null=True, blank=True)
+    is_homepage_featured = models.BooleanField(
+        default=False,
+        db_index=True,
+        help_text='Ana sayfadaki "One Cikan Ilanlar" bolumunde goster.',
+    )
+    homepage_featured_rank = models.PositiveSmallIntegerField(
+        default=99,
+        help_text='Kucuk sayi once gelir. Ana sayfada en fazla 3 ilan gosterilir.',
+    )
+    homepage_featured_image_url = models.URLField(
+        max_length=500,
+        blank=True,
+        default='',
+        help_text='Kartin ust banner gorseli icin harici gorsel URLsi.',
+    )
+    homepage_featured_summary = models.TextField(
+        blank=True,
+        default='',
+        help_text='Kartta kullanilacak kisa ozet. Bos birakilirsa ilan aciklamasindan otomatik uretilir.',
+    )
     moderation_status = models.CharField(
         max_length=10,
         choices=MODERATION_STATUS_CHOICES,

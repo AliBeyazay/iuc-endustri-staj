@@ -28,13 +28,75 @@ class StudentAdmin(admin.ModelAdmin):
 
 @admin.register(Listing)
 class ListingAdmin(admin.ModelAdmin):
-    list_display  = ['title', 'company_name', 'em_focus_area', 'source_platform',
+    list_display  = ['title', 'company_name', 'homepage_featured_rank', 'is_homepage_featured', 'em_focus_area', 'source_platform',
                      'deadline_status', 'is_active', 'canonical_listing', 'is_talent_program', 'created_at']
-    list_filter   = ['is_active', 'is_talent_program', 'em_focus_area',
+    list_filter   = ['is_active', 'is_homepage_featured', 'is_talent_program', 'em_focus_area',
                      'source_platform', 'internship_type', 'company_origin', 'deadline_status', 'canonical_listing']
     search_fields = ['title', 'company_name', 'location']
     readonly_fields = ['id', 'created_at', 'updated_at']
     ordering      = ['-created_at']
+    fieldsets = (
+        (
+            None,
+            {
+                'fields': (
+                    'id',
+                    'title',
+                    'company_name',
+                    'company_logo_url',
+                    'source_platform',
+                    'source_url',
+                    'application_url',
+                    'location',
+                    'description',
+                    'requirements',
+                    'application_deadline',
+                    'deadline_status',
+                )
+            },
+        ),
+        (
+            'Siniflandirma ve Durum',
+            {
+                'fields': (
+                    'em_focus_area',
+                    'secondary_em_focus_area',
+                    'em_focus_confidence',
+                    'internship_type',
+                    'company_origin',
+                    'is_active',
+                    'is_talent_program',
+                    'program_type',
+                    'duration_weeks',
+                    'canonical_listing',
+                )
+            },
+        ),
+        (
+            'Ana Sayfa One Cikan Kart',
+            {
+                'fields': (
+                    'is_homepage_featured',
+                    'homepage_featured_rank',
+                    'homepage_featured_image_url',
+                    'homepage_featured_summary',
+                ),
+                'description': 'En fazla 3 ilani one cikar. Kucuk siralama numarasi daha once gosterilir.',
+            },
+        ),
+        (
+            'Moderasyon',
+            {
+                'fields': (
+                    'moderation_status',
+                    'moderation_note',
+                    'moderated_at',
+                    'created_at',
+                    'updated_at',
+                )
+            },
+        ),
+    )
 
     actions = ['activate_listings', 'deactivate_listings']
 

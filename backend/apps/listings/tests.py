@@ -97,6 +97,16 @@ class ListingDeletionProtectionTests(TestCase):
         self.assertGreater(after_create_version, initial_version)
         self.assertGreater(after_delete_version, after_create_version)
 
+    def test_featured_update_bumps_cache_version(self):
+        listing = self.create_listing()
+        initial_version = get_listing_list_cache_version()
+
+        listing.is_homepage_featured = True
+        listing.homepage_featured_rank = 1
+        listing.save(update_fields=['is_homepage_featured', 'homepage_featured_rank'])
+
+        self.assertGreater(get_listing_list_cache_version(), initial_version)
+
     def test_admin_deactivate_action_bumps_cache_version(self):
         listing = self.create_listing()
         initial_version = get_listing_list_cache_version()
@@ -159,6 +169,79 @@ class ListingDeletionProtectionTests(TestCase):
         self.assertEqual(response.status_code, 200)
         results = response.json()['results']
         self.assertNotIn('Deleted Via Admin Log', [item['title'] for item in results])
+
+    def test_homepage_featured_endpoint_filters_and_orders_results(self):
+        featured_rank_two = self.create_listing(
+            title='Featured Two',
+            source_url='https://example.com/listing/featured-two',
+            is_homepage_featured=True,
+            homepage_featured_rank=2,
+            homepage_featured_summary='Second featured summary',
+        )
+        featured_rank_one = self.create_listing(
+            title='Featured One',
+            source_url='https://example.com/listing/featured-one',
+            is_homepage_featured=True,
+            homepage_featured_rank=1,
+            homepage_featured_summary='First featured summary',
+        )
+        self.create_listing(
+            title='Featured Inactive',
+            source_url='https://example.com/listing/featured-inactive',
+            is_homepage_featured=True,
+            homepage_featured_rank=0,
+            is_active=False,
+        )
+        canonical = self.create_listing(
+            title='Canonical Featured',
+            source_url='https://example.com/listing/canonical-featured',
+            is_homepage_featured=True,
+            homepage_featured_rank=3,
+        )
+        self.create_listing(
+            title='Duplicate Featured',
+            source_url='https://example.com/listing/duplicate-featured',
+            is_homepage_featured=True,
+            homepage_featured_rank=1,
+            canonical_listing=canonical,
+        )
+        self.create_listing(
+            title='Pending Featured',
+            source_url='https://example.com/listing/pending-featured',
+            is_homepage_featured=True,
+            homepage_featured_rank=1,
+            moderation_status='pending',
+        )
+
+        response = self.client.get('/api/homepage/featured-listings/')
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual([item['title'] for item in payload], ['Featured One', 'Featured Two', 'Canonical Featured'])
+        self.assertEqual(payload[0]['homepage_featured_summary'], 'First featured summary')
+        self.assertEqual(payload[1]['homepage_featured_summary'], 'Second featured summary')
+        self.assertEqual(payload[2]['homepage_featured_image_url'], None)
+        self.assertEqual({item['id'] for item in payload}, {str(featured_rank_one.id), str(featured_rank_two.id), str(canonical.id)})
+
+    def test_homepage_featured_endpoint_updates_after_flag_removed(self):
+        listing = self.create_listing(
+            title='Temporary Featured',
+            source_url='https://example.com/listing/temp-featured',
+            is_homepage_featured=True,
+            homepage_featured_rank=1,
+            description='A' * 220,
+        )
+
+        first_response = self.client.get('/api/homepage/featured-listings/')
+        listing.is_homepage_featured = False
+        listing.save(update_fields=['is_homepage_featured'])
+        second_response = self.client.get('/api/homepage/featured-listings/')
+
+        self.assertEqual(first_response.status_code, 200)
+        self.assertEqual(second_response.status_code, 200)
+        self.assertEqual(len(first_response.json()), 1)
+        self.assertTrue(first_response.json()[0]['homepage_featured_summary'].endswith('...'))
+        self.assertEqual(second_response.json(), [])
 
 
 class DummyLogger:

@@ -58,8 +58,24 @@ export interface Listing {
   is_talent_program: boolean
   program_type: TalentProgramType | null
   duration_weeks: number | null
+  homepage_featured_image_url?: string | null
+  homepage_featured_summary?: string | null
   created_at: string
   updated_at: string
+}
+
+export interface HomepageFeaturedListing {
+  id: string
+  title: string
+  company_name: string
+  company_logo_url: string | null
+  source_platform: SourcePlatform
+  internship_type: InternshipType
+  location: string
+  application_deadline: string | null
+  is_talent_program: boolean
+  homepage_featured_image_url?: string | null
+  homepage_featured_summary?: string | null
 }
 
 export interface Review {

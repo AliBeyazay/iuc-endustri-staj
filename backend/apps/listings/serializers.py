@@ -189,6 +189,17 @@ def clean_company_name(name: str) -> str:
     return name
 
 
+def build_featured_summary(summary: str, description: str, *, max_length: int = 180) -> str:
+    source = summary or description or ''
+    text = re.sub(r'<[^>]+>', ' ', source)
+    text = re.sub(r'\s+', ' ', text).strip()
+    if len(text) <= max_length:
+        return text
+
+    shortened = text[: max_length - 3].rsplit(' ', 1)[0].strip()
+    return f'{shortened or text[: max_length - 3]}...'
+
+
 class ListingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Listing
@@ -239,6 +250,23 @@ class ListingListSerializer(serializers.ModelSerializer):
                 data.get('company_name', ''),
                 data.get('application_url', ''),
             )
+        return data
+
+
+class HomepageFeaturedListingSerializer(ListingListSerializer):
+    class Meta(ListingListSerializer.Meta):
+        fields = ListingListSerializer.Meta.fields + [
+            'homepage_featured_image_url',
+            'homepage_featured_summary',
+        ]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['homepage_featured_image_url'] = getattr(instance, 'homepage_featured_image_url', '') or None
+        data['homepage_featured_summary'] = build_featured_summary(
+            getattr(instance, 'homepage_featured_summary', ''),
+            getattr(instance, 'description', ''),
+        )
         return data
 
 

@@ -32,6 +32,7 @@ from .serializers import (
     ApplicationListSerializer,
     ApplicationWriteSerializer,
     BookmarkSerializer,
+    HomepageFeaturedListingSerializer,
     InternshipJournalListSerializer,
     InternshipJournalWriteSerializer,
     JournalCommentListSerializer,
@@ -46,6 +47,7 @@ from .serializers import (
 
 _volatile_cache_store: dict[str, tuple[str, float]] = {}
 LISTING_LIST_CACHE_TTL_SECONDS = 30
+HOMEPAGE_FEATURED_CACHE_TTL_SECONDS = 30
 ENCODING_QUALITY_CACHE_TTL_SECONDS = 300
 
 
@@ -303,6 +305,44 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
         avg = reviews.aggregate(avg=Avg('rating'))['avg']
         serializer = ReviewSerializer(reviews, many=True)
         return Response({'results': serializer.data, 'average_rating': avg})
+
+
+class HomepageFeaturedListingsView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        cache_key = self._get_cache_key()
+        try:
+            cached_payload = cache.get(cache_key)
+        except Exception:
+            cached_payload = None
+
+        if cached_payload is not None:
+            return Response(cached_payload)
+
+        featured_qs = (
+            Listing.objects.filter(
+                is_active=True,
+                moderation_status='approved',
+                canonical_listing__isnull=True,
+                is_homepage_featured=True,
+            )
+            .exclude(deadline_status='expired')
+            .exclude(application_deadline__lt=date.today())
+            .order_by('homepage_featured_rank', '-created_at')[:3]
+        )
+
+        serializer = HomepageFeaturedListingSerializer(featured_qs, many=True)
+        payload = serializer.data
+        try:
+            cache.set(cache_key, payload, timeout=HOMEPAGE_FEATURED_CACHE_TTL_SECONDS)
+        except Exception:
+            pass
+        return Response(payload)
+
+    def _get_cache_key(self) -> str:
+        cache_version = get_listing_list_cache_version()
+        return f'homepage-featured-listings:v{cache_version}'
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
