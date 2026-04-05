@@ -7,11 +7,13 @@ from collections import Counter
 from datetime import date, timedelta
 from time import time
 
+from django.contrib.admin.models import DELETION, LogEntry
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.core.mail import send_mail
-from django.db.models import Avg, Case, Count, FloatField, IntegerField, Q, Value, When
-from django.db.models.functions import Coalesce
+from django.db.models import Avg, Case, CharField, Count, FloatField, IntegerField, Q, Value, When
+from django.db.models.functions import Coalesce, Concat
 from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, permissions, status, viewsets
@@ -64,6 +66,7 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
 
     # Endüstri mühendisliğiyle ilgisiz ilanları filtrele (DB'den, 5dk cache)
     NEGATIVE_KEYWORDS_CACHE_TTL = 300
+    DELETED_LISTING_REPRS_CACHE_TTL = 300
 
     @classmethod
     def _get_negative_keywords(cls):
@@ -88,6 +91,36 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
             return ListingListSerializer
         return ListingSerializer
 
+    @classmethod
+    def _get_deleted_listing_object_reprs(cls):
+        cache_version = get_listing_list_cache_version()
+        cache_key = f'deleted_listing_object_reprs:v{cache_version}'
+        try:
+            deleted_reprs = cache.get(cache_key)
+        except Exception:
+            deleted_reprs = None
+
+        if deleted_reprs is None:
+            try:
+                content_type = ContentType.objects.get_for_model(Listing)
+                deleted_reprs = list(
+                    LogEntry.objects.filter(
+                        content_type=content_type,
+                        action_flag=DELETION,
+                    )
+                    .values_list('object_repr', flat=True)
+                    .distinct()
+                )
+            except Exception:
+                deleted_reprs = []
+
+            try:
+                cache.set(cache_key, deleted_reprs, timeout=cls.DELETED_LISTING_REPRS_CACHE_TTL)
+            except Exception:
+                pass
+
+        return deleted_reprs
+
     def get_queryset(self):
         qs = super().get_queryset()
         if self.action in ['list', 'similar']:
@@ -110,6 +143,17 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
 
         # Bozuk encoding'li ilanları gizle (? içeren title/company_name)
         qs = qs.exclude(title__contains='?').exclude(company_name__contains='?')
+
+        deleted_object_reprs = self._get_deleted_listing_object_reprs()
+        if deleted_object_reprs:
+            qs = qs.annotate(
+                admin_object_repr=Concat(
+                    'title',
+                    Value(' - '),
+                    'company_name',
+                    output_field=CharField(),
+                )
+            ).exclude(admin_object_repr__in=deleted_object_reprs)
 
         return qs.annotate(
             bookmark_count=Count('bookmarked_by', distinct=True),

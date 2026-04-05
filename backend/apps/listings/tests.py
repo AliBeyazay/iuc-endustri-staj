@@ -1,5 +1,7 @@
 from django.contrib.admin.sites import AdminSite
+from django.contrib.admin.models import DELETION, LogEntry
 from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.test import RequestFactory, TestCase, override_settings
 
@@ -134,6 +136,29 @@ class ListingDeletionProtectionTests(TestCase):
 
         self.assertEqual(runtime_info['environment'], 'prod')
         self.assertEqual(runtime_info['frontend_url'], 'https://iuc-endustri-staj.vercel.app')
+
+    def test_listing_api_hides_entries_with_admin_delete_log(self):
+        listing = self.create_listing(title='Deleted Via Admin Log', company_name='Test Company')
+        admin_user = get_user_model().objects.create_superuser(
+            username='admin-log',
+            iuc_email='admin-log@iuc.edu.tr',
+            email='admin-log@iuc.edu.tr',
+            password='test-pass-123',
+        )
+        LogEntry.objects.create(
+            user=admin_user,
+            content_type=ContentType.objects.get_for_model(Listing),
+            object_id=str(listing.id),
+            object_repr=str(listing),
+            action_flag=DELETION,
+            change_message='',
+        )
+
+        response = self.client.get('/api/listings/?limit=50')
+
+        self.assertEqual(response.status_code, 200)
+        results = response.json()['results']
+        self.assertNotIn('Deleted Via Admin Log', [item['title'] for item in results])
 
 
 class DummyLogger:
