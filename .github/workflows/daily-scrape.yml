@@ -1,0 +1,75 @@
+name: Daily Scraper
+
+on:
+  schedule:
+    # 05:00 UTC = 08:00 Europe/Istanbul
+    - cron: "0 5 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: daily-scrape
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          # scrapy-playwright needs chromium but our spiders don't use it;
+          # skip the heavy browser install.
+          python -c "import scrapy; print('scrapy', scrapy.__version__)"
+
+      - name: Prepare database
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.dev
+          USE_SQLITE: "True"
+        run: |
+          python manage.py migrate --run-syncdb
+          python manage.py import_production_listings
+          echo "Existing listings loaded"
+
+      - name: Run all spiders
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.dev
+          USE_SQLITE: "True"
+        run: python manage.py run_scrapers
+
+      - name: Export updated fixture
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.dev
+          USE_SQLITE: "True"
+          PYTHONIOENCODING: utf-8
+        run: python manage.py export_listings
+
+      - name: Commit & push if changed
+        run: |
+          cd ..
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add backend/apps/listings/fixtures/production_real_listings.json
+          if git diff --cached --quiet; then
+            echo "No listing changes — skipping commit"
+          else
+            COUNT=$(python -c "import json; print(len(json.load(open('backend/apps/listings/fixtures/production_real_listings.json'))))")
+            git commit -m "data: daily scrape — ${COUNT} listings [skip ci]"
+            git push
+          fi
