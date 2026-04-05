@@ -1169,7 +1169,7 @@ export default function ListingsPage() {
           </p>
 
           {/* Search */}
-          <div className="relative z-[90] mx-auto mt-8 max-w-2xl" ref={searchBoxRef}>
+          <div className="relative z-0 mx-auto mt-8 max-w-2xl" ref={searchBoxRef}>
             <div className="flex items-center rounded-xl bg-white shadow-lg dark:bg-[#1a2d45]">
               <input
                 value={query}
@@ -1200,7 +1200,7 @@ export default function ListingsPage() {
             </div>
 
             {showSuggestions && (
-              <div className="absolute left-0 top-full z-[94] mt-2 max-h-[320px] w-full overflow-y-auto rounded-xl border border-gray-200 bg-white p-2 shadow-xl dark:border-white/10 dark:bg-[#1a2d45]">
+              <div className="absolute left-0 top-full z-10 mt-2 max-h-[320px] w-full overflow-y-auto rounded-xl border border-gray-200 bg-white p-2 shadow-xl dark:border-white/10 dark:bg-[#1a2d45]">
                 {autocompleteSuggestions.length > 0 && (
                   <div className="mb-2">
                     <p className="px-2 py-1 text-xs font-semibold uppercase tracking-wide text-gray-400">
