@@ -5,6 +5,8 @@ from typing import Optional
 
 import scrapy
 
+from apps.listings.deadlines import parse_deadline_string
+
 
 class BaseEMSpider(scrapy.Spider):
     """
@@ -490,73 +492,7 @@ class BaseEMSpider(scrapy.Spider):
         Parse deadline from various source formats.
         Returns None if date is in the past, unparseable, or missing.
         """
-        if not raw:
-            return None
-
-        today = date.today()
-        raw = raw.strip()
-        norm = self.normalize_turkish(raw)
-
-        if norm in ("bugun", "today", "bugun son gun"):
-            return today
-
-        if re.search(r"\d+\s*(gun once|days ago)", norm):
-            return None
-        if "30+" in norm and "once" in norm:
-            return None
-
-        match = re.search(r"(\d+)\s*(gun kaldi|days left|days remaining)", norm)
-        if match:
-            return today + timedelta(days=int(match.group(1)))
-
-        match = re.match(r"(\d{4})-(\d{2})-(\d{2})", raw)
-        if match:
-            try:
-                parsed = date(int(match.group(1)), int(match.group(2)), int(match.group(3)))
-                return parsed if parsed >= today else None
-            except ValueError:
-                return None
-
-        match = re.search(r"(\d{1,2})\s+([a-zA-Z]+)\s+(\d{4})", norm)
-        if match:
-            month_num = self.TR_MONTHS.get(match.group(2))
-            if month_num:
-                try:
-                    parsed = date(int(match.group(3)), month_num, int(match.group(1)))
-                    return parsed if parsed >= today else None
-                except ValueError:
-                    return None
-
-        match = re.search(r"([A-Za-z]+)\s+(\d{1,2}),\s*(\d{4})", raw)
-        if match:
-            month_num = self.EN_MONTHS.get(match.group(1).lower())
-            if month_num:
-                try:
-                    parsed = date(int(match.group(3)), month_num, int(match.group(2)))
-                    return parsed if parsed >= today else None
-                except ValueError:
-                    return None
-
-        match = re.search(r"(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})", raw)
-        if match:
-            month_num = self.EN_MONTHS.get(match.group(2).lower())
-            if month_num:
-                try:
-                    parsed = date(int(match.group(3)), month_num, int(match.group(1)))
-                    return parsed if parsed >= today else None
-                except ValueError:
-                    return None
-
-        match = re.match(r"(\d{2})[./](\d{2})[./](\d{4})", raw)
-        if match:
-            try:
-                parsed = date(int(match.group(3)), int(match.group(2)), int(match.group(1)))
-                return parsed if parsed >= today else None
-            except ValueError:
-                return None
-
-        self.logger.debug(f'UNPARSED_DEADLINE: "{raw}"')
-        return None
+        return parse_deadline_string(raw, allow_past=False)
 
     def compute_deadline_status(self, deadline: Optional[date]) -> str:
         if deadline is None:

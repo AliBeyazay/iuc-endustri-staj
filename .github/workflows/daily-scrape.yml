@@ -53,6 +53,12 @@ jobs:
           USE_SQLITE: "True"
         run: python manage.py run_scrapers
 
+      - name: Audit listing deadlines
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.dev
+          USE_SQLITE: "True"
+        run: python manage.py audit_listing_deadlines
+
       - name: Export updated fixture
         env:
           DJANGO_SETTINGS_MODULE: config.settings.dev

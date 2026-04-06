@@ -137,36 +137,18 @@ def run_single_spider(self, spider_name: str):
 def deactivate_expired_listings():
     """Set is_active=False and deadline_status='expired' for past deadlines
     and for old listings with unknown deadlines (>90 days)."""
-    from datetime import date, timedelta
-    from apps.listings.models import Listing
-    from apps.listings.sync import update_listing_queryset
+    from apps.listings.deadline_audit import audit_listing_deadlines
 
-    today = date.today()
-
-    # 1. Deactivate listings with known expired deadlines
-    expired_count = update_listing_queryset(
-        Listing.objects.filter(
-            application_deadline__lt=today,
-            is_active=True,
-        ),
-        is_active=False,
-        deadline_status='expired',
+    summary = audit_listing_deadlines()
+    logger.info(
+        'DEADLINE_AUDIT updated=%s expired=%s stale=%s recovered_remote=%s recovered_description=%s',
+        summary.get('updated', 0),
+        summary.get('deactivated_expired', 0),
+        summary.get('deactivated_stale', 0),
+        summary.get('recovered_from_application_url', 0),
+        summary.get('recovered_from_description', 0),
     )
-
-    # 2. Deactivate old listings with unknown/missing deadlines (>90 days old)
-    cutoff = today - timedelta(days=90)
-    stale_count = update_listing_queryset(
-        Listing.objects.filter(
-            application_deadline__isnull=True,
-            is_active=True,
-            created_at__lt=cutoff,
-        ),
-        is_active=False,
-        deadline_status='expired',
-    )
-
-    logger.info(f'DEACTIVATED {expired_count} expired + {stale_count} stale listings (today={today})')
-    return {'deactivated_expired': expired_count, 'deactivated_stale': stale_count}
+    return summary
 
 
 @shared_task(name='apps.scraper.tasks.mark_upcoming_programs')

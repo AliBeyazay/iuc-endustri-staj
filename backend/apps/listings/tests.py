@@ -1,4 +1,5 @@
 import json
+from datetime import date, timedelta
 from io import StringIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -11,6 +12,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.core.management import call_command
 from django.test import RequestFactory, TestCase, override_settings
+from django.utils import timezone
 
 from apps.listings.admin import ListingAdmin
 from apps.listings.cache_keys import get_listing_list_cache_version
@@ -372,7 +374,7 @@ class ProductionListingFixtureCommandTests(TestCase):
 
         def fake_call_command(name, *args, **kwargs):
             recorded_commands.append(name)
-            if name == 'run_scrapers':
+            if name in {'run_scrapers', 'audit_listing_deadlines'}:
                 return None
             return original_call_command(name, *args, **kwargs)
 
@@ -390,7 +392,7 @@ class ProductionListingFixtureCommandTests(TestCase):
                     stdout=output,
                 )
 
-            self.assertEqual(recorded_commands, ['run_scrapers', 'export_listings'])
+            self.assertEqual(recorded_commands, ['run_scrapers', 'audit_listing_deadlines', 'export_listings'])
             self.assertTrue(fixture_path.exists())
 
             exported_records = json.loads(fixture_path.read_text(encoding='utf-8'))
@@ -402,3 +404,129 @@ class ProductionListingFixtureCommandTests(TestCase):
             self.assertIn('Listings summary: total=2 active=2 visible=2', rendered_output)
             self.assertIn('pythiango: total=1 active=1 visible=1', rendered_output)
             self.assertIn('youthall: total=1 active=1 visible=1', rendered_output)
+
+
+class ListingDeadlineAuditCommandTests(TestCase):
+    def create_listing(self, **overrides):
+        payload = {
+            'title': 'Deadline Test Listing',
+            'company_name': 'Example Company',
+            'source_url': 'https://example.com/listing/deadline-test',
+            'application_url': 'https://example.com/apply/deadline-test',
+            'source_platform': 'youthall',
+            'em_focus_area': 'diger',
+            'internship_type': 'belirsiz',
+            'company_origin': 'belirsiz',
+            'location': 'Istanbul',
+            'description': 'Support operations and improvement projects.',
+            'requirements': '',
+        }
+        payload.update(overrides)
+        return Listing.objects.create(**payload)
+
+    def test_audit_command_updates_deadlines_statuses_and_preserves_manual_inactive(self):
+        expired = self.create_listing(
+            title='Expired Listing',
+            source_url='https://example.com/listing/expired',
+            application_deadline=date.today() - timedelta(days=1),
+            deadline_status='normal',
+            is_active=True,
+        )
+        urgent = self.create_listing(
+            title='Urgent Listing',
+            source_url='https://example.com/listing/urgent',
+            application_deadline=date.today() + timedelta(days=3),
+            deadline_status='normal',
+            is_active=True,
+        )
+        normal = self.create_listing(
+            title='Normal Listing',
+            source_url='https://example.com/listing/normal',
+            application_deadline=date.today() + timedelta(days=20),
+            deadline_status='urgent',
+            is_active=True,
+        )
+        upcoming = self.create_listing(
+            title='Upcoming Listing',
+            source_url='https://example.com/listing/upcoming',
+            application_url=None,
+            application_deadline=None,
+            deadline_status='upcoming',
+            is_active=True,
+        )
+        manual_inactive = self.create_listing(
+            title='Manual Inactive Listing',
+            source_url='https://example.com/listing/manual-inactive',
+            application_deadline=date.today() + timedelta(days=5),
+            deadline_status='normal',
+            is_active=False,
+        )
+        stale = self.create_listing(
+            title='Stale Unknown Listing',
+            source_url='https://example.com/listing/stale',
+            application_url=None,
+            application_deadline=None,
+            deadline_status='unknown',
+            is_active=True,
+        )
+        Listing.objects.filter(id=stale.id).update(created_at=timezone.now() - timedelta(days=91))
+
+        output = StringIO()
+        call_command('audit_listing_deadlines', stdout=output)
+
+        expired.refresh_from_db()
+        urgent.refresh_from_db()
+        normal.refresh_from_db()
+        upcoming.refresh_from_db()
+        manual_inactive.refresh_from_db()
+        stale.refresh_from_db()
+
+        self.assertFalse(expired.is_active)
+        self.assertEqual(expired.deadline_status, 'expired')
+        self.assertTrue(urgent.is_active)
+        self.assertEqual(urgent.deadline_status, 'urgent')
+        self.assertTrue(normal.is_active)
+        self.assertEqual(normal.deadline_status, 'normal')
+        self.assertTrue(upcoming.is_active)
+        self.assertEqual(upcoming.deadline_status, 'upcoming')
+        self.assertFalse(manual_inactive.is_active)
+        self.assertEqual(manual_inactive.deadline_status, 'urgent')
+        self.assertFalse(stale.is_active)
+        self.assertEqual(stale.deadline_status, 'expired')
+        self.assertIn('Deadline audit finished:', output.getvalue())
+
+    @patch('apps.listings.deadline_audit.extract_deadline_from_remote_page')
+    def test_audit_command_prefers_application_url_then_description_fallback(self, remote_deadline_mock):
+        remote_first = self.create_listing(
+            title='Remote First Listing',
+            source_url='https://example.com/listing/remote-first',
+            application_url='https://example.com/apply/remote-first',
+            application_deadline=None,
+            deadline_status='unknown',
+            description='Son başvuru: 27 Mart 2099',
+        )
+        description_fallback = self.create_listing(
+            title='Description Fallback Listing',
+            source_url='https://example.com/listing/description-fallback',
+            application_url='https://example.com/apply/description-fallback',
+            application_deadline=None,
+            deadline_status='unknown',
+            description='Application Deadline: March 22nd, 2099',
+        )
+
+        def remote_side_effect(url, **kwargs):
+            if url.endswith('remote-first'):
+                return date(2099, 3, 30)
+            return None
+
+        remote_deadline_mock.side_effect = remote_side_effect
+
+        call_command('audit_listing_deadlines')
+
+        remote_first.refresh_from_db()
+        description_fallback.refresh_from_db()
+
+        self.assertEqual(remote_first.application_deadline, date(2099, 3, 30))
+        self.assertEqual(description_fallback.application_deadline, date(2099, 3, 22))
+        self.assertEqual(remote_first.deadline_status, 'normal')
+        self.assertEqual(description_fallback.deadline_status, 'normal')

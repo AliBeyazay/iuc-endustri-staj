@@ -15,6 +15,12 @@ import requests
 from bs4 import BeautifulSoup
 from scrapy import Request
 
+from apps.listings.deadlines import (
+    extract_deadline_from_remote_page as extract_deadline_from_remote_page_helper,
+    extract_deadline_from_text,
+    has_deadline_signal,
+)
+
 from ..items import ScrapedListingItem
 from .base_spider import BaseEMSpider
 
@@ -642,6 +648,9 @@ def extract_deadline_from_remote_page(spider: BaseEMSpider, url: str) -> date | 
 
     return None
 
+def extract_deadline_from_remote_page(spider: BaseEMSpider, url: str) -> date | None:
+    return extract_deadline_from_remote_page_helper(url, allow_past=False)
+
 
 class KariyerSpider(BaseEMSpider):
     name = "kariyer"
@@ -1028,9 +1037,9 @@ class ItuKariyerLinkedinSpider(BaseEMSpider):
 
             application_url = resolve_redirect_url(external_url)
             title = self.extract_title_from_commentary(raw_commentary)
-            deadline = self.extract_deadline_from_commentary(commentary)
+            deadline = extract_deadline_from_remote_page(self, application_url)
             if deadline is None:
-                deadline = extract_deadline_from_remote_page(self, application_url)
+                deadline = self.extract_deadline_from_commentary(commentary)
             if not company_logo_url:
                 company_logo_url = fetch_remote_logo_url(application_url, company_name=company)
 
@@ -1670,13 +1679,13 @@ class OdtuKpmSpider(BaseEMSpider):
         application_url = find_known_job_url_in_html(response.text, self.BLOCKED_EXTERNAL_DOMAINS) or find_best_application_link(
             response, self.BLOCKED_EXTERNAL_DOMAINS
         )
-        deadline_match = re.search(
-            r"son basvuru tarihi[:\s]+([^\n]+)",
-            self.normalize_turkish(description),
-        )
-        deadline = self.parse_deadline(deadline_match.group(1).strip()) if deadline_match else None
+        deadline = extract_deadline_from_remote_page(self, application_url)
         if deadline is None:
-            deadline = extract_deadline_from_remote_page(self, application_url)
+            deadline_match = re.search(
+                r"son basvuru tarihi[:\s]+([^\n]+)",
+                self.normalize_turkish(description),
+            )
+            deadline = self.parse_deadline(deadline_match.group(1).strip()) if deadline_match else None
 
         if not application_url or not has_listing_keywords(self, title, description):
             return
@@ -1922,10 +1931,12 @@ class YtuOrkamSpider(BaseEMSpider):
         page_title = page_title.replace(" – YTÜ Öğrenci Rehberlik ve Kariyer Merkezi", "").strip()
         article = soup.select_one(".entry-content") or soup.select_one("article") or soup
         description = self.clean_text(article.get_text(" ", strip=True))[:4000]
-        deadline, has_deadline = self.extract_deadline(description)
         application_links = self.collect_application_links(article, response.url)
-        if deadline is None and application_links:
-            deadline = extract_deadline_from_remote_page(self, application_links[0][1])
+        deadline = extract_deadline_from_remote_page(self, application_links[0][1]) if application_links else None
+        if deadline is None:
+            deadline, has_deadline = self.extract_deadline(description)
+        else:
+            has_deadline = True
         if has_deadline and deadline is None:
             self.logger.info("YTU_ORKAM_SKIPPED_EXPIRED: %s", page_title)
             return
@@ -1964,6 +1975,13 @@ class YtuOrkamSpider(BaseEMSpider):
                 duration_weeks=None,
                 scraped_at=datetime.utcnow(),
             )
+
+
+def _ytu_orkam_extract_deadline(self, text: str) -> tuple[date | None, bool]:
+    return extract_deadline_from_text(text, allow_past=False), has_deadline_signal(text)
+
+
+YtuOrkamSpider.extract_deadline = _ytu_orkam_extract_deadline
 
 
 class SavunmaSpider(BaseEMSpider):

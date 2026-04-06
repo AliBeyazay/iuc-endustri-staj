@@ -1,6 +1,7 @@
 import json
 from io import StringIO
 from datetime import date, timedelta
+from unittest.mock import patch
 
 from django.conf import settings
 from django.core.management import call_command
@@ -11,6 +12,7 @@ from scrapy import Request
 from scrapy.http import TextResponse
 
 from apps.scraper.beat_schedule import MANAGED_BEAT_SCHEDULES
+from apps.listings.deadlines import extract_deadline_from_text, parse_deadline_string
 from apps.scraper.tasks import (
     _count_rate_limit_signals,
     _linkedin_retry_delay,
@@ -19,6 +21,7 @@ from apps.scraper.tasks import (
 from apps.scraper.spiders.spiders import LinkedInSpider
 from apps.scraper.spiders.spiders import (
     PythianGoSpider,
+    YtuOrkamSpider,
     extract_youthall_description,
     translate_known_youthall_description,
 )
@@ -279,6 +282,96 @@ class LinkedInTaskHelperTests(SimpleTestCase):
                 {'new_count': 2, 'updated_count': 0, 'skipped_count': 0, 'error_count': 0},
             )
         )
+
+
+class DeadlineParsingHelperTests(SimpleTestCase):
+    def test_parses_supported_deadline_formats(self):
+        self.assertEqual(
+            extract_deadline_from_text("Son başvuru: 27 Mart 2026", allow_past=True),
+            date(2026, 3, 27),
+        )
+        self.assertEqual(
+            extract_deadline_from_text("Application Deadline: March 30, 2026", allow_past=True),
+            date(2026, 3, 30),
+        )
+        self.assertEqual(
+            extract_deadline_from_text("Job Posting End Date March 30, 2026", allow_past=True),
+            date(2026, 3, 30),
+        )
+        self.assertEqual(
+            extract_deadline_from_text("Last day to apply is March 22nd, 2026", allow_past=True),
+            date(2026, 3, 22),
+        )
+        self.assertEqual(
+            parse_deadline_string("March 22nd, 2026", allow_past=True),
+            date(2026, 3, 22),
+        )
+
+
+class YtuOrkamSpiderTests(SimpleTestCase):
+    def setUp(self):
+        self.spider = YtuOrkamSpider()
+
+    def build_response(self, html: str):
+        url = "https://orkam.yildiz.edu.tr/3776-2/"
+        request = Request(url=url)
+        return TextResponse(
+            url=url,
+            body=html.encode("utf-8"),
+            encoding="utf-8",
+            request=request,
+        )
+
+    @patch("apps.scraper.spiders.spiders.fetch_remote_logo_url", return_value=None)
+    @patch("apps.scraper.spiders.spiders.extract_deadline_from_remote_page", return_value=date(2099, 3, 30))
+    def test_parse_detail_prefers_application_page_deadline(self, remote_deadline_mock, _logo_mock):
+        html = """
+        <html>
+          <head>
+            <title>Commencis Future Commencer Summer Internship Program 2099 - YTU ORKAM</title>
+          </head>
+          <body>
+            <article>
+              <h1 class="entry-title">Commencis Future Commencer Summer Internship Program 2099</h1>
+              <div class="entry-content">
+                <p>We are hiring. Son başvuru: 27 Mart 2099</p>
+                <p><a href="https://www.commencis.com/future-commencer-internship-program-2099/">Detaylı bilgi ve başvuru için tıklayınız.</a></p>
+              </div>
+            </article>
+          </body>
+        </html>
+        """
+
+        results = list(self.spider.parse_detail(self.build_response(html)))
+
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["application_deadline"], date(2099, 3, 30))
+        remote_deadline_mock.assert_called_once()
+
+    @patch("apps.scraper.spiders.spiders.fetch_remote_logo_url", return_value=None)
+    @patch("apps.scraper.spiders.spiders.extract_deadline_from_remote_page", return_value=None)
+    def test_parse_detail_falls_back_to_description_deadline(self, _remote_deadline_mock, _logo_mock):
+        html = """
+        <html>
+          <head>
+            <title>Commencis Future Commencer Summer Internship Program 2099 - YTU ORKAM</title>
+          </head>
+          <body>
+            <article>
+              <h1 class="entry-title">Commencis Future Commencer Summer Internship Program 2099</h1>
+              <div class="entry-content">
+                <p>We are hiring. Son başvuru: 27 Mart 2099</p>
+                <p><a href="https://www.commencis.com/future-commencer-internship-program-2099/">Detaylı bilgi ve başvuru için tıklayınız.</a></p>
+              </div>
+            </article>
+          </body>
+        </html>
+        """
+
+        results = list(self.spider.parse_detail(self.build_response(html)))
+
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["application_deadline"], date(2099, 3, 27))
 
 
 class PythianGoSpiderTests(SimpleTestCase):
