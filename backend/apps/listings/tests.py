@@ -52,6 +52,22 @@ class EligibilityHelperTests(SimpleTestCase):
             with self.subTest(sample=sample):
                 decision = classify_student_eligibility("Sample Listing", sample)
                 self.assertFalse(decision.graduate_only)
+                self.assertFalse(decision.requires_experience)
+
+    def test_detects_required_experience_signals(self):
+        samples = (
+            "Tercihen Savunma Sanayii projelerinde proje yönetimi alanında en az 3 yıl tecrübe sahibi",
+            "Tercihen 4-8 yıl deneyimli",
+            "Minimum 3 years of professional experience",
+            "At least 5 years experience in project management",
+        )
+
+        for sample in samples:
+            with self.subTest(sample=sample):
+                decision = classify_student_eligibility("Sample Listing", sample)
+                self.assertFalse(decision.graduate_only)
+                self.assertTrue(decision.requires_experience)
+                self.assertIsNotNone(decision.reason)
 
 
 class ListingDeletionProtectionTests(TestCase):
@@ -366,7 +382,30 @@ class EligibilityValidationPipelineTests(TestCase):
         self.assertIn(
             (
                 'info',
-                'GRADUATE_ONLY_SKIPPED: Software QA Intern (4-Month Internship Program). This position is only open to graduates. | reason=graduates_only',
+                'INELIGIBLE_FOR_STUDENTS_SKIPPED: Software QA Intern (4-Month Internship Program). This position is only open to graduates. | reason=graduates_only',
+            ),
+            self.spider.logger.messages,
+        )
+
+    def test_drops_experience_required_listing_before_db_write(self):
+        item = {
+            'title': 'Elektronik Harp Proje Mühendisi',
+            'company_name': 'ASELSAN',
+            'source_url': 'https://tr.linkedin.com/jobs/view/elektronik-harp-proje-muhendisi-1',
+            'application_url': 'https://tr.linkedin.com/jobs/view/elektronik-harp-proje-muhendisi-1',
+            'source_platform': 'linkedin',
+            'location': 'Ankara, Turkiye',
+            'description': 'Tercihen Savunma Sanayii projelerinde proje yönetimi alanında en az 3 yıl tecrübe sahibi.',
+        }
+
+        with self.assertRaises(DropItem):
+            self.pipeline.process_item(item, self.spider)
+
+        self.assertFalse(Listing.objects.exists())
+        self.assertIn(
+            (
+                'info',
+                'INELIGIBLE_FOR_STUDENTS_SKIPPED: Elektronik Harp Proje Mühendisi | reason=minimum_years_experience_tr',
             ),
             self.spider.logger.messages,
         )
@@ -656,6 +695,12 @@ class ListingEligibilityAuditCommandTests(TestCase):
             description='Graduates only.',
             is_active=False,
         )
+        experienced_role = self.create_listing(
+            title='Elektronik Harp Proje Mühendisi',
+            source_url='https://example.com/listing/experienced-role',
+            description='Tercihen Savunma Sanayii projelerinde proje yönetimi alanında en az 3 yıl tecrübe sahibi.',
+            is_active=True,
+        )
 
         output = StringIO()
         call_command('audit_listing_eligibility', stdout=output)
@@ -664,18 +709,26 @@ class ListingEligibilityAuditCommandTests(TestCase):
         mixed_eligibility.refresh_from_db()
         graduate_welcome.refresh_from_db()
         manual_inactive.refresh_from_db()
+        experienced_role.refresh_from_db()
 
         self.assertFalse(graduate_only.is_active)
         self.assertTrue(mixed_eligibility.is_active)
         self.assertTrue(graduate_welcome.is_active)
         self.assertFalse(manual_inactive.is_active)
+        self.assertFalse(experienced_role.is_active)
         self.assertIn('Eligibility audit finished:', output.getvalue())
 
-    def test_audit_command_hides_graduate_only_listing_from_api(self):
+    def test_audit_command_hides_ineligible_listing_from_api(self):
         self.create_listing(
             title='Software QA Intern',
             source_url='https://example.com/listing/graduate-only-api',
             description='This position is only open to graduates.',
+            is_active=True,
+        )
+        self.create_listing(
+            title='Elektronik Harp Proje Mühendisi',
+            source_url='https://example.com/listing/experienced-role-api',
+            description='Tercihen 4-8 yıl deneyimli.',
             is_active=True,
         )
         self.create_listing(
@@ -691,4 +744,5 @@ class ListingEligibilityAuditCommandTests(TestCase):
         self.assertEqual(response.status_code, 200)
         titles = [item['title'] for item in response.json()['results']]
         self.assertNotIn('Software QA Intern', titles)
+        self.assertNotIn('Elektronik Harp Proje Mühendisi', titles)
         self.assertIn('Student Friendly Internship', titles)

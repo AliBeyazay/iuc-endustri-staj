@@ -71,11 +71,46 @@ _GRADUATE_ONLY_PATTERNS = (
     ),
 )
 
+_EXPERIENCE_REQUIRED_PATTERNS = (
+    (
+        "minimum_years_experience_tr",
+        re.compile(r"\b(?:en\s+az|minimum)\s+([2-9]|[1-9][0-9])\s+yil\s+(?:tecrube|deneyim)\b"),
+    ),
+    (
+        "years_experience_range_tr",
+        re.compile(
+            r"\b([2-9]|[1-9][0-9])\s*(?:[-–]|\s)\s*([2-9]|[1-9][0-9])\s+yil\s+deneyimli\b"
+        ),
+    ),
+    (
+        "minimum_years_experience_en",
+        re.compile(
+            r"\b(?:at\s+least|minimum|min(?:imum)?)\s+([2-9]|[1-9][0-9])\+?\s+years?\s+"
+            r"(?:of\s+)?(?:professional\s+)?experience\b"
+        ),
+    ),
+    (
+        "years_experience_range_en",
+        re.compile(
+            r"\b([2-9]|[1-9][0-9])\s*(?:[-–]|\s)\s*([2-9]|[1-9][0-9])\s+years?\s+experience\b"
+        ),
+    ),
+    (
+        "experienced_role_tr",
+        re.compile(r"\b(?:tercihen\s+)?([2-9]|[1-9][0-9])\+?\s+yil\s+tecrube\s+sahibi\b"),
+    ),
+)
+
 
 @dataclass(frozen=True, slots=True)
 class EligibilityDecision:
     graduate_only: bool
+    requires_experience: bool = False
     reason: str | None = None
+
+    @property
+    def is_eligible_for_students(self) -> bool:
+        return not self.graduate_only and not self.requires_experience
 
 
 def normalize_eligibility_text(text: str | None) -> str:
@@ -98,5 +133,19 @@ def classify_student_eligibility(title: str | None, description: str | None) -> 
         if pattern.search(combined):
             return EligibilityDecision(graduate_only=True, reason=reason)
 
-    return EligibilityDecision(graduate_only=False)
+    for reason, pattern in _EXPERIENCE_REQUIRED_PATTERNS:
+        match = pattern.search(combined)
+        if not match:
+            continue
 
+        numbers = [int(value) for value in match.groups() if value is not None]
+        if numbers and min(numbers) < 2:
+            continue
+
+        return EligibilityDecision(
+            graduate_only=False,
+            requires_experience=True,
+            reason=reason,
+        )
+
+    return EligibilityDecision(graduate_only=False)

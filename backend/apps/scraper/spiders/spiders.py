@@ -572,7 +572,7 @@ def has_listing_keywords(spider: BaseEMSpider, *chunks: str) -> bool:
         "uzun donem",
         "summer",
     )
-    return any(keyword in normalized for keyword in keywords)
+    return any(re.search(rf"\b{re.escape(keyword)}\b", normalized) for keyword in keywords)
 
 
 def resolve_redirect_url(url: str) -> str:

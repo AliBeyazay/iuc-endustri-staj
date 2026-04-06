@@ -14,6 +14,7 @@ class Command(BaseCommand):
                 f"processed={summary.get('processed', 0)} "
                 f"updated={summary.get('updated', 0)} "
                 f"deactivated={summary.get('deactivated', 0)} "
-                f"graduate_only={summary.get('graduate_only', 0)}"
+                f"graduate_only={summary.get('graduate_only', 0)} "
+                f"requires_experience={summary.get('requires_experience', 0)}"
             )
         )

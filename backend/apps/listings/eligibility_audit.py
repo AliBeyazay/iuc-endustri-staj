@@ -17,11 +17,14 @@ def audit_listing_eligibility(queryset=None) -> dict[str, int]:
         summary["processed"] += 1
         decision = classify_student_eligibility(listing.title, listing.description)
 
-        if not decision.graduate_only:
+        if decision.is_eligible_for_students:
             summary["eligible"] += 1
             continue
 
-        summary["graduate_only"] += 1
+        if decision.graduate_only:
+            summary["graduate_only"] += 1
+        if decision.requires_experience:
+            summary["requires_experience"] += 1
         if decision.reason:
             summary[f"reason_{decision.reason}"] += 1
 
@@ -39,4 +42,3 @@ def audit_listing_eligibility(queryset=None) -> dict[str, int]:
         summary["updated"] = len(changed_listings)
 
     return dict(summary)
-

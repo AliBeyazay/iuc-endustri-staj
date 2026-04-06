@@ -340,13 +340,13 @@ class EligibilityValidationPipeline:
             adapter.get('title', ''),
             adapter.get('description', ''),
         )
-        if not decision.graduate_only:
+        if decision.is_eligible_for_students:
             return item
 
-        reason = decision.reason or 'graduate_only'
+        reason = decision.reason or 'ineligible'
         title = adapter.get('title', '')
-        spider.logger.info('GRADUATE_ONLY_SKIPPED: %s | reason=%s', title, reason)
-        raise DropItem(f'Graduate-only listing skipped: reason={reason}')
+        spider.logger.info('INELIGIBLE_FOR_STUDENTS_SKIPPED: %s | reason=%s', title, reason)
+        raise DropItem(f'Ineligible listing skipped: reason={reason}')
 
 
 class DeadlineValidationPipeline:

@@ -18,7 +18,7 @@ from apps.scraper.tasks import (
     _linkedin_retry_delay,
     _should_retry_linkedin_rate_limit,
 )
-from apps.scraper.spiders.spiders import LinkedInSpider
+from apps.scraper.spiders.spiders import LinkedInSpider, has_listing_keywords
 from apps.scraper.spiders.spiders import (
     PythianGoSpider,
     YtuOrkamSpider,
@@ -245,6 +245,24 @@ class LinkedInSpiderTests(SimpleTestCase):
                 "Remote",
                 "Role supports operations in Germany and Poland.",
                 "Global Company",
+            )
+        )
+
+    def test_listing_keyword_match_uses_word_boundaries(self):
+        self.assertFalse(
+            has_listing_keywords(
+                self.spider,
+                "Elektronik Harp Proje Mühendisi",
+                "ASELSAN",
+                "İşe alım kriterlerimizi ASELSAN internet sayfasında inceleyin.",
+            )
+        )
+        self.assertTrue(
+            has_listing_keywords(
+                self.spider,
+                "Industrial Engineering Intern",
+                "Example Company",
+                "Support supply chain and process improvement projects.",
             )
         )
 
