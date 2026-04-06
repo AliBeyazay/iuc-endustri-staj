@@ -956,6 +956,11 @@ export default function ListingsPageClient({
     [],
   )
 
+  const platformOptions = useMemo(
+    () => (platforms.includes('PythianGo') ? platforms : [...platforms, 'PythianGo']),
+    [platforms],
+  )
+
   const autocompleteSuggestions = useMemo(() => {
     const normalizedQuery = normalizeSearchValue(query)
     if (!normalizedQuery) return []
@@ -968,7 +973,7 @@ export default function ListingsPageClient({
       }
     })
 
-    platforms.forEach((platform) => {
+    platformOptions.forEach((platform) => {
       if (normalizeSearchValue(platform).includes(normalizedQuery)) {
         matches.add(platform)
       }
@@ -990,7 +995,7 @@ export default function ListingsPageClient({
     })
 
     return Array.from(matches).slice(0, 8)
-  }, [listings, query])
+  }, [listings, platformOptions, query])
 
   const urgentCount = useMemo(() => {
     return listings.filter((item) => {
@@ -1346,7 +1351,7 @@ export default function ListingsPageClient({
               {/* Platform Filters */}
               <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-[#132843] dark:text-[#e7edf4]">Platform</h3>
               <ul className="space-y-1">
-                {platforms.map((platform) => {
+                {platformOptions.map((platform) => {
                   const isActive = selectedPlatforms.includes(platform)
                   return (
                     <li key={platform}>
@@ -1593,7 +1598,7 @@ export default function ListingsPageClient({
 
             <FilterPanel
               sectors={sectors}
-              platforms={platforms}
+              platforms={platformOptions}
               durations={DURATION_OPTIONS}
               selectedSectors={selectedSectors}
               selectedPlatforms={selectedPlatforms}

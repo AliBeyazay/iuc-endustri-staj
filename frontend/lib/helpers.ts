@@ -114,6 +114,51 @@ export function formatDateTurkish(dateStr: string): string {
   })
 }
 
+const DESCRIPTION_URL_PATTERN = /(?:https?:\/\/|www\.)[^\s<>()]+/i
+const DESCRIPTION_URL_GLOBAL_PATTERN = /(?:https?:\/\/|www\.)[^\s<>()]+/gi
+const DESCRIPTION_LINK_ONLY_PATTERN =
+  /^(?:(?:başvuru|basvuru|application|apply(?:\s+now)?|detaylı bilgi(?: ve başvuru)? için|detayli bilgi(?: ve basvuru)? icin|daha fazla bilgi için|daha fazla bilgi icin|kaynak|source|website|web\s*site(?:si)?|işveren web sitesi|isveren web sitesi|başvuru adresi|basvuru adresi)\s*[:\-]?\s*)?(?:https?:\/\/|www\.)[^\s<>()]+(?:\s+(?:https?:\/\/|www\.)[^\s<>()]+)*$/iu
+const DESCRIPTION_LINK_LABEL_PATTERN =
+  /^(?:başvuru|basvuru|application|apply|link|url|website|web\s*site(?:si)?|işveren web sitesi|isveren web sitesi|kaynak|source|başvuru adresi|basvuru adresi|başvuru linki|basvuru linki|detaylı bilgi(?: ve başvuru)? için|detayli bilgi(?: ve basvuru)? icin|daha fazla bilgi için|daha fazla bilgi icin)$/iu
+
+function stripDescriptionLinksFromFragment(fragment: string): string {
+  const trimmed = fragment.trim()
+  if (!trimmed) return ''
+  if (!DESCRIPTION_URL_PATTERN.test(trimmed)) return trimmed
+  if (DESCRIPTION_LINK_ONLY_PATTERN.test(trimmed)) return ''
+
+  const withoutUrlsRaw = trimmed
+    .replace(DESCRIPTION_URL_GLOBAL_PATTERN, ' ')
+    .replace(/\s+([,.;!?])/g, '$1')
+    .replace(/\s{2,}/g, ' ')
+    .trim()
+
+  const endsWithPrompt = /[:\-]\s*$/.test(withoutUrlsRaw)
+  const withoutUrls = withoutUrlsRaw
+    .replace(/\(\s*\)/g, '')
+    .replace(/\[\s*\]/g, '')
+    .replace(/\s+:/g, ':')
+    .replace(/[:\-]\s*$/, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim()
+
+  if (!withoutUrls) return ''
+  if (DESCRIPTION_LINK_LABEL_PATTERN.test(withoutUrls)) return ''
+  if (endsWithPrompt && withoutUrls.length <= 140) return ''
+
+  return withoutUrls
+}
+
+export function stripListingDescriptionLinks(raw: string): string {
+  if (!raw) return ''
+
+  return raw
+    .split('\n')
+    .map((line) => stripDescriptionLinksFromFragment(line))
+    .filter(Boolean)
+    .join('\n')
+}
+
 export function formatListingDescription(raw: string): string[] {
   if (!raw) return []
 
@@ -145,6 +190,8 @@ export function formatListingDescription(raw: string): string[] {
     .replace(/\n{3,}/g, '\n\n')
     .replace(/\s([:;,.!?])/g, '$1')
     .trim()
+
+  text = stripListingDescriptionLinks(text)
 
   const noisePatterns = [
     /youthall ana?sayfa.*?(?=rotani|hemen basvur|bu programda|$)/i,
@@ -239,14 +286,19 @@ export function formatListingDescription(raw: string): string[] {
 
   const blocks = text
     .split(/\n{2,}/)
+    .map((block) => stripListingDescriptionLinks(block))
     .map((block) => block.trim())
     .filter(Boolean)
     .filter((block, index, all) => all.indexOf(block) === index)
 
-  const cleanedBlocks = blocks.flatMap((block) => {
-    if (block.length <= 200) return [block]
+  const cleanedBlocks = blocks
+    .flatMap((block) => {
+      if (block.length <= 200) {
+        const cleanedBlock = stripListingDescriptionLinks(block)
+        return cleanedBlock ? [cleanedBlock] : []
+      }
 
-    return block
+      return block
       .replace(/(\d+\s*[.)-]\s+)/g, '\n$1')
       .replace(/\s+-\s+/g, '\n- ')
       .replace(
@@ -255,6 +307,7 @@ export function formatListingDescription(raw: string): string[] {
       )
       .replace(/([.!?])\s+(?=[A-ZÇĞİÖŞÜ0-9])/g, '$1\n')
       .split('\n')
+      .map((part) => stripListingDescriptionLinks(part))
       .map((part) => part.trim())
       .filter(Boolean)
       .reduce<string[]>((parts, part) => {
@@ -266,7 +319,8 @@ export function formatListingDescription(raw: string): string[] {
         }
         return parts
       }, [])
-  })
+    })
+    .filter((block, index, all) => all.indexOf(block) === index)
 
   if (cleanedBlocks.length > 0) {
     return cleanedBlocks.slice(0, 20)
@@ -274,6 +328,7 @@ export function formatListingDescription(raw: string): string[] {
 
   return text
     .split(/(?<=[.!?])\s+/)
+    .map((part) => stripListingDescriptionLinks(part))
     .map((part) => part.trim())
     .filter(Boolean)
     .slice(0, 10)

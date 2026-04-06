@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { cache } from 'react'
 import { notFound } from 'next/navigation'
 import { getBackendApiBaseUrl } from '@/lib/backend-url'
+import { stripListingDescriptionLinks } from '@/lib/helpers'
 import { Listing } from '@/types'
 import ListingDetailClient from './ListingDetailClient'
 
@@ -34,7 +35,7 @@ const getListingById = cache(async (id: string): Promise<Listing | null> => {
 })
 
 function buildMetaDescription(listing: Listing): string {
-  const raw = (listing.description ?? '').replace(/\s+/g, ' ').trim()
+  const raw = stripListingDescriptionLinks(listing.description ?? '').replace(/\s+/g, ' ').trim()
   const shortened = raw.length > 180 ? `${raw.slice(0, 177)}...` : raw
   return (
     shortened ||
