@@ -67,6 +67,7 @@ class Command(BaseCommand):
 
         call_command("run_scrapers", **run_scrapers_kwargs)
         call_command("audit_listing_deadlines", stdout=self.stdout)
+        call_command("audit_listing_eligibility", stdout=self.stdout)
         call_command("export_listings", path=str(target_path), stdout=self.stdout)
 
         summary_rows = get_platform_summary()

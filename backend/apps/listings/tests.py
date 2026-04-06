@@ -11,15 +11,47 @@ from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.core.management import call_command
-from django.test import RequestFactory, TestCase, override_settings
+from django.test import RequestFactory, SimpleTestCase, TestCase, override_settings
 from django.utils import timezone
+from scrapy.exceptions import DropItem
 
 from apps.listings.admin import ListingAdmin
 from apps.listings.cache_keys import get_listing_list_cache_version
+from apps.listings.eligibility import classify_student_eligibility
 from apps.listings.models import Listing, SuppressedListingSource
 from apps.listings.runtime import get_admin_runtime_info
 from apps.listings.sync import delete_listing_groups
-from apps.scraper.pipelines import DjangoORMPipeline
+from apps.scraper.pipelines import DjangoORMPipeline, EligibilityValidationPipeline
+
+
+class EligibilityHelperTests(SimpleTestCase):
+    def test_detects_explicit_graduate_only_signals(self):
+        samples = (
+            "This position is only open to graduates",
+            "Graduates only",
+            "Sadece mezun adaylar",
+            "Current students will not be considered",
+            "Yalnızca yeni mezun adaylar",
+        )
+
+        for sample in samples:
+            with self.subTest(sample=sample):
+                decision = classify_student_eligibility("Sample Listing", sample)
+                self.assertTrue(decision.graduate_only)
+                self.assertIsNotNone(decision.reason)
+
+    def test_keeps_mixed_student_and_graduate_phrases_visible(self):
+        samples = (
+            "3rd/4th year students or recent graduates",
+            "Undergraduate or master's students, as well as recent graduates",
+            "New graduates are welcome",
+            "Current Bachelor's or Master's students may apply",
+        )
+
+        for sample in samples:
+            with self.subTest(sample=sample):
+                decision = classify_student_eligibility("Sample Listing", sample)
+                self.assertFalse(decision.graduate_only)
 
 
 class ListingDeletionProtectionTests(TestCase):
@@ -310,6 +342,52 @@ class DjangoORMPipelineTests(TestCase):
         )
 
 
+class EligibilityValidationPipelineTests(TestCase):
+    def setUp(self):
+        self.pipeline = EligibilityValidationPipeline()
+        self.orm_pipeline = DjangoORMPipeline()
+        self.spider = DummySpider()
+
+    def test_drops_graduate_only_listing_before_db_write(self):
+        item = {
+            'title': 'Software QA Intern (4-Month Internship Program). This position is only open to graduates.',
+            'company_name': 'Meta Smart Factory',
+            'source_url': 'https://tr.linkedin.com/jobs/view/software-qa-intern-1',
+            'application_url': 'https://tr.linkedin.com/jobs/view/software-qa-intern-1',
+            'source_platform': 'linkedin',
+            'location': 'Turkiye',
+            'description': 'Graduates only. Current students will not be considered.',
+        }
+
+        with self.assertRaises(DropItem):
+            self.pipeline.process_item(item, self.spider)
+
+        self.assertFalse(Listing.objects.exists())
+        self.assertIn(
+            (
+                'info',
+                'GRADUATE_ONLY_SKIPPED: Software QA Intern (4-Month Internship Program). This position is only open to graduates. | reason=graduates_only',
+            ),
+            self.spider.logger.messages,
+        )
+
+    def test_keeps_mixed_student_and_recent_graduate_listing(self):
+        item = {
+            'title': 'Supply Chain Internship',
+            'company_name': 'Example Company',
+            'source_url': 'https://tr.linkedin.com/jobs/view/supply-chain-intern-1',
+            'application_url': 'https://company.example/apply',
+            'source_platform': 'linkedin',
+            'location': 'Turkiye',
+            'description': 'Open to 3rd/4th year students or recent graduates in engineering.',
+        }
+
+        filtered_item = self.pipeline.process_item(item, self.spider)
+        self.orm_pipeline.process_item(filtered_item, self.spider)
+
+        self.assertTrue(Listing.objects.filter(source_url='https://tr.linkedin.com/jobs/view/supply-chain-intern-1').exists())
+
+
 class ProductionListingFixtureCommandTests(TestCase):
     def create_listing(self, **overrides):
         payload = {
@@ -374,7 +452,7 @@ class ProductionListingFixtureCommandTests(TestCase):
 
         def fake_call_command(name, *args, **kwargs):
             recorded_commands.append(name)
-            if name in {'run_scrapers', 'audit_listing_deadlines'}:
+            if name in {'run_scrapers', 'audit_listing_deadlines', 'audit_listing_eligibility'}:
                 return None
             return original_call_command(name, *args, **kwargs)
 
@@ -392,7 +470,10 @@ class ProductionListingFixtureCommandTests(TestCase):
                     stdout=output,
                 )
 
-            self.assertEqual(recorded_commands, ['run_scrapers', 'audit_listing_deadlines', 'export_listings'])
+            self.assertEqual(
+                recorded_commands,
+                ['run_scrapers', 'audit_listing_deadlines', 'audit_listing_eligibility', 'export_listings'],
+            )
             self.assertTrue(fixture_path.exists())
 
             exported_records = json.loads(fixture_path.read_text(encoding='utf-8'))
@@ -530,3 +611,84 @@ class ListingDeadlineAuditCommandTests(TestCase):
         self.assertEqual(description_fallback.application_deadline, date(2099, 3, 22))
         self.assertEqual(remote_first.deadline_status, 'normal')
         self.assertEqual(description_fallback.deadline_status, 'normal')
+
+
+class ListingEligibilityAuditCommandTests(TestCase):
+    def create_listing(self, **overrides):
+        payload = {
+            'title': 'Eligibility Test Listing',
+            'company_name': 'Example Company',
+            'source_url': 'https://example.com/listing/eligibility-test',
+            'application_url': 'https://example.com/apply/eligibility-test',
+            'source_platform': 'linkedin',
+            'em_focus_area': 'diger',
+            'internship_type': 'belirsiz',
+            'company_origin': 'belirsiz',
+            'location': 'Istanbul',
+            'description': 'Support operations and improvement projects.',
+            'requirements': '',
+        }
+        payload.update(overrides)
+        return Listing.objects.create(**payload)
+
+    def test_audit_command_deactivates_graduate_only_listings_and_preserves_manual_inactive(self):
+        graduate_only = self.create_listing(
+            title='Software QA Intern',
+            source_url='https://example.com/listing/graduate-only',
+            description='This position is only open to graduates.',
+            is_active=True,
+        )
+        mixed_eligibility = self.create_listing(
+            title='Supply Chain Internship',
+            source_url='https://example.com/listing/mixed-eligibility',
+            description='Open to 3rd/4th year students or recent graduates.',
+            is_active=True,
+        )
+        graduate_welcome = self.create_listing(
+            title='Operations Internship',
+            source_url='https://example.com/listing/graduate-welcome',
+            description='New graduates are welcome to apply alongside students.',
+            is_active=True,
+        )
+        manual_inactive = self.create_listing(
+            title='Manual Inactive Graduate Listing',
+            source_url='https://example.com/listing/manual-inactive-graduate',
+            description='Graduates only.',
+            is_active=False,
+        )
+
+        output = StringIO()
+        call_command('audit_listing_eligibility', stdout=output)
+
+        graduate_only.refresh_from_db()
+        mixed_eligibility.refresh_from_db()
+        graduate_welcome.refresh_from_db()
+        manual_inactive.refresh_from_db()
+
+        self.assertFalse(graduate_only.is_active)
+        self.assertTrue(mixed_eligibility.is_active)
+        self.assertTrue(graduate_welcome.is_active)
+        self.assertFalse(manual_inactive.is_active)
+        self.assertIn('Eligibility audit finished:', output.getvalue())
+
+    def test_audit_command_hides_graduate_only_listing_from_api(self):
+        self.create_listing(
+            title='Software QA Intern',
+            source_url='https://example.com/listing/graduate-only-api',
+            description='This position is only open to graduates.',
+            is_active=True,
+        )
+        self.create_listing(
+            title='Student Friendly Internship',
+            source_url='https://example.com/listing/student-friendly',
+            description='Open to undergraduate students or recent graduates.',
+            is_active=True,
+        )
+
+        call_command('audit_listing_eligibility')
+        response = self.client.get('/api/listings/?limit=50')
+
+        self.assertEqual(response.status_code, 200)
+        titles = [item['title'] for item in response.json()['results']]
+        self.assertNotIn('Software QA Intern', titles)
+        self.assertIn('Student Friendly Internship', titles)

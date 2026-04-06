@@ -11,6 +11,9 @@ import django
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from itemadapter import ItemAdapter
+from scrapy.exceptions import DropItem
+
+from apps.listings.eligibility import classify_student_eligibility
 
 # Django setup for ORM access inside Scrapy
 BASE_DIR = Path(__file__).resolve().parents[3]
@@ -326,6 +329,24 @@ class LogoEnrichmentPipeline:
             spider.logger.debug(f'NO_DOMAIN: {company}')
 
         return item
+
+
+class EligibilityValidationPipeline:
+    """Drop graduate-only postings before any database writes happen."""
+
+    def process_item(self, item, spider):
+        adapter = ItemAdapter(item)
+        decision = classify_student_eligibility(
+            adapter.get('title', ''),
+            adapter.get('description', ''),
+        )
+        if not decision.graduate_only:
+            return item
+
+        reason = decision.reason or 'graduate_only'
+        title = adapter.get('title', '')
+        spider.logger.info('GRADUATE_ONLY_SKIPPED: %s | reason=%s', title, reason)
+        raise DropItem(f'Graduate-only listing skipped: reason={reason}')
 
 
 class DeadlineValidationPipeline:
