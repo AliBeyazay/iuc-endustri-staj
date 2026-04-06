@@ -14,19 +14,24 @@ type PaginatedListingResponse = {
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? `https://${process.env.VERCEL_URL ?? 'iuc-endustri-staj.vercel.app'}`)
   .replace(/\/$/, '')
 const backendApiBaseUrl = getBackendApiBaseUrl()
+const REQUEST_TIMEOUT_MS = 8000
+const MAX_SITEMAP_PAGES = 25
+
+export const dynamic = 'force-dynamic'
 
 async function fetchAllActiveListings(): Promise<ListingSitemapItem[]> {
   const allItems: ListingSitemapItem[] = []
   let page = 1
   let hasNext = true
 
-  while (hasNext) {
+  while (hasNext && page <= MAX_SITEMAP_PAGES) {
     const response = await fetch(`${backendApiBaseUrl}/listings/?page=${page}&ordering=-created_at`, {
       headers: {
         Accept: 'application/json',
         'ngrok-skip-browser-warning': 'true',
       },
       next: { revalidate: 300 },
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     })
 
     if (!response.ok) {
