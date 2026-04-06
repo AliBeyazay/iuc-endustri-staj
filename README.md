@@ -130,6 +130,20 @@ run_all_scrapers.delay()
 Beat tarafında aktif toplu görev:
 `all-scrape` -> `apps.scraper.tasks.run_all_scrapers` -> `02:00 Europe/Istanbul`
 
+Render free planda production ilanlarını güncellemek için manuel fixture akışı kullanılır:
+
+```bash
+docker compose exec backend python manage.py sync_production_listings
+```
+
+Bu komut:
+- tüm scraper'ları yerelde çalıştırır
+- `backend/apps/listings/fixtures/production_real_listings.json` dosyasını yeniler
+- platform bazlı ilan sayılarını özetler
+
+Komut tamamlanınca fixture değişikliklerini commit/push et. Render backend redeploy olduğunda
+`import_production_listings` güncel fixture'i production veritabanına tekrar import eder.
+
 ---
 
 ## Ortam Değişkenleri
@@ -202,8 +216,11 @@ Beat tarafında aktif toplu görev:
  
 ### Production Deploy Checklist
  
-1. Deploy backend changes.
-2. Run Django migrations on the production backend.
-3. Open Django admin and confirm the runtime banner shows `prod` and the expected database host.
-4. Confirm the production frontend is pointing to the production backend URL.
-5. Verify that a listing edited or deleted in production admin is reflected on the production site.
+1. Run `docker compose exec backend python manage.py sync_production_listings` locally.
+2. Review the fixture diff in `backend/apps/listings/fixtures/production_real_listings.json`.
+3. Commit and push the backend changes so Render redeploys.
+4. Run Django migrations on the production backend if the deploy includes schema changes.
+5. Open Django admin and confirm the runtime banner shows `prod` and the expected database host.
+6. Confirm the production frontend is pointing to the production backend URL.
+7. Verify `https://iuc-staj-backend.onrender.com/api/listings/?source_platform=pythiango&limit=20` returns `count > 0`.
+8. Verify the production site shows listings under the `PythianGo` platform filter.

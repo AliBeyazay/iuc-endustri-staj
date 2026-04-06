@@ -1,8 +1,15 @@
+import json
+from io import StringIO
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from unittest.mock import patch
+
 from django.contrib.admin.sites import AdminSite
 from django.contrib.admin.models import DELETION, LogEntry
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
+from django.core.management import call_command
 from django.test import RequestFactory, TestCase, override_settings
 
 from apps.listings.admin import ListingAdmin
@@ -299,3 +306,99 @@ class DjangoORMPipelineTests(TestCase):
             ),
             spider.logger.messages,
         )
+
+
+class ProductionListingFixtureCommandTests(TestCase):
+    def create_listing(self, **overrides):
+        payload = {
+            'title': 'PythianGo Intern',
+            'company_name': 'Example Company',
+            'source_url': 'https://panel.pythiango.com/student/jobs/job-123',
+            'application_url': 'https://company.example/apply',
+            'source_platform': 'pythiango',
+            'em_focus_area': 'diger',
+            'internship_type': 'belirsiz',
+            'company_origin': 'belirsiz',
+            'location': 'Istanbul',
+            'description': 'Support operations and improvement projects.',
+            'requirements': 'Analytical thinking',
+        }
+        payload.update(overrides)
+        return Listing.objects.create(**payload)
+
+    def test_export_and_import_round_trip_recreates_and_updates_listings(self):
+        original = self.create_listing()
+
+        with TemporaryDirectory() as temp_dir:
+            fixture_path = Path(temp_dir) / 'production_real_listings.json'
+            export_output = StringIO()
+            call_command('export_listings', path=str(fixture_path), stdout=export_output)
+
+            self.assertTrue(fixture_path.exists())
+            self.assertIn('Exported 1 listings', export_output.getvalue())
+
+            Listing.objects.all().delete()
+
+            create_output = StringIO()
+            call_command('import_production_listings', path=str(fixture_path), stdout=create_output)
+
+            recreated = Listing.objects.get(source_url=original.source_url)
+            self.assertEqual(recreated.title, 'PythianGo Intern')
+            self.assertEqual(recreated.source_platform, 'pythiango')
+            self.assertIn('created=1 updated=0 total=1', create_output.getvalue())
+
+            recreated.title = 'Stale Title'
+            recreated.save(update_fields=['title'])
+
+            update_output = StringIO()
+            call_command('import_production_listings', path=str(fixture_path), stdout=update_output)
+
+            recreated.refresh_from_db()
+            self.assertEqual(recreated.title, 'PythianGo Intern')
+            self.assertIn('created=0 updated=1 total=1', update_output.getvalue())
+
+    def test_sync_production_listings_runs_scrapers_then_exports_and_prints_summary(self):
+        self.create_listing()
+        self.create_listing(
+            title='Youthall Program',
+            source_url='https://www.youthall.com/tr/example/youthall-program_1/',
+            source_platform='youthall',
+            application_url='https://www.youthall.com/tr/example/youthall-program_1/apply/',
+            canonical_listing=None,
+        )
+
+        recorded_commands = []
+        original_call_command = call_command
+
+        def fake_call_command(name, *args, **kwargs):
+            recorded_commands.append(name)
+            if name == 'run_scrapers':
+                return None
+            return original_call_command(name, *args, **kwargs)
+
+        with TemporaryDirectory() as temp_dir:
+            fixture_path = Path(temp_dir) / 'production_real_listings.json'
+            output = StringIO()
+
+            with patch(
+                'apps.listings.management.commands.sync_production_listings.call_command',
+                side_effect=fake_call_command,
+            ):
+                call_command(
+                    'sync_production_listings',
+                    path=str(fixture_path),
+                    stdout=output,
+                )
+
+            self.assertEqual(recorded_commands, ['run_scrapers', 'export_listings'])
+            self.assertTrue(fixture_path.exists())
+
+            exported_records = json.loads(fixture_path.read_text(encoding='utf-8'))
+            self.assertEqual(len(exported_records), 2)
+
+            rendered_output = output.getvalue()
+            self.assertIn('Production fixture sync started', rendered_output)
+            self.assertIn('Production fixture sync finished', rendered_output)
+            self.assertIn('Listings summary: total=2 active=2 visible=2', rendered_output)
+            self.assertIn('pythiango: total=1 active=1 visible=1', rendered_output)
+            self.assertIn('youthall: total=1 active=1 visible=1', rendered_output)

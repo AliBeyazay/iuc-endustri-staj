@@ -1,4 +1,4 @@
-"""Export all active listings to a flat JSON file for production import."""
+"""Export listings to a flat JSON file for production imports."""
 import json
 from pathlib import Path
 
@@ -10,10 +10,14 @@ DEFAULT_PATH = "apps/listings/fixtures/production_real_listings.json"
 
 
 class Command(BaseCommand):
-    help = "Export listings to flat JSON (compatible with import_production_listings)."
+    help = "Export listings to flat JSON used by import_production_listings."
 
     def add_arguments(self, parser):
-        parser.add_argument("--path", default=DEFAULT_PATH)
+        parser.add_argument(
+            "--path",
+            default=DEFAULT_PATH,
+            help="Path for the production fixture JSON file.",
+        )
 
     def handle(self, *args, **options):
         qs = Listing.objects.all().order_by("created_at")

@@ -14,7 +14,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--path",
             default="apps/listings/fixtures/production_real_listings.json",
-            help="Path to the JSON file exported from the local SQLite database.",
+            help="Path to the JSON file exported from the local listings database.",
         )
 
     def handle(self, *args, **options):
