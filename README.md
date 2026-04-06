@@ -92,6 +92,11 @@ celery -A config worker --loglevel=info
 celery -A config beat   --loglevel=info
 ```
 
+Beat schedule veritabanını deploy veya bakım sonrası hizalamak için:
+```bash
+python manage.py sync_celery_beat
+```
+
 ### Frontend
 
 ```bash
@@ -121,6 +126,9 @@ from apps.scraper.tasks import run_all_scrapers
 run_all_scrapers.delay()
 "
 ```
+
+Beat tarafında aktif toplu görev:
+`all-scrape` -> `apps.scraper.tasks.run_all_scrapers` -> `02:00 Europe/Istanbul`
 
 ---
 

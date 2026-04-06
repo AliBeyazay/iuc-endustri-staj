@@ -1,6 +1,12 @@
-from bs4 import BeautifulSoup
-from django.test import SimpleTestCase
+from io import StringIO
 
+from django.conf import settings
+from django.core.management import call_command
+from django.test import SimpleTestCase, TestCase
+from bs4 import BeautifulSoup
+from django_celery_beat.models import CrontabSchedule, PeriodicTask, PeriodicTasks
+
+from apps.scraper.beat_schedule import MANAGED_BEAT_SCHEDULES
 from apps.scraper.tasks import (
     _count_rate_limit_signals,
     _linkedin_retry_delay,
@@ -268,3 +274,55 @@ class LinkedInTaskHelperTests(SimpleTestCase):
                 {'new_count': 2, 'updated_count': 0, 'skipped_count': 0, 'error_count': 0},
             )
         )
+
+
+class CeleryBeatSyncCommandTests(TestCase):
+    def create_legacy_task(self, name, task_name):
+        schedule, _ = CrontabSchedule.objects.get_or_create(
+            minute='0',
+            hour='8',
+            day_of_week='*',
+            day_of_month='*',
+            month_of_year='*',
+            timezone=settings.CELERY_TIMEZONE,
+        )
+        return PeriodicTask.objects.create(
+            name=name,
+            task=task_name,
+            crontab=schedule,
+            enabled=True,
+        )
+
+    def test_sync_celery_beat_creates_managed_tasks_and_disables_legacy_entries(self):
+        self.create_legacy_task('morning-scrape', 'apps.scraper.tasks.run_non_linkedin_scrapers')
+        self.create_legacy_task('evening-scrape', 'apps.scraper.tasks.run_non_linkedin_scrapers')
+        self.create_legacy_task('linkedin-night-scrape', 'apps.scraper.tasks.run_linkedin_scraper')
+
+        output = StringIO()
+        call_command('sync_celery_beat', stdout=output)
+
+        all_scrape = PeriodicTask.objects.get(name='all-scrape')
+        self.assertEqual(all_scrape.task, 'apps.scraper.tasks.run_all_scrapers')
+        self.assertTrue(all_scrape.enabled)
+        self.assertEqual(all_scrape.crontab.minute, '0')
+        self.assertEqual(all_scrape.crontab.hour, '2')
+        self.assertEqual(str(all_scrape.crontab.timezone), settings.CELERY_TIMEZONE)
+
+        self.assertTrue(PeriodicTask.objects.get(name='expire-check').enabled)
+        self.assertTrue(PeriodicTask.objects.get(name='weekly-digest').enabled)
+        self.assertFalse(PeriodicTask.objects.get(name='morning-scrape').enabled)
+        self.assertFalse(PeriodicTask.objects.get(name='evening-scrape').enabled)
+        self.assertFalse(PeriodicTask.objects.get(name='linkedin-night-scrape').enabled)
+        self.assertIsNotNone(PeriodicTasks.last_change())
+        self.assertIn('all-scrape', output.getvalue())
+
+    def test_sync_celery_beat_is_idempotent(self):
+        call_command('sync_celery_beat')
+        call_command('sync_celery_beat')
+
+        managed_names = set(MANAGED_BEAT_SCHEDULES.keys())
+        self.assertEqual(
+            set(PeriodicTask.objects.filter(name__in=managed_names).values_list('name', flat=True)),
+            managed_names,
+        )
+        self.assertEqual(PeriodicTask.objects.filter(name='all-scrape').count(), 1)

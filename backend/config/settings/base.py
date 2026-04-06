@@ -3,6 +3,7 @@
 # ════════════════════════════════════════════════════════════════════
 from pathlib import Path
 import os
+from apps.scraper.beat_schedule import build_celery_beat_schedule
 
 try:
     from celery.schedules import crontab
@@ -123,48 +124,7 @@ CELERY_BROKER_URL        = os.environ.get('REDIS_URL', 'redis://localhost:6379/0
 CELERY_RESULT_BACKEND    = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
 CELERY_TIMEZONE          = 'Europe/Istanbul'
 CELERY_BEAT_SCHEDULER    = 'django_celery_beat.schedulers:DatabaseScheduler'
-if crontab is not None:
-    CELERY_BEAT_SCHEDULE = {
-        'morning-scrape': {
-            'task': 'apps.scraper.tasks.run_non_linkedin_scrapers',
-            'schedule': crontab(hour=8, minute=0),
-        },
-        'evening-scrape': {
-            'task': 'apps.scraper.tasks.run_non_linkedin_scrapers',
-            'schedule': crontab(hour=20, minute=0),
-        },
-        'linkedin-night-scrape': {
-            'task': 'apps.scraper.tasks.run_linkedin_scraper',
-            'schedule': crontab(hour=2, minute=0),
-        },
-        'expire-check': {
-            'task': 'apps.scraper.tasks.deactivate_expired_listings',
-            'schedule': crontab(hour=9, minute=0),
-        },
-        'weekly-digest': {
-            'task': 'apps.scraper.tasks.send_weekly_digest',
-            'schedule': crontab(hour=10, minute=0, day_of_week=1),
-        },
-    }
-else:
-    CELERY_BEAT_SCHEDULE = {
-        'morning-scrape': {
-            'task': 'apps.scraper.tasks.run_non_linkedin_scrapers',
-            'schedule': 28800,
-        },
-        'linkedin-night-scrape': {
-            'task': 'apps.scraper.tasks.run_linkedin_scraper',
-            'schedule': 86400,
-        },
-        'expire-check': {
-            'task': 'apps.scraper.tasks.deactivate_expired_listings',
-            'schedule': 86400,
-        },
-        'weekly-digest': {
-            'task': 'apps.scraper.tasks.send_weekly_digest',
-            'schedule': 604800,
-        },
-    }
+CELERY_BEAT_SCHEDULE      = build_celery_beat_schedule(crontab)
 
 if USE_SQLITE:
     CACHES = {

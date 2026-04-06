@@ -36,13 +36,13 @@ def run_all_scrapers():
 
 @shared_task(name='apps.scraper.tasks.run_non_linkedin_scrapers')
 def run_non_linkedin_scrapers():
-    """Trigger all non-LinkedIn spiders for routine daytime scrapes."""
+    """Trigger all non-LinkedIn spiders for manual or debug scrapes."""
     return _dispatch_spiders(NON_LINKEDIN_SPIDERS)
 
 
 @shared_task(name='apps.scraper.tasks.run_linkedin_scraper')
 def run_linkedin_scraper():
-    """Run LinkedIn on its own schedule to reduce shared crawl pressure."""
+    """Run LinkedIn on its own for manual or debug scrapes."""
     result = run_single_spider.delay('linkedin')
     logger.info('Dispatched dedicated LinkedIn spider task: %s', result.id)
     return {'linkedin': result.id}
@@ -68,14 +68,14 @@ def run_single_spider(self, spider_name: str):
     import os
     import subprocess
     import sys
-    from datetime import datetime
+    from django.utils import timezone
 
     spider_cls = SPIDER_MAP.get(spider_name)
     if not spider_cls:
         raise ValueError(f'Unknown spider: {spider_name}')
 
     module, cls = spider_cls.rsplit('.', 1)
-    started_at  = datetime.utcnow()
+    started_at  = timezone.now()
 
     try:
         env = os.environ.copy()
@@ -90,7 +90,7 @@ def run_single_spider(self, spider_name: str):
             cwd=settings.BASE_DIR,
             env=env,
         )
-        finished_at = datetime.utcnow()
+        finished_at = timezone.now()
         combined_output = "\n".join(chunk for chunk in (proc.stdout, proc.stderr) if chunk)
         stats = _parse_scrapy_stats(proc.stdout)
         rate_limit_hits = _count_rate_limit_signals(combined_output)
