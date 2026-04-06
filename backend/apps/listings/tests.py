@@ -60,6 +60,7 @@ class EligibilityHelperTests(SimpleTestCase):
             "Tercihen 4-8 yıl deneyimli",
             "Minimum 3 years of professional experience",
             "At least 5 years experience in project management",
+            "Minimum of 3 years experience within a similar role",
         )
 
         for sample in samples:
@@ -410,6 +411,29 @@ class EligibilityValidationPipelineTests(TestCase):
             self.spider.logger.messages,
         )
 
+    def test_drops_english_experience_required_listing_before_db_write(self):
+        item = {
+            'title': 'Supply Chain Specialist',
+            'company_name': 'Example Company',
+            'source_url': 'https://tr.linkedin.com/jobs/view/supply-chain-specialist-1',
+            'application_url': 'https://tr.linkedin.com/jobs/view/supply-chain-specialist-1',
+            'source_platform': 'linkedin',
+            'location': 'Aliaga, Turkiye',
+            'description': 'Minimum of 3 years experience within a similar role. Experience in Supply Chain, Material planning or Production Planning.',
+        }
+
+        with self.assertRaises(DropItem):
+            self.pipeline.process_item(item, self.spider)
+
+        self.assertFalse(Listing.objects.exists())
+        self.assertIn(
+            (
+                'info',
+                'INELIGIBLE_FOR_STUDENTS_SKIPPED: Supply Chain Specialist | reason=minimum_years_experience_en',
+            ),
+            self.spider.logger.messages,
+        )
+
     def test_keeps_mixed_student_and_recent_graduate_listing(self):
         item = {
             'title': 'Supply Chain Internship',
@@ -702,6 +726,13 @@ class ListingEligibilityAuditCommandTests(TestCase):
             is_active=True,
         )
 
+        experienced_role_english = self.create_listing(
+            title='Supply Chain Specialist',
+            source_url='https://example.com/listing/experienced-role-english',
+            description='Minimum of 3 years experience within a similar role. Experience in Supply Chain, Material planning or Production Planning.',
+            is_active=True,
+        )
+
         output = StringIO()
         call_command('audit_listing_eligibility', stdout=output)
 
@@ -710,12 +741,14 @@ class ListingEligibilityAuditCommandTests(TestCase):
         graduate_welcome.refresh_from_db()
         manual_inactive.refresh_from_db()
         experienced_role.refresh_from_db()
+        experienced_role_english.refresh_from_db()
 
         self.assertFalse(graduate_only.is_active)
         self.assertTrue(mixed_eligibility.is_active)
         self.assertTrue(graduate_welcome.is_active)
         self.assertFalse(manual_inactive.is_active)
         self.assertFalse(experienced_role.is_active)
+        self.assertFalse(experienced_role_english.is_active)
         self.assertIn('Eligibility audit finished:', output.getvalue())
 
     def test_audit_command_hides_ineligible_listing_from_api(self):
@@ -738,6 +771,13 @@ class ListingEligibilityAuditCommandTests(TestCase):
             is_active=True,
         )
 
+        self.create_listing(
+            title='Supply Chain Specialist',
+            source_url='https://example.com/listing/experienced-role-api-english',
+            description='Minimum of 3 years experience within a similar role.',
+            is_active=True,
+        )
+
         call_command('audit_listing_eligibility')
         response = self.client.get('/api/listings/?limit=50')
 
@@ -745,4 +785,5 @@ class ListingEligibilityAuditCommandTests(TestCase):
         titles = [item['title'] for item in response.json()['results']]
         self.assertNotIn('Software QA Intern', titles)
         self.assertNotIn('Elektronik Harp Proje Mühendisi', titles)
+        self.assertNotIn('Supply Chain Specialist', titles)
         self.assertIn('Student Friendly Internship', titles)

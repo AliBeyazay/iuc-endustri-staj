@@ -85,7 +85,7 @@ _EXPERIENCE_REQUIRED_PATTERNS = (
     (
         "minimum_years_experience_en",
         re.compile(
-            r"\b(?:at\s+least|minimum|min(?:imum)?)\s+([2-9]|[1-9][0-9])\+?\s+years?\s+"
+            r"\b(?:at\s+least|min(?:imum)?(?:\s+of)?)\s+([2-9]|[1-9][0-9])\+?\s+years?\s+"
             r"(?:of\s+)?(?:professional\s+)?experience\b"
         ),
     ),
