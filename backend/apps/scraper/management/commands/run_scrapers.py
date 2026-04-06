@@ -26,6 +26,7 @@ SPIDER_NAMES = [
     'bogazici_km',
     'ytu_orkam',
     'kariyer',
+    'pythiango',
 ]
 
 

@@ -22,6 +22,7 @@ SPIDER_MAP = {
     'bogazici_km': 'apps.scraper.spiders.spiders.BogaziciKariyerSpider',
     'ytu_orkam': 'apps.scraper.spiders.spiders.YtuOrkamSpider',
     'kariyer':   'apps.scraper.spiders.spiders.KariyerSpider',
+    'pythiango': 'apps.scraper.spiders.spiders.PythianGoSpider',
 }
 NON_LINKEDIN_SPIDERS = tuple(name for name in SPIDER_MAP if name != 'linkedin')
 

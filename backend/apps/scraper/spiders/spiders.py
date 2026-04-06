@@ -2090,3 +2090,198 @@ class SavunmaSpider(BaseEMSpider):
                 duration_weeks=None,
                 scraped_at=datetime.utcnow(),
             )
+
+
+class PythianGoSpider(BaseEMSpider):
+    name = "pythiango"
+    API_URL = "https://api.pythiango.com/opportunities"
+    API_MEDIA_BASE_URL = "https://api.pythiango.com"
+    PUBLIC_JOB_BASE_URL = "https://panel.pythiango.com/student/jobs"
+    PAGE_SIZE = 10
+    LOCATION_TYPE_LABELS = {
+        "REMOTE": "Uzaktan",
+        "HYBRID": "Hibrit",
+        "ONSITE": "Yerinde",
+    }
+    TALENT_POSITION_TYPES = {
+        "YOUNG_TALENT_PROGRAM",
+        "NEW_GRADUATE_PROGRAM",
+    }
+    INCLUDED_POSITION_TYPES = {
+        "INTERNSHIP",
+        "SHORT_TERM_INTERNSHIP",
+        "LONG_TERM_INTERNSHIP",
+        "YOUNG_TALENT_PROGRAM",
+        "NEW_GRADUATE_PROGRAM",
+        "PART_TIME",
+    }
+    EXCLUDED_NON_LISTING_KEYWORDS = (
+        "akademi",
+        "academy",
+        "atolye",
+        "workshop",
+        "bootcamp",
+        "burs",
+        "competition",
+        "hackathon",
+        "mentorluk",
+        "mentorship",
+        "scholarship",
+        "yarisma",
+    )
+
+    def start_requests(self):
+        yield Request(
+            self.build_api_url(page=1),
+            headers={"Accept": "application/json"},
+            callback=self.parse,
+            meta={"page": 1},
+        )
+
+    def build_api_url(self, *, page: int) -> str:
+        return (
+            f"{self.API_URL}?type=JOB&perPage={self.PAGE_SIZE}"
+            f"&isPublished=true&page={page}"
+        )
+
+    def normalize_public_url(self, value: str | None) -> str | None:
+        if not value:
+            return None
+        stripped = str(value).strip()
+        if stripped.startswith(("mailto:", "tel:", "javascript:")):
+            return None
+        absolute = absolute_logo(self.API_MEDIA_BASE_URL, stripped)
+        if not absolute:
+            return None
+        parsed = urlparse(absolute)
+        if parsed.scheme == "http" and parsed.netloc.endswith("pythiango.com"):
+            return absolute.replace("http://", "https://", 1)
+        return absolute
+
+    def clean_optional_text(self, value) -> str | None:
+        raw = "" if value in (None, "null", "None") else str(value)
+        cleaned = self.clean_text(raw)
+        return cleaned or None
+
+    def build_location(self, item: dict) -> str:
+        location_type = self.clean_text(item.get("locationType", "")).upper()
+        location_label = self.LOCATION_TYPE_LABELS.get(location_type)
+        city = self.clean_optional_text(item.get("city"))
+        country = self.clean_optional_text(item.get("country"))
+
+        place_parts: list[str] = []
+        if city:
+            place_parts.append(city)
+        if country and (not city or city.casefold() != country.casefold()):
+            place_parts.append(country)
+
+        place = ", ".join(place_parts)
+        if location_label and place:
+            return f"{location_label} - {place}"
+        if location_label:
+            return location_label
+        if place:
+            return place
+        return "Turkiye"
+
+    def extract_company_name(self, item: dict) -> str:
+        company = item.get("company") or {}
+        brand = item.get("brand") or {}
+        club = item.get("club") or {}
+        return self.clean_text(
+            company.get("legalName")
+            or company.get("name")
+            or brand.get("name")
+            or club.get("name")
+            or "PythianGo"
+        )
+
+    def should_include_item(self, title: str, description: str, position_type: str) -> bool:
+        normalized_title = self.normalize_turkish(title)
+        if any(keyword in normalized_title for keyword in self.EXCLUDED_NON_LISTING_KEYWORDS):
+            return False
+        if position_type in self.INCLUDED_POSITION_TYPES:
+            return True
+        return has_listing_keywords(self, title, description, position_type)
+
+    def parse(self, response):
+        try:
+            payload = json.loads(response.text)
+        except json.JSONDecodeError:
+            self.logger.warning("PYTHIANGO_INVALID_JSON: %s", response.url)
+            return
+
+        items = payload.get("data") or []
+        meta = payload.get("meta") or {}
+        current_page = int(meta.get("page") or response.meta.get("page", 1))
+        page_count = int(meta.get("pageCount") or current_page)
+
+        for item in items:
+            if not item.get("isPublished") or item.get("isPublic") is False:
+                continue
+
+            uuid = self.clean_text(item.get("uuid", ""))
+            title = self.clean_text(item.get("title", ""))
+            if not uuid or not title:
+                continue
+
+            company_name = self.extract_company_name(item)
+            description = html_fragment_to_text(str(item.get("description") or ""))
+            source_url = f"{self.PUBLIC_JOB_BASE_URL}/{uuid}"
+            external_url = self.normalize_public_url(item.get("externalUrl"))
+            application_url = external_url or source_url
+            job_posting = item.get("jobPosting") or {}
+            position_type = self.clean_text(job_posting.get("positionType", ""))
+            if not self.should_include_item(title, description, position_type):
+                self.logger.info("PYTHIANGO_SKIPPED_NON_LISTING: %s", title)
+                continue
+
+            raw_deadline = self.clean_optional_text(item.get("applicationDeadline"))
+            deadline = self.parse_deadline(raw_deadline[:10]) if raw_deadline else None
+            if raw_deadline and deadline is None:
+                self.logger.info("PYTHIANGO_SKIPPED_EXPIRED: %s", title)
+                continue
+
+            is_talent_program = (
+                position_type in self.TALENT_POSITION_TYPES
+                or "program" in self.normalize_turkish(f"{title} {description}")
+            )
+
+            yield ScrapedListingItem(
+                title=title,
+                company_name=company_name,
+                company_logo_url=self.normalize_public_url(
+                    (item.get("company") or {}).get("logoUrl")
+                ),
+                source_url=source_url,
+                application_url=application_url,
+                source_platform="pythiango",
+                em_focus_area=self.detect_em_focus_area(
+                    title,
+                    description,
+                    company_name,
+                    "pythiango",
+                ),
+                internship_type=self.detect_internship_type(title, description),
+                company_origin=self.detect_company_origin(company_name),
+                location=self.build_location(item),
+                description=description[:4000],
+                requirements="",
+                application_deadline=deadline,
+                deadline_status=self.compute_deadline_status(deadline),
+                is_active=deadline is None or deadline >= date.today(),
+                is_talent_program=is_talent_program,
+                program_type=self.detect_program_type(title, description),
+                duration_weeks=None,
+                scraped_at=datetime.utcnow(),
+            )
+
+        if current_page < page_count:
+            next_page = current_page + 1
+            yield Request(
+                self.build_api_url(page=next_page),
+                headers={"Accept": "application/json"},
+                callback=self.parse,
+                meta={"page": next_page},
+                dont_filter=True,
+            )

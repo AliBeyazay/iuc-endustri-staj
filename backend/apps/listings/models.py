@@ -79,6 +79,7 @@ SOURCE_PLATFORM_CHOICES = [
     ('bogazici_km', 'Bogazici Kariyer'),
     ('ytu_orkam', 'YTU ORKAM'),
     ('itu_kariyer', 'ITU Kariyer'),
+    ('pythiango', 'PythianGo'),
 ]
 
 INTERNSHIP_TYPE_CHOICES = [

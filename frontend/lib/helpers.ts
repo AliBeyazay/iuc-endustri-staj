@@ -39,6 +39,7 @@ export const PLATFORM_LABELS: Record<SourcePlatform, string> = {
   odtu_kpm: 'ODTU KPM',
   bogazici_km: 'Bogazici Kariyer',
   ytu_orkam: 'YTU ORKAM',
+  pythiango: 'PythianGo',
   itu_kariyer: 'İTÜ Kariyer',
 }
 

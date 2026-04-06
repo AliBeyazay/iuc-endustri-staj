@@ -64,6 +64,7 @@ const PLATFORM_LABELS: Record<string, string> = {
   odtu_kpm: 'ODTÜ KPM',
   bogazici_km: 'Boğaziçi Kariyer',
   ytu_orkam: 'YTU ORKAM',
+  pythiango: 'PythianGo',
   itu_kariyer: 'İTÜ Kariyer',
 }
 
@@ -122,6 +123,7 @@ const DISPLAY_PLATFORM_LABELS: Record<string, string> = {
   bogazici_km: 'Boğaziçi Kariyer',
   ytu_orkam: 'YTÜ ORKAM',
   itu_kariyer: 'İTÜ Kariyer',
+  pythiango: 'PythianGo',
 }
 
 const PLATFORM_QUERY_ALIASES: Record<string, string[]> = {
@@ -136,6 +138,7 @@ const PLATFORM_QUERY_ALIASES: Record<string, string[]> = {
   bogazici_km: ['bogazici', 'bogazici kariyer', 'boğaziçi', 'boğaziçi kariyer'],
   ytu_orkam: ['ytu', 'ytu orkam', 'ytü', 'ytü orkam'],
   itu_kariyer: ['itu', 'itu kariyer', 'itü', 'itü kariyer'],
+  pythiango: ['pythiango', 'pythian go'],
 }
 
 const COMPANY_QUERY_ALIASES: Record<string, string[]> = {

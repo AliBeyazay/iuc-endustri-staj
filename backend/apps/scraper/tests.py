@@ -1,10 +1,14 @@
+import json
 from io import StringIO
+from datetime import date, timedelta
 
 from django.conf import settings
 from django.core.management import call_command
 from django.test import SimpleTestCase, TestCase
 from bs4 import BeautifulSoup
 from django_celery_beat.models import CrontabSchedule, PeriodicTask, PeriodicTasks
+from scrapy import Request
+from scrapy.http import TextResponse
 
 from apps.scraper.beat_schedule import MANAGED_BEAT_SCHEDULES
 from apps.scraper.tasks import (
@@ -14,6 +18,7 @@ from apps.scraper.tasks import (
 )
 from apps.scraper.spiders.spiders import LinkedInSpider
 from apps.scraper.spiders.spiders import (
+    PythianGoSpider,
     extract_youthall_description,
     translate_known_youthall_description,
 )
@@ -274,6 +279,128 @@ class LinkedInTaskHelperTests(SimpleTestCase):
                 {'new_count': 2, 'updated_count': 0, 'skipped_count': 0, 'error_count': 0},
             )
         )
+
+
+class PythianGoSpiderTests(SimpleTestCase):
+    def setUp(self):
+        self.spider = PythianGoSpider()
+
+    def build_response(self, payload, *, page=1):
+        url = self.spider.build_api_url(page=page)
+        request = Request(url=url, meta={'page': page})
+        return TextResponse(
+            url=url,
+            body=json.dumps(payload).encode('utf-8'),
+            encoding='utf-8',
+            request=request,
+        )
+
+    def test_parses_public_api_items(self):
+        deadline = (date.today() + timedelta(days=14)).isoformat()
+        payload = {
+            'data': [
+                {
+                    'uuid': 'job-123',
+                    'title': 'Young Talent Operations Program',
+                    'description': '<p>Support planning and process improvement projects.</p>',
+                    'locationType': 'REMOTE',
+                    'country': 'Turkiye',
+                    'city': 'null',
+                    'applicationDeadline': f'{deadline}T23:59:59.000Z',
+                    'externalUrl': 'https://company.example/apply',
+                    'isPublished': True,
+                    'isPublic': True,
+                    'company': {
+                        'name': 'Example Company',
+                        'logoUrl': 'http://api.pythiango.com/storage/company/logo.png',
+                    },
+                    'jobPosting': {
+                        'positionType': 'YOUNG_TALENT_PROGRAM',
+                    },
+                    'submissions': [
+                        {
+                            'email': 'private@example.com',
+                        }
+                    ],
+                }
+            ],
+            'meta': {'page': 1, 'pageCount': 1},
+        }
+
+        results = list(self.spider.parse(self.build_response(payload)))
+
+        self.assertEqual(len(results), 1)
+        item = results[0]
+        self.assertEqual(item['source_platform'], 'pythiango')
+        self.assertEqual(item['source_url'], 'https://panel.pythiango.com/student/jobs/job-123')
+        self.assertEqual(item['application_url'], 'https://company.example/apply')
+        self.assertEqual(item['company_name'], 'Example Company')
+        self.assertEqual(item['company_logo_url'], 'https://api.pythiango.com/storage/company/logo.png')
+        self.assertEqual(item['location'], 'Uzaktan - Turkiye')
+        self.assertTrue(item['is_talent_program'])
+        self.assertEqual(item['application_deadline'].isoformat(), deadline)
+
+    def test_skips_expired_items(self):
+        deadline = (date.today() - timedelta(days=2)).isoformat()
+        payload = {
+            'data': [
+                {
+                    'uuid': 'expired-123',
+                    'title': 'Expired Internship',
+                    'description': '<p>Old posting.</p>',
+                    'locationType': 'ONSITE',
+                    'country': 'Turkiye',
+                    'city': 'Istanbul',
+                    'applicationDeadline': f'{deadline}T23:59:59.000Z',
+                    'isPublished': True,
+                    'isPublic': True,
+                    'company': {'name': 'Example Company'},
+                    'jobPosting': {'positionType': 'LONG_TERM_INTERNSHIP'},
+                }
+            ],
+            'meta': {'page': 1, 'pageCount': 1},
+        }
+
+        results = list(self.spider.parse(self.build_response(payload)))
+
+        self.assertEqual(results, [])
+
+    def test_requests_next_page_when_available(self):
+        payload = {
+            'data': [],
+            'meta': {'page': 1, 'pageCount': 2},
+        }
+
+        results = list(self.spider.parse(self.build_response(payload)))
+
+        self.assertEqual(len(results), 1)
+        self.assertIsInstance(results[0], Request)
+        self.assertEqual(results[0].url, self.spider.build_api_url(page=2))
+
+    def test_skips_non_listing_entries(self):
+        deadline = (date.today() + timedelta(days=14)).isoformat()
+        payload = {
+            'data': [
+                {
+                    'uuid': 'event-123',
+                    'title': 'Quantum Technologies Competition',
+                    'description': '<p>Join the challenge.</p>',
+                    'locationType': 'REMOTE',
+                    'country': 'Turkiye',
+                    'city': 'Ankara',
+                    'applicationDeadline': f'{deadline}T23:59:59.000Z',
+                    'isPublished': True,
+                    'isPublic': True,
+                    'company': {'name': 'Example Company'},
+                    'jobPosting': {'positionType': 'PART_TIME'},
+                }
+            ],
+            'meta': {'page': 1, 'pageCount': 1},
+        }
+
+        results = list(self.spider.parse(self.build_response(payload)))
+
+        self.assertEqual(results, [])
 
 
 class CeleryBeatSyncCommandTests(TestCase):

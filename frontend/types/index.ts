@@ -23,6 +23,7 @@ export type SourcePlatform =
   | 'bogazici_km'
   | 'ytu_orkam'
   | 'itu_kariyer'
+  | 'pythiango'
 
 export type InternshipType = 'zorunlu' | 'gonullu' | 'belirsiz'
 export type CompanyOrigin = 'yerli' | 'yabanci' | 'belirsiz'

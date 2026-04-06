@@ -359,6 +359,7 @@ class DjangoORMPipeline:
         'anbea': 90,
         'boomerang': 85,
         'toptalent': 80,
+        'pythiango': 78,
         'savunma': 75,
         'linkedin': 70,
         'kariyer': 65,
