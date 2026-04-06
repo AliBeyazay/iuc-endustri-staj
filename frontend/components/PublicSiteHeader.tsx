@@ -9,7 +9,6 @@ type PublicSiteHeaderProps = {
 }
 
 const NAV_ITEMS = [
-  { label: 'Anasayfa', href: '/' as const },
   { label: 'İlanlar', href: '/listings' as const },
   { label: 'Başvurular', href: '/dashboard' as const },
   { label: 'Profil', href: '/profile' as const },
