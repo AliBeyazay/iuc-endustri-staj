@@ -321,7 +321,7 @@ export default function DashboardPage() {
             <h2 className="campus-heading text-lg font-bold text-[#132843] dark:text-[#e7edf4]">Başvuru Takip Panosu</h2>
             <button
               onClick={() => setAddAppOpen(true)}
-              className="flex items-center gap-1.5 rounded-lg bg-[#132843] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#1E3A5F] dark:bg-[#d8ad43] dark:text-[#10223b] dark:hover:bg-[#c79828]"
+              className="flex items-center gap-1.5 rounded-lg bg-[#132843] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#1E3A5F] dark:bg-[#132843] dark:text-white dark:hover:bg-[#1E3A5F]"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -470,7 +470,7 @@ export default function DashboardPage() {
               {bookmarks.length > 0 && <span className="ml-2 text-gray-400 dark:text-[#e7edf4]/40">({bookmarks.length})</span>}
             </h2>
             <div className="flex items-center gap-3">
-              <button onClick={() => router.push('/listings')} className="rounded-lg bg-[#d8ad43] px-4 py-2 text-xs font-bold text-[#132843] hover:bg-[#c79828]">
+              <button onClick={() => router.push('/listings')} className="rounded-lg bg-[#132843] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#1E3A5F] dark:bg-[#132843] dark:text-white dark:hover:bg-[#1E3A5F]">
                 + İlan Keşfet
               </button>
             </div>
