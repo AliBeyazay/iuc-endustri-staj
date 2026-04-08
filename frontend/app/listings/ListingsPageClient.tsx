@@ -32,6 +32,7 @@ type Listing = {
 }
 
 type SortOption = 'newest' | 'deadline' | 'company' | 'popular' | 'top_rated'
+type SectorOption = { label: string; value: string; icon: string }
 
 const RECENT_SEARCHES_KEY = 'iuc_listings_recent_searches'
 const ITEMS_PER_PAGE = 20
@@ -675,7 +676,7 @@ function getListingSearchScore(
 }
 
 type FilterPanelProps = {
-  sectors: string[]
+  sectors: SectorOption[]
   platforms: string[]
   selectedSectors: string[]
   selectedPlatforms: string[]
@@ -704,20 +705,21 @@ function FilterPanel({
         <div className="filter-scrollbar max-h-[360px] overflow-y-scroll pr-1">
           <div className="flex flex-col gap-2">
           {sectors.map((sector) => {
-            const active = selectedSectors.includes(sector)
+            const active = selectedSectors.includes(sector.value)
             return (
               <button
-                key={sector}
+                key={sector.value}
                 type="button"
-                onClick={() => onToggleSector(sector)}
+                onClick={() => onToggleSector(sector.value)}
                 className={classNames(
-                  'w-full rounded-full border px-3 py-2 text-left text-xs font-medium transition',
+                  'flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm font-medium transition-all',
                   active
-                    ? 'border-[rgba(216,173,67,0.18)] bg-[rgba(216,173,67,0.14)] text-[#8f670b] dark:text-[#f0cf7a]'
+                    ? 'border-[#132843] bg-[#132843] text-white'
                     : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10',
                 )}
               >
-                {sector}
+                <span className="text-lg">{sector.icon}</span>
+                <span>{sector.label}</span>
               </button>
             )
           })}
@@ -725,21 +727,21 @@ function FilterPanel({
         </div>
       </section>
 
-      <section>
+      <div className="pt-1 [&>h3]:hidden">
         <h3 className="mb-3 text-sm font-semibold text-[#132843] dark:text-[#e7edf4]">Yetenek Programı</h3>
         <button
           type="button"
           onClick={onToggleTalent}
           className={classNames(
-            'w-full rounded-2xl border px-4 py-2 text-left text-sm font-medium transition',
+            'w-full rounded-xl border px-4 py-3 text-left text-sm font-medium transition-all',
             talentOnly
-              ? 'border-[rgba(216,173,67,0.18)] bg-[rgba(216,173,67,0.14)] text-[#8f670b] dark:text-[#f0cf7a]'
+              ? 'border-[#132843] bg-[#132843] text-white'
               : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10',
           )}
         >
           Yetenek Programları
         </button>
-      </section>
+      </div>
 
       <button
         type="button"
@@ -1535,7 +1537,7 @@ export default function ListingsPageClient({
             </div>
 
             <FilterPanel
-              sectors={sectors}
+              sectors={SIDEBAR_SECTORS}
               platforms={platformOptions}
               selectedSectors={selectedSectors}
               selectedPlatforms={selectedPlatforms}
