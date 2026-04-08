@@ -469,7 +469,7 @@ export default function DashboardPage() {
               Kaydedilen İlanlar
               {bookmarks.length > 0 && <span className="ml-2 text-gray-400 dark:text-[#e7edf4]/40">({bookmarks.length})</span>}
             </h2>
-            <div className="flex items-center gap-3">
+            <div className="flex justify-end">
               <button onClick={() => router.push('/listings')} className="rounded-lg bg-[#132843] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#1E3A5F] dark:bg-[#132843] dark:text-white dark:hover:bg-[#1E3A5F]">
                 + İlan Keşfet
               </button>
