@@ -39,7 +39,7 @@ export default function ProfileDropdown() {
           onClick={() => router.push('/login')}
           className="shrink-0 whitespace-nowrap rounded-full border border-[#d8ad43]/35 bg-[#f1d27e] px-3 py-2 text-xs font-bold text-[#10223b] shadow-[0_6px_20px_rgba(0,0,0,0.18)] transition-transform hover:-translate-y-px sm:hidden"
         >
-          Giris
+          Giriş
         </button>
         <button
           type="button"
