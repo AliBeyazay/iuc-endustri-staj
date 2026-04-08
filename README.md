@@ -139,10 +139,12 @@ docker compose exec backend python manage.py sync_production_listings
 Bu komut:
 - tüm scraper'ları yerelde çalıştırır
 - `backend/apps/listings/fixtures/production_real_listings.json` dosyasını yeniler
+- `backend/apps/listings/fixtures/public_listings_snapshot.json` fallback snapshot'unu yeniler
 - platform bazlı ilan sayılarını özetler
 
-Komut tamamlanınca fixture değişikliklerini commit/push et. Render backend redeploy olduğunda
-`import_production_listings` güncel fixture'i production veritabanına tekrar import eder.
+Komut tamamlanınca `backend/apps/listings/fixtures/public_listings_snapshot.json` dosyasını
+`frontend/lib/generated/public-listings-snapshot.json` konumuna kopyala ve değişiklikleri commit/push et.
+Render backend redeploy olduğunda `import_production_listings` güncel fixture'i production veritabanına tekrar import eder.
 
 ---
 
@@ -217,10 +219,11 @@ Komut tamamlanınca fixture değişikliklerini commit/push et. Render backend re
 ### Production Deploy Checklist
  
 1. Run `docker compose exec backend python manage.py sync_production_listings` locally.
-2. Review the fixture diff in `backend/apps/listings/fixtures/production_real_listings.json`.
-3. Commit and push the backend changes so Render redeploys.
-4. Run Django migrations on the production backend if the deploy includes schema changes.
-5. Open Django admin and confirm the runtime banner shows `prod` and the expected database host.
-6. Confirm the production frontend is pointing to the production backend URL.
-7. Verify `https://iuc-staj-backend.onrender.com/api/listings/?source_platform=pythiango&limit=20` returns `count > 0`.
-8. Verify the production site shows listings under the `PythianGo` platform filter.
+2. Review the diffs in `backend/apps/listings/fixtures/production_real_listings.json` and `backend/apps/listings/fixtures/public_listings_snapshot.json`.
+3. Copy `backend/apps/listings/fixtures/public_listings_snapshot.json` to `frontend/lib/generated/public-listings-snapshot.json`.
+4. Commit and push the backend/frontend changes so Render and Vercel redeploy.
+5. Run Django migrations on the production backend if the deploy includes schema changes.
+6. Open Django admin and confirm the runtime banner shows `prod` and the expected database host.
+7. Confirm the production frontend is pointing to the production backend URL.
+8. Verify `https://iuc-staj-backend.onrender.com/api/listings/?source_platform=pythiango&limit=20` returns `count > 0`.
+9. Verify the production site shows listings under the `PythianGo` platform filter.

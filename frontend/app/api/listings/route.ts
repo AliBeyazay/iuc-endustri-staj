@@ -1,31 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getBackendApiBaseUrl } from '@/lib/backend-url'
+import {
+  buildPublicListingsCacheHeaders,
+} from '@/lib/public-listings-cache'
+import { loadListingsResponse } from '@/lib/public-listings-source'
 
 export const runtime = 'nodejs'
 
-const backendApiBaseUrl = getBackendApiBaseUrl()
-
 export async function GET(request: NextRequest) {
-  const targetUrl = new URL(`${backendApiBaseUrl}/listings/`)
-  targetUrl.search = request.nextUrl.search
+  const { data, source } = await loadListingsResponse(request.nextUrl)
 
-  const response = await fetch(targetUrl.toString(), {
+  if (!data) {
+    return NextResponse.json(
+      { error: 'Ilanlar zamaninda alinamadi.' },
+      {
+        status: 504,
+        headers: buildPublicListingsCacheHeaders(),
+      },
+    )
+  }
+
+  return NextResponse.json(data, {
     headers: {
-      Accept: 'application/json',
-      'ngrok-skip-browser-warning': 'true',
-    },
-    cache: 'no-store',
-  })
-
-  const body = await response.text()
-
-  return new NextResponse(body, {
-    status: response.status,
-    headers: {
-      'Content-Type': response.headers.get('Content-Type') ?? 'application/json',
-      'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
-      'CDN-Cache-Control': 'no-store',
-      'Vercel-CDN-Cache-Control': 'no-store',
+      ...buildPublicListingsCacheHeaders(),
+      'X-IUC-Public-Data-Source': source ?? 'unknown',
     },
   })
 }

@@ -2,30 +2,13 @@ import { redirect } from 'next/navigation'
 import type { HomepageFeaturedListing } from '@/types'
 import PublicSiteHeader from '@/components/PublicSiteHeader'
 import FeaturedListingsSection from '@/components/home/FeaturedListingsSection'
-import { getBackendApiBaseUrl } from '@/lib/backend-url'
+import { loadHomepageFeaturedListings } from '@/lib/public-listings-source'
 
-export const dynamic = 'force-dynamic'
-
-const backendApiBaseUrl = getBackendApiBaseUrl()
+export const revalidate = 300
 
 async function getHomepageFeaturedListings(): Promise<HomepageFeaturedListing[]> {
-  try {
-    const response = await fetch(`${backendApiBaseUrl}/homepage/featured-listings/`, {
-      headers: {
-        Accept: 'application/json',
-        'ngrok-skip-browser-warning': 'true',
-      },
-      cache: 'no-store',
-    })
-
-    if (!response.ok) {
-      return []
-    }
-
-    return (await response.json()) as HomepageFeaturedListing[]
-  } catch {
-    return []
-  }
+  const { data } = await loadHomepageFeaturedListings()
+  return data
 }
 
 export default async function HomePage() {

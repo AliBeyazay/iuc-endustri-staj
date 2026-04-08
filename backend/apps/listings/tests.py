@@ -3,6 +3,7 @@ from datetime import date, timedelta
 from io import StringIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from django.contrib.admin.sites import AdminSite
@@ -11,6 +12,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.core.management import call_command
+from django.http import QueryDict
 from django.test import RequestFactory, SimpleTestCase, TestCase, override_settings
 from django.utils import timezone
 from scrapy.exceptions import DropItem
@@ -18,9 +20,10 @@ from scrapy.exceptions import DropItem
 from apps.listings.admin import ListingAdmin
 from apps.listings.cache_keys import get_listing_list_cache_version
 from apps.listings.eligibility import classify_student_eligibility
-from apps.listings.models import Listing, SuppressedListingSource
+from apps.listings.models import Bookmark, Listing, Review, SuppressedListingSource
 from apps.listings.runtime import get_admin_runtime_info
 from apps.listings.sync import delete_listing_groups
+from apps.listings.views import ListingViewSet
 from apps.scraper.pipelines import DjangoORMPipeline, EligibilityValidationPipeline
 
 
@@ -301,6 +304,69 @@ class ListingDeletionProtectionTests(TestCase):
         self.assertTrue(first_response.json()[0]['homepage_featured_summary'].endswith('...'))
         self.assertEqual(second_response.json(), [])
 
+    def test_default_listing_ordering_skips_aggregate_annotations(self):
+        view = ListingViewSet()
+        view.action = 'list'
+        view.request = SimpleNamespace(query_params=QueryDict('ordering=-created_at'))
+
+        annotations = view.get_queryset().query.annotations
+
+        self.assertNotIn('bookmark_count', annotations)
+        self.assertNotIn('average_rating', annotations)
+
+    def test_popular_and_top_rated_listing_orderings_still_work(self):
+        student = get_user_model().objects.create_user(
+            username='ordering-user',
+            iuc_email='ordering-user@ogr.iuc.edu.tr',
+            email='ordering-user@ogr.iuc.edu.tr',
+            password='test-pass-123',
+        )
+        popular_listing = self.create_listing(
+            title='Most Bookmarked',
+            source_url='https://example.com/listing/most-bookmarked',
+        )
+        highly_rated_listing = self.create_listing(
+            title='Highest Rated',
+            source_url='https://example.com/listing/highest-rated',
+        )
+        neutral_listing = self.create_listing(
+            title='Neutral Listing',
+            source_url='https://example.com/listing/neutral-listing',
+        )
+
+        Bookmark.objects.create(student=student, listing=popular_listing)
+        Review.objects.create(
+            listing=highly_rated_listing,
+            student=student,
+            rating=5,
+            comment='Great internship experience',
+            internship_year=2026,
+            is_anonymous=True,
+        )
+
+        popular_response = self.client.get('/api/listings/?ordering=-bookmark_count&limit=10')
+        top_rated_response = self.client.get('/api/listings/?ordering=-average_rating&limit=10')
+
+        self.assertEqual(popular_response.status_code, 200)
+        self.assertEqual(top_rated_response.status_code, 200)
+        self.assertEqual(popular_response.json()['results'][0]['title'], 'Most Bookmarked')
+        self.assertEqual(top_rated_response.json()['results'][0]['title'], 'Highest Rated')
+
+        popular_view = ListingViewSet()
+        popular_view.action = 'list'
+        popular_view.request = SimpleNamespace(query_params=QueryDict('ordering=-bookmark_count'))
+        popular_annotations = popular_view.get_queryset().query.annotations
+
+        top_rated_view = ListingViewSet()
+        top_rated_view.action = 'list'
+        top_rated_view.request = SimpleNamespace(query_params=QueryDict('ordering=-average_rating'))
+        top_rated_annotations = top_rated_view.get_queryset().query.annotations
+
+        self.assertIn('bookmark_count', popular_annotations)
+        self.assertNotIn('average_rating', popular_annotations)
+        self.assertIn('average_rating', top_rated_annotations)
+        self.assertNotIn('bookmark_count', top_rated_annotations)
+
 
 class DummyLogger:
     def __init__(self):
@@ -500,6 +566,54 @@ class ProductionListingFixtureCommandTests(TestCase):
             self.assertEqual(recreated.title, 'PythianGo Intern')
             self.assertIn('created=0 updated=1 total=1', update_output.getvalue())
 
+    def test_export_public_listing_snapshot_writes_visible_listings_and_featured_subset(self):
+        student = get_user_model().objects.create_user(
+            username='snapshot-user',
+            iuc_email='snapshot-user@ogr.iuc.edu.tr',
+            email='snapshot-user@ogr.iuc.edu.tr',
+            password='test-pass-123',
+        )
+        featured_listing = self.create_listing(
+            title='Featured Snapshot Listing',
+            source_url='https://example.com/listing/featured-snapshot',
+            is_homepage_featured=True,
+            homepage_featured_rank=1,
+        )
+        duplicate_listing = self.create_listing(
+            title='Duplicate Snapshot Listing',
+            source_url='https://example.com/listing/duplicate-snapshot',
+            canonical_listing=featured_listing,
+        )
+        self.create_listing(
+            title='Inactive Snapshot Listing',
+            source_url='https://example.com/listing/inactive-snapshot',
+            is_active=False,
+        )
+        Bookmark.objects.create(student=student, listing=featured_listing)
+        Review.objects.create(
+            listing=featured_listing,
+            student=student,
+            rating=5,
+            comment='Strong internship program',
+            internship_year=2026,
+            is_anonymous=True,
+        )
+
+        with TemporaryDirectory() as temp_dir:
+            snapshot_path = Path(temp_dir) / 'public_listings_snapshot.json'
+            output = StringIO()
+
+            call_command('export_public_listing_snapshot', path=str(snapshot_path), stdout=output)
+
+            payload = json.loads(snapshot_path.read_text(encoding='utf-8'))
+            self.assertEqual(payload['count'], 1)
+            self.assertEqual([row['title'] for row in payload['listings']], ['Featured Snapshot Listing'])
+            self.assertEqual(payload['listings'][0]['bookmark_count'], 1)
+            self.assertEqual(payload['listings'][0]['average_rating'], 5.0)
+            self.assertEqual([row['title'] for row in payload['featured_listings']], ['Featured Snapshot Listing'])
+            self.assertNotIn('Duplicate Snapshot Listing', json.dumps(payload, ensure_ascii=False))
+            self.assertIn('Exported public snapshot with 1 listings', output.getvalue())
+
     def test_sync_production_listings_runs_scrapers_then_exports_and_prints_summary(self):
         self.create_listing()
         self.create_listing(
@@ -521,6 +635,7 @@ class ProductionListingFixtureCommandTests(TestCase):
 
         with TemporaryDirectory() as temp_dir:
             fixture_path = Path(temp_dir) / 'production_real_listings.json'
+            public_snapshot_path = Path(temp_dir) / 'public_listings_snapshot.json'
             output = StringIO()
 
             with patch(
@@ -530,21 +645,32 @@ class ProductionListingFixtureCommandTests(TestCase):
                 call_command(
                     'sync_production_listings',
                     path=str(fixture_path),
+                    public_snapshot_path=str(public_snapshot_path),
                     stdout=output,
                 )
 
             self.assertEqual(
                 recorded_commands,
-                ['run_scrapers', 'audit_listing_deadlines', 'audit_listing_eligibility', 'export_listings'],
+                [
+                    'run_scrapers',
+                    'audit_listing_deadlines',
+                    'audit_listing_eligibility',
+                    'export_listings',
+                    'export_public_listing_snapshot',
+                ],
             )
             self.assertTrue(fixture_path.exists())
+            self.assertTrue(public_snapshot_path.exists())
 
             exported_records = json.loads(fixture_path.read_text(encoding='utf-8'))
             self.assertEqual(len(exported_records), 2)
+            public_snapshot = json.loads(public_snapshot_path.read_text(encoding='utf-8'))
+            self.assertEqual(public_snapshot['count'], 2)
 
             rendered_output = output.getvalue()
             self.assertIn('Production fixture sync started', rendered_output)
             self.assertIn('Production fixture sync finished', rendered_output)
+            self.assertIn('Public snapshot path:', rendered_output)
             self.assertIn('Listings summary: total=2 active=2 visible=2', rendered_output)
             self.assertIn('pythiango: total=1 active=1 visible=1', rendered_output)
             self.assertIn('youthall: total=1 active=1 visible=1', rendered_output)

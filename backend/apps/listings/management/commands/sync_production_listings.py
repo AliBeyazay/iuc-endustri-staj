@@ -6,6 +6,7 @@ from django.db.models import Count, Q
 from django.utils import timezone
 
 from apps.listings.management.commands.export_listings import DEFAULT_PATH
+from apps.listings.management.commands.export_public_listing_snapshot import DEFAULT_PATH as DEFAULT_PUBLIC_SNAPSHOT_PATH
 from apps.listings.models import Listing
 
 
@@ -29,7 +30,7 @@ def get_platform_summary():
 
 
 class Command(BaseCommand):
-    help = "Run local scrapers and refresh the production listings fixture."
+    help = "Run local scrapers and refresh the production listings fixture plus the public fallback snapshot."
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -41,6 +42,11 @@ class Command(BaseCommand):
             "--spider",
             type=str,
             help="Run only a specific spider before exporting the fixture.",
+        )
+        parser.add_argument(
+            "--public-snapshot-path",
+            default=DEFAULT_PUBLIC_SNAPSHOT_PATH,
+            help="Path for the public fallback snapshot JSON file.",
         )
         parser.add_argument(
             "--no-deactivate",
@@ -69,6 +75,11 @@ class Command(BaseCommand):
         call_command("audit_listing_deadlines", stdout=self.stdout)
         call_command("audit_listing_eligibility", stdout=self.stdout)
         call_command("export_listings", path=str(target_path), stdout=self.stdout)
+        call_command(
+            "export_public_listing_snapshot",
+            path=str(options["public_snapshot_path"]),
+            stdout=self.stdout,
+        )
 
         summary_rows = get_platform_summary()
         total_listings = sum(row["total"] for row in summary_rows)
@@ -83,6 +94,7 @@ class Command(BaseCommand):
             )
         )
         self.stdout.write(f"Fixture path: {target_path}")
+        self.stdout.write(f"Public snapshot path: {options['public_snapshot_path']}")
         self.stdout.write(
             f"Listings summary: total={total_listings} active={active_listings} visible={visible_listings}"
         )

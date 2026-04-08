@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getBackendApiBaseUrl } from '@/lib/backend-url'
+import {
+  buildPublicListingsCacheHeaders,
+} from '@/lib/public-listings-cache'
+import { loadListingById } from '@/lib/public-listings-source'
 
 export const runtime = 'nodejs'
-
-const backendApiBaseUrl = getBackendApiBaseUrl()
 
 type Params = {
   params: Promise<{ id: string }>
@@ -11,26 +12,22 @@ type Params = {
 
 export async function GET(request: NextRequest, context: Params) {
   const { id } = await context.params
-  const targetUrl = new URL(`${backendApiBaseUrl}/listings/${id}/`)
-  targetUrl.search = request.nextUrl.search
+  const { data, source, status } = await loadListingById(id)
 
-  const response = await fetch(targetUrl.toString(), {
+  if (!data) {
+    return NextResponse.json(
+      { error: status === 404 ? 'Ilan bulunamadi.' : 'Ilan detayi zamaninda alinamadi.' },
+      {
+        status: status === 404 ? 404 : 504,
+        headers: buildPublicListingsCacheHeaders(),
+      },
+    )
+  }
+
+  return NextResponse.json(data, {
     headers: {
-      Accept: 'application/json',
-      'ngrok-skip-browser-warning': 'true',
-    },
-    cache: 'no-store',
-  })
-
-  const body = await response.text()
-
-  return new NextResponse(body, {
-    status: response.status,
-    headers: {
-      'Content-Type': response.headers.get('Content-Type') ?? 'application/json',
-      'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
-      'CDN-Cache-Control': 'no-store',
-      'Vercel-CDN-Cache-Control': 'no-store',
+      ...buildPublicListingsCacheHeaders(),
+      'X-IUC-Public-Data-Source': source ?? 'unknown',
     },
   })
 }

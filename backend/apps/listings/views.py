@@ -7,13 +7,10 @@ from collections import Counter
 from datetime import date, timedelta
 from time import time
 
-from django.contrib.admin.models import DELETION, LogEntry
 from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.core.mail import send_mail
-from django.db.models import Avg, Case, CharField, Count, FloatField, IntegerField, Q, Value, When
-from django.db.models.functions import Coalesce, Concat
+from django.db.models import Avg, Case, IntegerField, Q, Value, When
 from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, permissions, status, viewsets
@@ -24,7 +21,8 @@ from rest_framework.views import APIView
 
 from .cache_keys import get_listing_list_cache_version
 from .filters import ListingFilter
-from .models import Application, Bookmark, InternshipJournal, JournalComment, Listing, NegativeKeyword, Review, ScraperLog, Student
+from .models import Application, Bookmark, InternshipJournal, JournalComment, Listing, Review, ScraperLog, Student
+from .public_listings import get_ordering_aggregate_annotations, get_public_listing_queryset
 from .sync import delete_listing_groups
 from .serializers import (
     AdminListingListSerializer,
@@ -46,8 +44,8 @@ from .serializers import (
 )
 
 _volatile_cache_store: dict[str, tuple[str, float]] = {}
-LISTING_LIST_CACHE_TTL_SECONDS = 30
-HOMEPAGE_FEATURED_CACHE_TTL_SECONDS = 30
+LISTING_LIST_CACHE_TTL_SECONDS = 300
+HOMEPAGE_FEATURED_CACHE_TTL_SECONDS = 300
 ENCODING_QUALITY_CACHE_TTL_SECONDS = 300
 
 
@@ -67,100 +65,34 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
     ordering = ['-created_at']
 
     # Endüstri mühendisliğiyle ilgisiz ilanları filtrele (DB'den, 5dk cache)
-    NEGATIVE_KEYWORDS_CACHE_TTL = 300
-    DELETED_LISTING_REPRS_CACHE_TTL = 300
-
-    @classmethod
-    def _get_negative_keywords(cls):
-        cache_key = 'negative_keywords_list'
-        try:
-            keywords = cache.get(cache_key)
-        except Exception:
-            keywords = None
-        if keywords is None:
-            try:
-                keywords = list(NegativeKeyword.objects.values_list('keyword', flat=True))
-            except Exception:
-                keywords = []
-            try:
-                cache.set(cache_key, keywords, timeout=cls.NEGATIVE_KEYWORDS_CACHE_TTL)
-            except Exception:
-                pass
-        return keywords
-
+    # Public listing filters live in apps.listings.public_listings.
     def get_serializer_class(self):
         if self.action == 'list':
             return ListingListSerializer
         return ListingSerializer
 
-    @classmethod
-    def _get_deleted_listing_object_reprs(cls):
-        cache_version = get_listing_list_cache_version()
-        cache_key = f'deleted_listing_object_reprs:v{cache_version}'
-        try:
-            deleted_reprs = cache.get(cache_key)
-        except Exception:
-            deleted_reprs = None
-
-        if deleted_reprs is None:
-            try:
-                content_type = ContentType.objects.get_for_model(Listing)
-                deleted_reprs = list(
-                    LogEntry.objects.filter(
-                        content_type=content_type,
-                        action_flag=DELETION,
-                    )
-                    .values_list('object_repr', flat=True)
-                    .distinct()
-                )
-            except Exception:
-                deleted_reprs = []
-
-            try:
-                cache.set(cache_key, deleted_reprs, timeout=cls.DELETED_LISTING_REPRS_CACHE_TTL)
-            except Exception:
-                pass
-
-        return deleted_reprs
-
     def get_queryset(self):
-        qs = super().get_queryset()
-        if self.action in ['list', 'similar']:
-            qs = qs.filter(canonical_listing__isnull=True)
-
+        qs = get_public_listing_queryset()
         exclude_id = self.request.query_params.get('exclude')
         if exclude_id:
             qs = qs.exclude(id=exclude_id)
 
         # Süresi geçmiş ilanları gizle
-        qs = qs.exclude(deadline_status='expired')
-        qs = qs.exclude(application_deadline__lt=date.today())
 
         # Negatif anahtar kelime filtresi
-        neg = Q()
-        for kw in self._get_negative_keywords():
-            neg |= Q(title__icontains=kw) | Q(company_name__icontains=kw)
-        if neg:
-            qs = qs.exclude(neg)
 
         # Bozuk encoding'li ilanları gizle (? içeren title/company_name)
-        qs = qs.exclude(title__contains='?').exclude(company_name__contains='?')
 
-        deleted_object_reprs = self._get_deleted_listing_object_reprs()
-        if deleted_object_reprs:
-            qs = qs.annotate(
-                admin_object_repr=Concat(
-                    'title',
-                    Value(' - '),
-                    'company_name',
-                    output_field=CharField(),
-                )
-            ).exclude(admin_object_repr__in=deleted_object_reprs)
 
-        return qs.annotate(
-            bookmark_count=Count('bookmarked_by', distinct=True),
-            average_rating=Coalesce(Avg('reviews__rating'), Value(0.0), output_field=FloatField()),
-        )
+        aggregate_annotations = self._get_ordering_aggregate_annotations()
+        if aggregate_annotations:
+            qs = qs.annotate(**aggregate_annotations)
+
+        return qs
+
+    def _get_ordering_aggregate_annotations(self):
+        requested_ordering = self.request.query_params.get('ordering', '')
+        return get_ordering_aggregate_annotations(requested_ordering)
 
     def list(self, request, *args, **kwargs):
         try:
@@ -320,17 +252,10 @@ class HomepageFeaturedListingsView(APIView):
         if cached_payload is not None:
             return Response(cached_payload)
 
-        featured_qs = (
-            Listing.objects.filter(
-                is_active=True,
-                moderation_status='approved',
-                canonical_listing__isnull=True,
-                is_homepage_featured=True,
-            )
-            .exclude(deadline_status='expired')
-            .exclude(application_deadline__lt=date.today())
-            .order_by('homepage_featured_rank', '-created_at')[:3]
-        )
+        featured_qs = get_public_listing_queryset(
+            only_approved=True,
+            only_featured=True,
+        ).order_by('homepage_featured_rank', '-created_at')[:3]
 
         serializer = HomepageFeaturedListingSerializer(featured_qs, many=True)
         payload = serializer.data

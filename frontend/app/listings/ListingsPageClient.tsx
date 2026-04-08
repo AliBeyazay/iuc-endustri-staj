@@ -883,7 +883,7 @@ export default function ListingsPageClient({
   ])
 
   const listingsFetcher = useCallback(async (url: string): Promise<ListingsResponse> => {
-    const response = await fetch(url, { cache: 'no-store' })
+    const response = await fetch(url)
     if (!response.ok) throw new Error('İlanlar alınamadı.')
     return response.json()
   }, [])

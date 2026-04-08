@@ -1,32 +1,14 @@
-import { getBackendApiBaseUrl } from '@/lib/backend-url'
+import { loadListingsResponse } from '@/lib/public-listings-source'
 import ListingsPageClient from './ListingsPageClient'
 import { buildDefaultListingsApiQuery, buildDefaultListingsSWRKey } from './listings-query'
 import type { ListingsResponse } from './types'
 
-export const dynamic = 'force-dynamic'
-
-const backendApiBaseUrl = getBackendApiBaseUrl()
+export const revalidate = 300
 
 async function getInitialListings(): Promise<ListingsResponse | null> {
-  const queryString = buildDefaultListingsApiQuery()
-
-  try {
-    const response = await fetch(`${backendApiBaseUrl}/listings/?${queryString}`, {
-      headers: {
-        Accept: 'application/json',
-        'ngrok-skip-browser-warning': 'true',
-      },
-      cache: 'no-store',
-    })
-
-    if (!response.ok) {
-      return null
-    }
-
-    return (await response.json()) as ListingsResponse
-  } catch {
-    return null
-  }
+  const requestUrl = new URL(`https://fallback.local/api/listings?${buildDefaultListingsApiQuery()}`)
+  const { data } = await loadListingsResponse(requestUrl)
+  return data
 }
 
 export default async function ListingsPage() {
