@@ -648,7 +648,12 @@ class ProductionListingFixtureCommandTests(TestCase):
 
         def fake_call_command(name, *args, **kwargs):
             recorded_commands.append(name)
-            if name in {'run_scrapers', 'audit_listing_deadlines', 'audit_listing_eligibility'}:
+            if name in {
+                'run_scrapers',
+                'audit_listing_deadlines',
+                'audit_listing_eligibility',
+                'cleanup_production_listings',
+            }:
                 return None
             return original_call_command(name, *args, **kwargs)
 
@@ -674,6 +679,7 @@ class ProductionListingFixtureCommandTests(TestCase):
                     'run_scrapers',
                     'audit_listing_deadlines',
                     'audit_listing_eligibility',
+                    'cleanup_production_listings',
                     'export_listings',
                     'export_public_listing_snapshot',
                 ],
@@ -693,6 +699,103 @@ class ProductionListingFixtureCommandTests(TestCase):
             self.assertIn('Listings summary: total=2 active=2 visible=2', rendered_output)
             self.assertIn('pythiango: total=1 active=1 visible=1', rendered_output)
             self.assertIn('youthall: total=1 active=1 visible=1', rendered_output)
+
+
+class AuthApiTests(TestCase):
+    def create_student(self, **overrides):
+        payload = {
+            'username': 'student-auth',
+            'iuc_email': 'student-auth@ogr.iuc.edu.tr',
+            'email': 'student-auth@ogr.iuc.edu.tr',
+            'is_verified': True,
+        }
+        password = overrides.pop('password', 'test-pass-123')
+        payload.update(overrides)
+        student = get_user_model().objects.create_user(password=password, **payload)
+        if student.is_verified != payload['is_verified']:
+            student.is_verified = payload['is_verified']
+            student.save(update_fields=['is_verified'])
+        return student
+
+    def test_account_status_returns_existing_student_verification_state(self):
+        self.create_student(
+            username='account-status-student',
+            iuc_email='account-status@ogr.iuc.edu.tr',
+            email='account-status@ogr.iuc.edu.tr',
+            is_verified=True,
+        )
+
+        response = self.client.post(
+            '/api/auth/account-status/',
+            data=json.dumps({'email': 'account-status@ogr.iuc.edu.tr'}),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {'exists': True, 'is_verified': True})
+
+    def test_login_returns_tokens_for_verified_student(self):
+        student = self.create_student(
+            username='verified-login-student',
+            iuc_email='verified-login@ogr.iuc.edu.tr',
+            email='verified-login@ogr.iuc.edu.tr',
+            password='verified-pass-123',
+            is_verified=True,
+            first_name='Ali',
+            last_name='Beyazay',
+        )
+
+        response = self.client.post(
+            '/api/auth/login/',
+            data=json.dumps(
+                {
+                    'email': 'verified-login@ogr.iuc.edu.tr',
+                    'password': 'verified-pass-123',
+                }
+            ),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertIn('access', payload)
+        self.assertIn('refresh', payload)
+        self.assertEqual(payload['user']['id'], str(student.id))
+        self.assertTrue(payload['user']['is_verified'])
+
+    def test_login_rejects_unverified_student(self):
+        self.create_student(
+            username='unverified-login-student',
+            iuc_email='unverified-login@ogr.iuc.edu.tr',
+            email='unverified-login@ogr.iuc.edu.tr',
+            password='verified-pass-123',
+            is_verified=False,
+        )
+
+        response = self.client.post(
+            '/api/auth/login/',
+            data=json.dumps(
+                {
+                    'email': 'unverified-login@ogr.iuc.edu.tr',
+                    'password': 'verified-pass-123',
+                }
+            ),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertIn('doğrulanmad', response.json()['detail'].lower())
+
+
+class ProductionStartupScriptTests(SimpleTestCase):
+    def test_startup_script_skips_network_dependent_maintenance(self):
+        script_path = Path(__file__).resolve().parents[2] / 'start-production.sh'
+        script = script_path.read_text(encoding='utf-8')
+
+        self.assertIn('python manage.py import_production_listings', script)
+        self.assertNotIn('audit_listing_deadlines', script)
+        self.assertNotIn('audit_listing_eligibility', script)
+        self.assertNotIn('delete_listing', script)
 
 
 class ListingDeadlineAuditCommandTests(TestCase):

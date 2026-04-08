@@ -6,6 +6,13 @@ import {
 } from '@/types'
 import { buildQueryString } from './helpers'
 import { getBackendApiBaseUrl } from './backend-url'
+import {
+  AUTH_SERVICE_UNAVAILABLE_MESSAGE,
+  extractAuthErrorMessage,
+  fetchWithTimeout,
+  isUnverifiedAccountMessage,
+  readResponsePayload,
+} from './auth-http'
 
 const browserApiBaseUrl = '/backend-api'
 const serverApiBaseUrl = getBackendApiBaseUrl()
@@ -22,7 +29,7 @@ export function normalizeIucEmail(email: string) {
 
 async function postPublicAuth<T>(path: string, payload: unknown): Promise<T> {
   const baseUrl = typeof window === 'undefined' ? serverApiBaseUrl : browserPublicApiBaseUrl
-  const response = await fetch(`${baseUrl}${path}`, {
+  const response = await fetchWithTimeout(`${baseUrl}${path}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -34,27 +41,13 @@ async function postPublicAuth<T>(path: string, payload: unknown): Promise<T> {
     credentials: 'include',
   })
 
-  const text = await response.text()
-  const isJson = response.headers.get('content-type')?.includes('application/json')
-  const data = text && isJson ? JSON.parse(text) : null
-
-  const normalizedErrorMessage = (() => {
-    if (!data || typeof data !== 'object') return ''
-    if ('error' in data && typeof data.error === 'string') return data.error
-    if ('detail' in data && typeof data.detail === 'string') return data.detail
-
-    const fieldMessages = Object.values(data as Record<string, unknown>)
-      .flatMap((value) => {
-        if (Array.isArray(value)) return value.map(String)
-        if (typeof value === 'string') return [value]
-        return []
-      })
-      .filter(Boolean)
-
-    return fieldMessages[0] ?? ''
-  })()
+  const { text, data, isJson } = await readResponsePayload(response)
+  const normalizedErrorMessage = extractAuthErrorMessage(data)
 
   if (!response.ok) {
+    if (response.status >= 500) {
+      throw new Error(AUTH_SERVICE_UNAVAILABLE_MESSAGE)
+    }
     throw new Error(
       normalizedErrorMessage ||
         (text && !isJson ? 'Sunucu beklenmeyen bir yanit dondurdu.' : '') ||
@@ -284,6 +277,79 @@ export async function fetchAccountStatus(email: string): Promise<{
   }>(
     '/auth/account-status/', { email: normalizeIucEmail(email) }
   )
+}
+
+export type CredentialLoginProbeResult =
+  | { ok: true }
+  | {
+      ok: false
+      reason: 'invalid_credentials' | 'unverified' | 'service_unavailable'
+      message: string
+    }
+
+export async function probeCredentialsLogin(
+  email: string,
+  password: string
+): Promise<CredentialLoginProbeResult> {
+  const baseUrl = typeof window === 'undefined' ? serverApiBaseUrl : browserPublicApiBaseUrl
+
+  try {
+    const response = await fetchWithTimeout(`${baseUrl}/auth/login/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        'ngrok-skip-browser-warning': 'true',
+      },
+      body: JSON.stringify({
+        email: normalizeIucEmail(email),
+        iuc_email: normalizeIucEmail(email),
+        password,
+      }),
+      cache: 'no-store',
+      credentials: 'include',
+    })
+
+    if (response.ok) {
+      return { ok: true }
+    }
+
+    const { text, data, isJson } = await readResponsePayload(response)
+    const normalizedErrorMessage =
+      extractAuthErrorMessage(data) ||
+      (text && !isJson ? text : '')
+
+    if (response.status >= 500) {
+      return {
+        ok: false,
+        reason: 'service_unavailable',
+        message: AUTH_SERVICE_UNAVAILABLE_MESSAGE,
+      }
+    }
+
+    if (isUnverifiedAccountMessage(normalizedErrorMessage)) {
+      return {
+        ok: false,
+        reason: 'unverified',
+        message: 'Hesabın kayıtlı ama e-posta doğrulaman tamamlanmamış.',
+      }
+    }
+
+    return {
+      ok: false,
+      reason: 'invalid_credentials',
+      message: 'E-posta veya şifre hatalı',
+    }
+  } catch (error) {
+    return {
+      ok: false,
+      reason: 'service_unavailable',
+      message:
+        error instanceof Error && error.message
+          ? error.message
+          : AUTH_SERVICE_UNAVAILABLE_MESSAGE,
+    }
+  }
 }
 
 export async function registerUser(payload: {

@@ -190,8 +190,8 @@ export default function RegisterPage() {
       setStep1Error('')
       setStep2Error(
         error instanceof Error && error.message
-          ? `On kontrol atlandi: ${error.message}`
-          : 'On kontrol atlandi. Bilgileri girip devam edebilirsin.',
+          ? `Ön kontrol atlandı: ${error.message}`
+          : 'Ön kontrol atlandı. Bilgileri girip devam edebilirsin.',
       )
       setStep1Data(data)
       setStep(2)
@@ -227,7 +227,7 @@ export default function RegisterPage() {
         setStep2Error('')
         setStep(3)
         return
-      } catch {
+      } catch (resendError) {
         try {
           const accountStatus = await fetchAccountStatus(step1Data.email)
           if (accountStatus.exists && !accountStatus.is_verified) {
@@ -245,6 +245,10 @@ export default function RegisterPage() {
         } catch {
           // Continue to surface the original error below.
         }
+
+        if (resendError instanceof Error && resendError.message) {
+          setStep2Error(resendError.message)
+        }
       }
 
       setStep2Error(
@@ -259,12 +263,18 @@ export default function RegisterPage() {
     if (!step1Data) return
 
     setOtpError(false)
+    setStep2Error('')
 
     try {
       await verifyOTP(step1Data.email, otp)
       setStep(4)
-    } catch {
+    } catch (error) {
       setOtpError(true)
+      setStep2Error(
+        error instanceof Error && error.message
+          ? error.message
+          : 'Kod hatalı veya süresi dolmuş.',
+      )
     }
   }
 
@@ -290,9 +300,15 @@ export default function RegisterPage() {
       }
       applyRegisterResponse(result)
       setOtpError(false)
+      setStep2Error('')
       startResendTimer()
-    } catch {
+    } catch (error) {
       setOtpError(true)
+      setStep2Error(
+        error instanceof Error && error.message
+          ? error.message
+          : 'Yeni doğrulama kodu oluşturulamadı.',
+      )
     }
   }
 
@@ -522,6 +538,10 @@ export default function RegisterPage() {
           ) : null}
 
           <OTPInput onComplete={onOTPComplete} hasError={otpError} />
+
+          {step2Error ? (
+            <p className="mb-3 text-center text-xs text-red-500">{step2Error}</p>
+          ) : null}
 
           {otpError ? (
             <p className="mb-3 text-center text-xs text-red-500">Kod hatalı veya süresi dolmuş.</p>

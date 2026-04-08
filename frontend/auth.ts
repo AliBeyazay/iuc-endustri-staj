@@ -2,6 +2,12 @@ import NextAuth from 'next-auth'
 import GoogleProvider from 'next-auth/providers/google'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { getBackendApiBaseUrl } from '@/lib/backend-url'
+import {
+  AUTH_REQUEST_TIMEOUT_MS,
+  extractAuthErrorMessage,
+  fetchWithTimeout,
+  readResponsePayload,
+} from '@/lib/auth-http'
 
 const ALLOWED_DOMAINS = ['@ogr.iuc.edu.tr', '@iuc.edu.tr']
 const API_URL = getBackendApiBaseUrl()
@@ -26,7 +32,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const normalizedEmail = String(credentials.email).trim().toLowerCase()
 
         try {
-          const res = await fetch(`${API_URL}/auth/login/`, {
+          const res = await fetchWithTimeout(`${API_URL}/auth/login/`, {
             method:  'POST',
             headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
             body:    JSON.stringify({
@@ -34,10 +40,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               iuc_email: normalizedEmail,
               password: credentials.password,
             }),
-          })
+          }, AUTH_REQUEST_TIMEOUT_MS)
 
           if (!res.ok) {
-            console.error('Credentials login failed', res.status, await res.text())
+            const { text, data, isJson } = await readResponsePayload(res)
+            console.error(
+              'Credentials login failed',
+              res.status,
+              extractAuthErrorMessage(data) || (text && !isJson ? text : ''),
+            )
             return null
           }
 

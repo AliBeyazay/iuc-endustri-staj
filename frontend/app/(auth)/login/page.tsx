@@ -6,7 +6,13 @@ import { getSession, signIn } from 'next-auth/react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { fetchAccountStatus, normalizeIucEmail, resendOTP, verifyOTP } from '@/lib/api'
+import {
+  fetchAccountStatus,
+  normalizeIucEmail,
+  probeCredentialsLogin,
+  resendOTP,
+  verifyOTP,
+} from '@/lib/api'
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react'
 
 const schema = z.object({
@@ -21,6 +27,9 @@ const ERROR_MAP: Record<string, string> = {
   NotIUCEmail: 'Sadece @ogr.iuc.edu.tr veya @iuc.edu.tr adresleri kabul edilir',
   OAuthAccountNotLinked: 'Bu e-posta başka bir yöntemle kayıtlı',
 }
+
+const SESSION_CREATION_FAILED_MESSAGE =
+  'Giriş oturumu şu anda oluşturulamıyor. Lütfen biraz sonra tekrar dene.'
 
 function LoginPageContent() {
   const router = useRouter()
@@ -54,40 +63,6 @@ function LoginPageContent() {
     },
   })
 
-  async function completeLogin(email: string, password: string) {
-    try {
-      const response = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
-        callbackUrl,
-      })
-
-      if (response?.error) {
-        setServerError(ERROR_MAP[response.error] ?? 'Bir hata oluştu, tekrar deneyin')
-        return false
-      }
-
-      if (!response?.ok) {
-        setServerError('Giriş tamamlanamadı. Bilgilerini kontrol edip tekrar dene.')
-        return false
-      }
-
-      setStatusMessage('Giriş başarılı. Yönlendiriliyorsun...')
-
-      const session = await getSession()
-      if (session?.access_token) {
-        document.cookie = `access_token=${encodeURIComponent(session.access_token)}; Path=/; SameSite=Lax`
-      }
-
-      window.location.assign(response?.url ?? callbackUrl)
-      return true
-    } catch {
-      setServerError('Giriş isteği başarısız oldu. Lütfen biraz sonra tekrar dene.')
-      return false
-    }
-  }
-
   async function startVerificationFlow(email: string, password: string) {
     setPendingVerification({ email, password })
     setVerificationCode('')
@@ -105,8 +80,68 @@ function LoginPageContent() {
       setOnscreenOtp(result.debug_otp)
       setVerificationMessage('Ekranda görünen 6 haneli kodu aynı şekilde gir.')
       return true
+    } catch (error) {
+      setVerificationMessage(
+        error instanceof Error && error.message
+          ? error.message
+          : 'Doğrulama kodu oluşturulamadı. Lütfen tekrar dene.',
+      )
+      return false
+    }
+  }
+
+  async function completeLogin(email: string, password: string) {
+    const loginProbe = await probeCredentialsLogin(email, password)
+    if (!loginProbe.ok) {
+      setStatusMessage('')
+      setServerError(loginProbe.message)
+
+      if (loginProbe.reason === 'unverified') {
+        await startVerificationFlow(email, password)
+        await loadVisibleOtp(email)
+      }
+
+      return false
+    }
+
+    setStatusMessage('Giriş tamamlanıyor...')
+
+    try {
+      const response = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+        callbackUrl,
+      })
+
+      if (response?.error) {
+        setStatusMessage('')
+        setServerError(
+          response.error === 'CredentialsSignin'
+            ? SESSION_CREATION_FAILED_MESSAGE
+            : ERROR_MAP[response.error] ?? 'Bir hata oluştu, tekrar deneyin',
+        )
+        return false
+      }
+
+      if (!response?.ok) {
+        setStatusMessage('')
+        setServerError(SESSION_CREATION_FAILED_MESSAGE)
+        return false
+      }
+
+      setStatusMessage('Giriş başarılı. Yönlendiriliyorsun...')
+
+      const session = await getSession()
+      if (session?.access_token) {
+        document.cookie = `access_token=${encodeURIComponent(session.access_token)}; Path=/; SameSite=Lax`
+      }
+
+      window.location.assign(response?.url ?? callbackUrl)
+      return true
     } catch {
-      setVerificationMessage('Doğrulama kodu oluşturulamadı. Lütfen tekrar dene.')
+      setStatusMessage('')
+      setServerError(SESSION_CREATION_FAILED_MESSAGE)
       return false
     }
   }
@@ -139,7 +174,7 @@ function LoginPageContent() {
         return
       }
     } catch {
-      setStatusMessage('Hesap durumu kontrol edilemedi, doğrudan giriş deneniyor...')
+      setStatusMessage('Hesap durumu kontrol edilemedi, giriş servisi deneniyor...')
     }
 
     setPendingVerification(null)
@@ -159,10 +194,13 @@ function LoginPageContent() {
       const loggedIn = await completeLogin(pendingVerification.email, pendingVerification.password)
       if (!loggedIn) {
         setVerificationMessage('')
-        setServerError('E-posta doğrulandı ama giriş tamamlanamadı. Şifreni tekrar kontrol et.')
       }
-    } catch {
-      setServerError('Doğrulama kodu hatalı veya süresi dolmuş.')
+    } catch (error) {
+      setServerError(
+        error instanceof Error && error.message
+          ? error.message
+          : 'Doğrulama kodu hatalı veya süresi dolmuş.',
+      )
     } finally {
       setIsVerifyingCode(false)
     }

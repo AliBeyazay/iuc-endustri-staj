@@ -65,6 +65,12 @@ jobs:
           USE_SQLITE: "True"
         run: python manage.py audit_listing_eligibility
 
+      - name: Apply production cleanup rules
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.dev
+          USE_SQLITE: "True"
+        run: python manage.py cleanup_production_listings
+
       - name: Export updated fixture
         env:
           DJANGO_SETTINGS_MODULE: config.settings.dev
