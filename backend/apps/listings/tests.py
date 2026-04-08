@@ -231,6 +231,25 @@ class ListingDeletionProtectionTests(TestCase):
         results = response.json()['results']
         self.assertNotIn('Deleted Via Admin Log', [item['title'] for item in results])
 
+    def test_listing_api_ignores_legacy_duration_bucket_query_param(self):
+        short_listing = self.create_listing(
+            title='Short Internship',
+            source_url='https://example.com/listing/short-internship',
+            duration_weeks=4,
+        )
+        open_listing = self.create_listing(
+            title='Open Internship',
+            source_url='https://example.com/listing/open-internship',
+            duration_weeks=None,
+        )
+
+        response = self.client.get('/api/listings/?duration_bucket=4_weeks&limit=50')
+
+        self.assertEqual(response.status_code, 200)
+        titles = [item['title'] for item in response.json()['results']]
+        self.assertIn(short_listing.title, titles)
+        self.assertIn(open_listing.title, titles)
+
     def test_homepage_featured_endpoint_filters_and_orders_results(self):
         featured_rank_two = self.create_listing(
             title='Featured Two',

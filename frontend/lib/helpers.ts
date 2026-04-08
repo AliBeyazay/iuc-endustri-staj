@@ -370,7 +370,6 @@ export function buildQueryString(filters: Partial<FilterState>): string {
   filters.internship_type?.forEach((v) => params.append('internship_type', v))
   filters.company_origin?.forEach((v) => params.append('company_origin', v))
   filters.source_platform?.forEach((v) => params.append('source_platform', v))
-  filters.duration_bucket?.forEach((v) => params.append('duration_bucket', v))
 
   return params.toString()
 }

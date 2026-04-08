@@ -50,22 +50,6 @@ function parsePositiveInt(value: string | null) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null
 }
 
-function matchesDurationBucket(listing: SnapshotListing, durationBucket: string) {
-  const duration = listing.duration_weeks
-  if (duration == null) return false
-
-  switch (durationBucket) {
-    case '4_weeks':
-      return duration <= 4
-    case '8_weeks':
-      return duration > 4 && duration <= 8
-    case '12_plus_weeks':
-      return duration >= 12
-    default:
-      return false
-  }
-}
-
 function toTimestamp(value?: string | null) {
   if (!value) return null
   const parsed = Date.parse(value)
@@ -215,7 +199,6 @@ export async function buildPublicSnapshotListingsResponse(requestUrl: URL): Prom
   const companyOrigins = new Set(searchParams.getAll('company_origin'))
   const sourcePlatforms = new Set(searchParams.getAll('source_platform'))
   const deadlineStatuses = new Set(searchParams.getAll('deadline_status'))
-  const durationBuckets = new Set(searchParams.getAll('duration_bucket'))
   const talentOnly = searchParams.get('is_talent_program') === 'true'
 
   let listings = snapshot.listings.filter((listing) => {
@@ -234,12 +217,6 @@ export async function buildPublicSnapshotListingsResponse(requestUrl: URL): Prom
     if (sourcePlatforms.size > 0 && !sourcePlatforms.has(listing.source_platform)) return false
     if (deadlineStatuses.size > 0 && !deadlineStatuses.has(listing.deadline_status)) return false
     if (talentOnly && !listing.is_talent_program) return false
-    if (
-      durationBuckets.size > 0 &&
-      !Array.from(durationBuckets).some((bucket) => matchesDurationBucket(listing, bucket))
-    ) {
-      return false
-    }
 
     return true
   })

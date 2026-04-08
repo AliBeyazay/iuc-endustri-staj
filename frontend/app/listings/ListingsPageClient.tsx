@@ -3,7 +3,6 @@
 import type { Dispatch, SetStateAction } from 'react'
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { BriefcaseBusiness, Clock3, MapPin, History } from 'lucide-react'
 import useSWR from 'swr'
@@ -80,12 +79,6 @@ const SECTOR_ORDER = [
   'İnşaat ve Yapı Malzemeleri',
   'Diğer',
 ]
-
-const DURATION_OPTIONS = [
-  { value: '4_weeks', label: '4 hafta' },
-  { value: '8_weeks', label: '8 hafta' },
-  { value: '12_plus_weeks', label: '12+ hafta' },
-] as const
 
 const SORT_OPTIONS: Array<{ value: SortOption; label: string }> = [
   { value: 'newest', label: 'En yeni' },
@@ -511,7 +504,6 @@ function buildListingsApiQuery(params: {
   query: string
   selectedSectors: string[]
   selectedPlatforms: string[]
-  selectedDurations: string[]
   talentOnly: boolean
   sortBy: SortOption
 }) {
@@ -560,10 +552,6 @@ function buildListingsApiQuery(params: {
 
   platformKeys.forEach((platformKey) => {
     searchParams.append('source_platform', platformKey)
-  })
-
-  params.selectedDurations.forEach((durationValue) => {
-    searchParams.append('duration_bucket', durationValue)
   })
 
   if (params.talentOnly) {
@@ -689,14 +677,11 @@ function getListingSearchScore(
 type FilterPanelProps = {
   sectors: string[]
   platforms: string[]
-  durations: ReadonlyArray<{ value: string; label: string }>
   selectedSectors: string[]
   selectedPlatforms: string[]
-  selectedDurations: string[]
   talentOnly: boolean
   onToggleSector: (value: string) => void
   onTogglePlatform: (value: string) => void
-  onToggleDuration: (value: string) => void
   onToggleTalent: () => void
   onClearAll: () => void
 }
@@ -704,14 +689,11 @@ type FilterPanelProps = {
 function FilterPanel({
   sectors,
   platforms,
-  durations,
   selectedSectors,
   selectedPlatforms,
-  selectedDurations,
   talentOnly,
   onToggleSector,
   onTogglePlatform,
-  onToggleDuration,
   onToggleTalent,
   onClearAll,
 }: FilterPanelProps) {
@@ -740,30 +722,6 @@ function FilterPanel({
             )
           })}
           </div>
-        </div>
-      </section>
-
-      <section>
-        <h3 className="mb-3 text-sm font-semibold text-[#132843] dark:text-[#e7edf4]">Sure</h3>
-        <div className="flex flex-col gap-2">
-          {durations.map((duration) => {
-            const active = selectedDurations.includes(duration.value)
-            return (
-              <button
-                key={duration.value}
-                type="button"
-                onClick={() => onToggleDuration(duration.value)}
-                className={classNames(
-                  'w-full rounded-full border px-3 py-2 text-left text-xs font-medium transition',
-                  active
-                    ? 'border-[rgba(216,173,67,0.18)] bg-[rgba(216,173,67,0.14)] text-[#8f670b] dark:text-[#f0cf7a]'
-                    : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10',
-                )}
-              >
-                {duration.label}
-              </button>
-            )
-          })}
         </div>
       </section>
 
@@ -803,14 +761,12 @@ export default function ListingsPageClient({
   initialData,
   initialSWRKey,
 }: ListingsPageClientProps) {
-  const router = useRouter()
   const { data: session, status } = useSession()
 
   const [query, setQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
   const [selectedSectors, setSelectedSectors] = useState<string[]>([])
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([])
-  const [selectedDurations, setSelectedDurations] = useState<string[]>([])
   const [talentOnly, setTalentOnly] = useState(false)
   const [sortBy, setSortBy] = useState<SortOption>('newest')
   const [recentSearches, setRecentSearches] = useState<string[]>([])
@@ -841,13 +797,11 @@ export default function ListingsPageClient({
       !debouncedQuery &&
       selectedSectors.length === 0 &&
       selectedPlatforms.length === 0 &&
-      selectedDurations.length === 0 &&
       !talentOnly &&
       sortBy === 'newest',
     [
       currentPage,
       debouncedQuery,
-      selectedDurations.length,
       selectedPlatforms.length,
       selectedSectors.length,
       sortBy,
@@ -865,7 +819,6 @@ export default function ListingsPageClient({
       query: debouncedQuery,
       selectedSectors,
       selectedPlatforms,
-      selectedDurations,
       talentOnly,
       sortBy,
     })
@@ -877,7 +830,6 @@ export default function ListingsPageClient({
     isDefaultState,
     selectedPlatforms,
     selectedSectors,
-    selectedDurations,
     sortBy,
     talentOnly,
   ])
@@ -1025,7 +977,7 @@ export default function ListingsPageClient({
 
   useEffect(() => {
     setCurrentPage(1)
-  }, [debouncedQuery, selectedPlatforms, selectedSectors, selectedDurations, sortBy, talentOnly])
+  }, [debouncedQuery, selectedPlatforms, selectedSectors, sortBy, talentOnly])
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -1072,7 +1024,6 @@ export default function ListingsPageClient({
     setDebouncedQuery('')
     setSelectedSectors([])
     setSelectedPlatforms([])
-    setSelectedDurations([])
     setTalentOnly(false)
     setSortBy('newest')
   }
@@ -1098,7 +1049,7 @@ export default function ListingsPageClient({
   }
 
   const activeFilterCount =
-    selectedSectors.length + selectedPlatforms.length + selectedDurations.length + (talentOnly ? 1 : 0)
+    selectedSectors.length + selectedPlatforms.length + (talentOnly ? 1 : 0)
 
   const summaryCards = [
     { label: 'Toplam Sonuç', value: totalCount },
@@ -1267,7 +1218,7 @@ export default function ListingsPageClient({
       </section>
 
       {/* ── Active Filters ── */}
-      {(selectedSectors.length > 0 || selectedPlatforms.length > 0 || selectedDurations.length > 0 || talentOnly) && (
+      {(selectedSectors.length > 0 || selectedPlatforms.length > 0 || talentOnly) && (
         <div className="bg-[#f9f9ff] px-4 pb-2 dark:bg-[#0e1e33]">
           <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2">
             {selectedSectors.map((sector) => (
@@ -1290,19 +1241,6 @@ export default function ListingsPageClient({
                 {platform} ×
               </button>
             ))}
-            {selectedDurations.map((durationValue) => {
-              const durationLabel = DURATION_OPTIONS.find((item) => item.value === durationValue)?.label ?? durationValue
-              return (
-                <button
-                  key={durationValue}
-                  type="button"
-                  onClick={() => setSelectedDurations(selectedDurations.filter((item) => item !== durationValue))}
-                  className="rounded-full bg-[#132843] px-3 py-1 text-xs font-medium text-white"
-                >
-                  {durationLabel} ×
-                </button>
-              )
-            })}
             {talentOnly && (
               <button type="button" onClick={() => setTalentOnly(false)} className="rounded-full bg-[#132843] px-3 py-1 text-xs font-medium text-white">
                 Yetenek Programı ×
@@ -1599,17 +1537,12 @@ export default function ListingsPageClient({
             <FilterPanel
               sectors={sectors}
               platforms={platformOptions}
-              durations={DURATION_OPTIONS}
               selectedSectors={selectedSectors}
               selectedPlatforms={selectedPlatforms}
-              selectedDurations={selectedDurations}
               talentOnly={talentOnly}
               onToggleSector={(value) => toggleItem(value, selectedSectors, setSelectedSectors)}
               onTogglePlatform={(value) =>
                 toggleItem(value, selectedPlatforms, setSelectedPlatforms)
-              }
-              onToggleDuration={(value) =>
-                toggleItem(value, selectedDurations, setSelectedDurations)
               }
               onToggleTalent={() => setTalentOnly((prev) => !prev)}
               onClearAll={clearAllFilters}
