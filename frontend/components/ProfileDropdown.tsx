@@ -37,14 +37,21 @@ export default function ProfileDropdown() {
         <button
           type="button"
           onClick={() => router.push('/login')}
-          className="rounded-full border border-white/18 bg-white/8 px-3 py-2 text-xs font-semibold text-[#f7ecd0] transition-colors hover:bg-white/14"
+          className="shrink-0 whitespace-nowrap rounded-full border border-[#d8ad43]/35 bg-[#f1d27e] px-3 py-2 text-xs font-bold text-[#10223b] shadow-[0_6px_20px_rgba(0,0,0,0.18)] transition-transform hover:-translate-y-px sm:hidden"
+        >
+          Giris
+        </button>
+        <button
+          type="button"
+          onClick={() => router.push('/login')}
+          className="hidden rounded-full border border-white/18 bg-white/8 px-3 py-2 text-xs font-semibold text-[#f7ecd0] transition-colors hover:bg-white/14 sm:inline-flex"
         >
           Giriş Yap
         </button>
         <button
           type="button"
           onClick={() => router.push('/register')}
-          className="rounded-full border border-[#d8ad43]/40 bg-[#f1d27e] px-3 py-2 text-xs font-bold text-[#10223b] shadow-[0_6px_20px_rgba(0,0,0,0.18)] transition-transform hover:-translate-y-px"
+          className="hidden rounded-full border border-[#d8ad43]/40 bg-[#f1d27e] px-3 py-2 text-xs font-bold text-[#10223b] shadow-[0_6px_20px_rgba(0,0,0,0.18)] transition-transform hover:-translate-y-px sm:inline-flex"
         >
           Kayıt Ol
         </button>
