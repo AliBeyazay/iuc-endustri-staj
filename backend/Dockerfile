@@ -13,7 +13,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN chmod +x /app/start-production.sh
+# Normalize line endings so the Linux entrypoint works even if the repo was edited on Windows.
+RUN sed -i 's/\r$//' /app/start-production.sh && chmod +x /app/start-production.sh
 
 RUN DJANGO_SETTINGS_MODULE=config.settings.prod python manage.py collectstatic --noinput 2>/dev/null || true
 
