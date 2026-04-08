@@ -1,6 +1,10 @@
-export const AUTH_REQUEST_TIMEOUT_MS = 8000
+export const AUTH_REQUEST_TIMEOUT_MS = 15000
+export const AUTH_REQUEST_MAX_ATTEMPTS = 3
+export const AUTH_REQUEST_RETRY_DELAY_MS = 1500
 export const AUTH_SERVICE_UNAVAILABLE_MESSAGE =
   'Kimlik servisine şu anda ulaşılamıyor. Lütfen biraz sonra tekrar dene.'
+
+const RETRYABLE_AUTH_STATUS_CODES = new Set([408, 425, 429, 500, 502, 503, 504, 521, 522, 523, 524])
 
 type AuthRequestErrorCode = 'timeout' | 'network'
 
@@ -35,6 +39,54 @@ export async function fetchWithTimeout(
   } finally {
     clearTimeout(timeoutId)
   }
+}
+
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+export function isRetryableAuthStatus(status: number) {
+  return RETRYABLE_AUTH_STATUS_CODES.has(status)
+}
+
+export async function fetchWithRetry(
+  input: RequestInfo | URL,
+  init: RequestInit = {},
+  options: {
+    timeoutMs?: number
+    attempts?: number
+    retryDelayMs?: number
+  } = {},
+): Promise<Response> {
+  const timeoutMs = options.timeoutMs ?? AUTH_REQUEST_TIMEOUT_MS
+  const attempts = Math.max(1, options.attempts ?? AUTH_REQUEST_MAX_ATTEMPTS)
+  const retryDelayMs = Math.max(0, options.retryDelayMs ?? AUTH_REQUEST_RETRY_DELAY_MS)
+
+  let lastError: unknown = null
+
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      const response = await fetchWithTimeout(input, init, timeoutMs)
+      if (!isRetryableAuthStatus(response.status) || attempt === attempts) {
+        return response
+      }
+    } catch (error) {
+      lastError = error
+      if (!(error instanceof AuthRequestError) || attempt === attempts) {
+        throw error
+      }
+    }
+
+    if (attempt < attempts) {
+      await delay(retryDelayMs * attempt)
+    }
+  }
+
+  if (lastError) {
+    throw lastError
+  }
+
+  return fetchWithTimeout(input, init, timeoutMs)
 }
 
 export async function readResponsePayload(response: Response): Promise<{

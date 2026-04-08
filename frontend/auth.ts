@@ -5,7 +5,7 @@ import { getBackendApiBaseUrl } from '@/lib/backend-url'
 import {
   AUTH_REQUEST_TIMEOUT_MS,
   extractAuthErrorMessage,
-  fetchWithTimeout,
+  fetchWithRetry,
   readResponsePayload,
 } from '@/lib/auth-http'
 
@@ -32,7 +32,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const normalizedEmail = String(credentials.email).trim().toLowerCase()
 
         try {
-          const res = await fetchWithTimeout(`${API_URL}/auth/login/`, {
+          const res = await fetchWithRetry(`${API_URL}/auth/login/`, {
             method:  'POST',
             headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
             body:    JSON.stringify({
@@ -40,7 +40,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               iuc_email: normalizedEmail,
               password: credentials.password,
             }),
-          }, AUTH_REQUEST_TIMEOUT_MS)
+          }, { timeoutMs: AUTH_REQUEST_TIMEOUT_MS })
 
           if (!res.ok) {
             const { text, data, isJson } = await readResponsePayload(res)

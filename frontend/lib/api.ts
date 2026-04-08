@@ -9,7 +9,7 @@ import { getBackendApiBaseUrl } from './backend-url'
 import {
   AUTH_SERVICE_UNAVAILABLE_MESSAGE,
   extractAuthErrorMessage,
-  fetchWithTimeout,
+  fetchWithRetry,
   isUnverifiedAccountMessage,
   readResponsePayload,
 } from './auth-http'
@@ -29,7 +29,7 @@ export function normalizeIucEmail(email: string) {
 
 async function postPublicAuth<T>(path: string, payload: unknown): Promise<T> {
   const baseUrl = typeof window === 'undefined' ? serverApiBaseUrl : browserPublicApiBaseUrl
-  const response = await fetchWithTimeout(`${baseUrl}${path}`, {
+  const response = await fetchWithRetry(`${baseUrl}${path}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -294,7 +294,7 @@ export async function probeCredentialsLogin(
   const baseUrl = typeof window === 'undefined' ? serverApiBaseUrl : browserPublicApiBaseUrl
 
   try {
-    const response = await fetchWithTimeout(`${baseUrl}/auth/login/`, {
+    const response = await fetchWithRetry(`${baseUrl}/auth/login/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
