@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import useSWR from 'swr'
+import { X } from 'lucide-react'
 import {
   createApplication,
   fetchApplications,
@@ -448,7 +449,7 @@ export default function DashboardPage() {
 
         {/* ── Kaydedilen İlanlar ── */}
         <div id="saved" className="mb-8">
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="campus-heading text-lg font-bold text-[#132843] dark:text-[#e7edf4]">
               Kaydedilen İlanlar
               {bookmarks.length > 0 && <span className="ml-2 text-gray-400 dark:text-[#e7edf4]/40">({bookmarks.length})</span>}
@@ -457,12 +458,6 @@ export default function DashboardPage() {
               <button onClick={() => router.push('/listings')} className="rounded-lg bg-[#d8ad43] px-4 py-2 text-xs font-bold text-[#132843] hover:bg-[#c79828]">
                 + İlan Keşfet
               </button>
-              {bookmarks.length > 0 && (() => {
-                const urgentCount = bookmarks.filter((b) => b.deadline_status === 'urgent').length
-                return urgentCount > 0 ? (
-                  <span className="text-xs text-red-500">{urgentCount} ilanın son başvuru tarihi yaklaşıyor</span>
-                ) : null
-              })()}
             </div>
           </div>
 
@@ -477,35 +472,31 @@ export default function DashboardPage() {
           ) : (
             <div className="space-y-2">
               {visibleBookmarks.map((bookmark) => {
-                const deadline = getDeadlineDisplay(bookmark)
                 const initials = getInitials(bookmark.company_name)
                 const isTracked = trackedListingIds.has(bookmark.id)
                 return (
                   <div
                     key={bookmark.id}
                     onClick={() => router.push(`/listings/${bookmark.id}`)}
-                    className="group flex cursor-pointer items-center gap-4 rounded-xl border border-gray-200 bg-white px-5 py-3 transition-all hover:shadow-sm dark:border-white/10 dark:bg-[#1a2d45]"
+                    className="group flex cursor-pointer items-start gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 transition-all hover:shadow-sm sm:items-center sm:gap-4 sm:px-5 dark:border-white/10 dark:bg-[#1a2d45]"
                   >
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-bold text-[#132843] dark:bg-white/8 dark:text-[#e7edf4]">
                       {initials}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-[#132843] group-hover:text-[#1E3A5F] dark:text-[#e7edf4] dark:group-hover:text-[#d8ad43]">{bookmark.title}</p>
-                      <p className="truncate text-xs text-gray-500 dark:text-[#e7edf4]/50">{bookmark.company_name}</p>
+                      <p className="line-clamp-2 break-words text-sm font-semibold leading-5 text-[#132843] group-hover:text-[#1E3A5F] sm:line-clamp-1 dark:text-[#e7edf4] dark:group-hover:text-[#d8ad43]">
+                        {bookmark.title}
+                      </p>
+                      <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-[#e7edf4]/50">{bookmark.company_name}</p>
                     </div>
-                    <div className="flex shrink-0 items-center gap-3" onClick={(e) => e.stopPropagation()}>
-                      {deadline.label && (
-                        <span className={`rounded-full px-3 py-1 text-[10px] font-bold ${
-                          deadline.color === 'red' ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
-                        }`}>
-                          {deadline.label}
-                        </span>
-                      )}
+                    <div className="flex shrink-0 items-start gap-2 pt-0.5 sm:items-center sm:pt-0" onClick={(e) => e.stopPropagation()}>
                       <button
                         onClick={(e) => { e.stopPropagation(); handleRemove(bookmark.id) }}
-                        className="rounded-lg border border-gray-200 px-4 py-1.5 text-xs font-medium text-[#132843] hover:bg-gray-50 dark:border-white/10 dark:text-[#e7edf4] dark:hover:bg-white/5"
+                        aria-label="İlanı çıkar"
+                        title="İlanı çıkar"
+                        className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-[#132843] transition-colors hover:bg-gray-50 hover:text-red-500 dark:border-white/10 dark:text-[#e7edf4] dark:hover:bg-white/5 dark:hover:text-red-300"
                       >
-                        İlanı Çıkar
+                        <X size={18} />
                       </button>
                     </div>
                   </div>
