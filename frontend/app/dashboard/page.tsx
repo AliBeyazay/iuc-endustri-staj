@@ -22,7 +22,7 @@ import {
   DashboardStats,
   UserProfile,
 } from '@/types'
-import { getAvatarColor, getDeadlineDisplay, getInitials, FOCUS_AREA_LABELS, FOCUS_AREA_COLORS, PLATFORM_LABELS, timeAgoTurkish } from '@/lib/helpers'
+import { daysUntilDeadline, getAvatarColor, getDeadlineDisplay, getInitials, FOCUS_AREA_LABELS, FOCUS_AREA_COLORS, PLATFORM_LABELS, timeAgoTurkish } from '@/lib/helpers'
 import ProfileDropdown from '@/components/ProfileDropdown'
 import UniversityLogo from '@/components/UniversityLogo'
 function BookmarkCard({
@@ -187,13 +187,28 @@ export default function DashboardPage() {
     if (aU !== bU) return aU - bU
     return new Date(b.bookmarked_at).getTime() - new Date(a.bookmarked_at).getTime()
   })
+  const approachingDeadlineBookmarks = sortedBookmarks.filter((bookmark) => {
+    const days = daysUntilDeadline(bookmark.application_deadline)
+    return days !== null && days >= 0 && days < 7
+  })
   const visibleBookmarks = showAll ? sortedBookmarks : sortedBookmarks.slice(0, 5)
   const trackedListingIds = new Set(applications.map((item) => item.listing.id))
   const firstName = profile?.full_name.split(' ')[0] ?? 'Öğrenci'
 
   async function handleRemove(id: string) {
-    await removeBookmark(id)
-    mutateBookmarks()
+    const optimisticBookmarks = bookmarks.filter((bookmark) => bookmark.id !== id)
+    await mutateBookmarks(
+      async (current = []) => {
+        await removeBookmark(id)
+        return current.filter((bookmark) => bookmark.id !== id)
+      },
+      {
+        optimisticData: optimisticBookmarks,
+        rollbackOnError: true,
+        populateCache: true,
+        revalidate: false,
+      }
+    )
   }
 
   async function handleTrackApplication(listingId: string) {
@@ -460,6 +475,43 @@ export default function DashboardPage() {
               </button>
             </div>
           </div>
+
+          {approachingDeadlineBookmarks.length > 0 ? (
+            <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 dark:border-red-400/20 dark:bg-red-950/20">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-bold text-red-700 dark:text-red-300">Son başvuru tarihi yaklaşıyor</p>
+                  <p className="text-xs text-red-600/80 dark:text-red-200/80">
+                    7 günden az kalan kaydedilmiş ilanlar burada görünüyor.
+                  </p>
+                </div>
+                <span className="shrink-0 rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-red-700 dark:bg-red-900/40 dark:text-red-200">
+                  {approachingDeadlineBookmarks.length} ilan
+                </span>
+              </div>
+              <div className="mt-3 space-y-2">
+                {approachingDeadlineBookmarks.slice(0, 3).map((bookmark) => {
+                  const deadline = getDeadlineDisplay(bookmark)
+                  return (
+                    <button
+                      key={`approaching-${bookmark.id}`}
+                      type="button"
+                      onClick={() => router.push(`/listings/${bookmark.id}`)}
+                      className="flex w-full items-center justify-between gap-3 rounded-lg bg-white/80 px-3 py-2 text-left hover:bg-white dark:bg-[#132843]/40 dark:hover:bg-[#132843]/60"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-xs font-semibold text-[#132843] dark:text-[#e7edf4]">{bookmark.title}</p>
+                        <p className="truncate text-[11px] text-gray-500 dark:text-[#e7edf4]/50">{bookmark.company_name}</p>
+                      </div>
+                      <span className="shrink-0 rounded-full bg-red-100 px-2 py-1 text-[10px] font-bold text-red-600 dark:bg-red-900/40 dark:text-red-200">
+                        {deadline.label}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          ) : null}
 
           {!bookmarks || bookmarks.length === 0 ? (
             <div className="rounded-xl border border-gray-200 bg-white py-12 text-center dark:border-white/10 dark:bg-[#1a2d45]">
