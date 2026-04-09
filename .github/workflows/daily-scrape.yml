@@ -47,46 +47,14 @@ jobs:
           python manage.py import_production_listings
           echo "Existing listings loaded"
 
-      - name: Run all spiders
-        env:
-          DJANGO_SETTINGS_MODULE: config.settings.dev
-          USE_SQLITE: "True"
-        run: python manage.py run_scrapers
-
-      - name: Audit listing deadlines
-        env:
-          DJANGO_SETTINGS_MODULE: config.settings.dev
-          USE_SQLITE: "True"
-        run: python manage.py audit_listing_deadlines
-
-      - name: Audit listing eligibility
-        env:
-          DJANGO_SETTINGS_MODULE: config.settings.dev
-          USE_SQLITE: "True"
-        run: python manage.py audit_listing_eligibility
-
-      - name: Apply production cleanup rules
-        env:
-          DJANGO_SETTINGS_MODULE: config.settings.dev
-          USE_SQLITE: "True"
-        run: python manage.py cleanup_production_listings
-
-      - name: Export updated fixture
-        env:
-          DJANGO_SETTINGS_MODULE: config.settings.dev
-          USE_SQLITE: "True"
-          PYTHONIOENCODING: utf-8
-        run: python manage.py export_listings
-
-      - name: Export public snapshot
+      - name: Sync fixtures and snapshots
         env:
           DJANGO_SETTINGS_MODULE: config.settings.dev
           USE_SQLITE: "True"
           PYTHONIOENCODING: utf-8
         run: |
-          python manage.py export_public_listing_snapshot
-          mkdir -p ../frontend/lib/generated
-          cp apps/listings/fixtures/public_listings_snapshot.json ../frontend/lib/generated/public-listings-snapshot.json
+          python manage.py sync_production_listings \
+            --frontend-snapshot-path ../frontend/lib/generated/public-listings-snapshot.json
 
       - name: Commit & push if changed
         run: |

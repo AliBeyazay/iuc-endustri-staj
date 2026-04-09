@@ -1,4 +1,5 @@
 from pathlib import Path
+from shutil import copyfile
 
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
@@ -49,6 +50,10 @@ class Command(BaseCommand):
             help="Path for the public fallback snapshot JSON file.",
         )
         parser.add_argument(
+            "--frontend-snapshot-path",
+            help="Optional path for mirroring the generated public snapshot into the frontend app.",
+        )
+        parser.add_argument(
             "--no-deactivate",
             action="store_true",
             help="Skip deactivating expired listings while running scrapers.",
@@ -79,6 +84,18 @@ class Command(BaseCommand):
         call_command(
             "export_public_listing_snapshot",
             path=str(options["public_snapshot_path"]),
+            stdout=self.stdout,
+        )
+        if options.get("frontend_snapshot_path"):
+            frontend_snapshot_path = Path(options["frontend_snapshot_path"])
+            frontend_snapshot_path.parent.mkdir(parents=True, exist_ok=True)
+            copyfile(options["public_snapshot_path"], frontend_snapshot_path)
+            self.stdout.write(f"Frontend snapshot path: {frontend_snapshot_path}")
+        call_command(
+            "verify_production_listing_sync",
+            path=str(target_path),
+            public_snapshot_path=str(options["public_snapshot_path"]),
+            frontend_snapshot_path=options.get("frontend_snapshot_path"),
             stdout=self.stdout,
         )
 

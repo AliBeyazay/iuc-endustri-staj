@@ -12,6 +12,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.core.management import call_command
+from django.core.management.base import CommandError
 from django.http import QueryDict
 from django.test import RequestFactory, SimpleTestCase, TestCase, override_settings
 from django.utils import timezone
@@ -660,6 +661,7 @@ class ProductionListingFixtureCommandTests(TestCase):
         with TemporaryDirectory() as temp_dir:
             fixture_path = Path(temp_dir) / 'production_real_listings.json'
             public_snapshot_path = Path(temp_dir) / 'public_listings_snapshot.json'
+            frontend_snapshot_path = Path(temp_dir) / 'frontend-public-listings-snapshot.json'
             output = StringIO()
 
             with patch(
@@ -670,6 +672,7 @@ class ProductionListingFixtureCommandTests(TestCase):
                     'sync_production_listings',
                     path=str(fixture_path),
                     public_snapshot_path=str(public_snapshot_path),
+                    frontend_snapshot_path=str(frontend_snapshot_path),
                     stdout=output,
                 )
 
@@ -682,23 +685,90 @@ class ProductionListingFixtureCommandTests(TestCase):
                     'cleanup_production_listings',
                     'export_listings',
                     'export_public_listing_snapshot',
+                    'verify_production_listing_sync',
                 ],
             )
             self.assertTrue(fixture_path.exists())
             self.assertTrue(public_snapshot_path.exists())
+            self.assertTrue(frontend_snapshot_path.exists())
 
             exported_records = json.loads(fixture_path.read_text(encoding='utf-8'))
             self.assertEqual(len(exported_records), 2)
             public_snapshot = json.loads(public_snapshot_path.read_text(encoding='utf-8'))
             self.assertEqual(public_snapshot['count'], 2)
+            self.assertEqual(
+                frontend_snapshot_path.read_text(encoding='utf-8'),
+                public_snapshot_path.read_text(encoding='utf-8'),
+            )
 
             rendered_output = output.getvalue()
             self.assertIn('Production fixture sync started', rendered_output)
             self.assertIn('Production fixture sync finished', rendered_output)
             self.assertIn('Public snapshot path:', rendered_output)
+            self.assertIn('Frontend snapshot path:', rendered_output)
             self.assertIn('Listings summary: total=2 active=2 visible=2', rendered_output)
             self.assertIn('pythiango: total=1 active=1 visible=1', rendered_output)
             self.assertIn('youthall: total=1 active=1 visible=1', rendered_output)
+
+    def test_verify_production_listing_sync_passes_for_recent_visible_listing(self):
+        recent_listing = self.create_listing(
+            title='Recent Public Listing',
+            source_url='https://example.com/listing/recent-public-listing',
+        )
+
+        with TemporaryDirectory() as temp_dir:
+            fixture_path = Path(temp_dir) / 'production_real_listings.json'
+            public_snapshot_path = Path(temp_dir) / 'public_listings_snapshot.json'
+            frontend_snapshot_path = Path(temp_dir) / 'frontend-public-listings-snapshot.json'
+            output = StringIO()
+
+            call_command('export_listings', path=str(fixture_path))
+            call_command('export_public_listing_snapshot', path=str(public_snapshot_path))
+            frontend_snapshot_path.write_text(public_snapshot_path.read_text(encoding='utf-8'), encoding='utf-8')
+            call_command(
+                'verify_production_listing_sync',
+                path=str(fixture_path),
+                public_snapshot_path=str(public_snapshot_path),
+                frontend_snapshot_path=str(frontend_snapshot_path),
+                lookback_hours=24,
+                stdout=output,
+            )
+
+            rendered_output = output.getvalue()
+            self.assertIn('recent_listings=1', rendered_output)
+            self.assertIn('recent_public_listings=1', rendered_output)
+            self.assertIn('Production listing sync verification passed.', rendered_output)
+
+            self.assertTrue(
+                json.loads(fixture_path.read_text(encoding='utf-8'))[0]['source_url']
+                == recent_listing.source_url
+            )
+
+    def test_verify_production_listing_sync_fails_when_recent_public_listing_missing_from_snapshot(self):
+        self.create_listing(
+            title='Missing Snapshot Listing',
+            source_url='https://example.com/listing/missing-snapshot-listing',
+        )
+
+        with TemporaryDirectory() as temp_dir:
+            fixture_path = Path(temp_dir) / 'production_real_listings.json'
+            public_snapshot_path = Path(temp_dir) / 'public_listings_snapshot.json'
+
+            call_command('export_listings', path=str(fixture_path))
+            public_snapshot_path.write_text(
+                json.dumps({'generated_at': timezone.now().isoformat(), 'count': 0, 'listings': [], 'featured_listings': []}),
+                encoding='utf-8',
+            )
+
+            with self.assertRaises(CommandError) as exc:
+                call_command(
+                    'verify_production_listing_sync',
+                    path=str(fixture_path),
+                    public_snapshot_path=str(public_snapshot_path),
+                    lookback_hours=24,
+                )
+
+            self.assertIn('Missing from public snapshot', str(exc.exception))
 
 
 class AuthApiTests(TestCase):
