@@ -5,30 +5,24 @@ from dataclasses import dataclass
 
 _TR_CHAR_MAP = str.maketrans(
     {
-        "c": "c",
         "C": "c",
-        "g": "g",
         "G": "g",
-        "i": "i",
         "I": "i",
-        "o": "o",
         "O": "o",
-        "s": "s",
         "S": "s",
-        "u": "u",
         "U": "u",
-        "ç": "c",
-        "Ç": "c",
-        "ğ": "g",
-        "Ğ": "g",
-        "ı": "i",
-        "İ": "i",
-        "ö": "o",
-        "Ö": "o",
-        "ş": "s",
-        "Ş": "s",
-        "ü": "u",
-        "Ü": "u",
+        "\u00c7": "c",
+        "\u00e7": "c",
+        "\u011e": "g",
+        "\u011f": "g",
+        "\u0130": "i",
+        "\u0131": "i",
+        "\u00d6": "o",
+        "\u00f6": "o",
+        "\u015e": "s",
+        "\u015f": "s",
+        "\u00dc": "u",
+        "\u00fc": "u",
     }
 )
 
@@ -92,7 +86,8 @@ _EXPERIENCE_REQUIRED_PATTERNS = (
     (
         "years_experience_range_en",
         re.compile(
-            r"\b([2-9]|[1-9][0-9])\s*(?:[-–]|\s)\s*([2-9]|[1-9][0-9])\s+years?\s+experience\b"
+            r"\b([1-9]|[1-9][0-9])\s*(?:[-–]|\s)\s*([1-9]|[1-9][0-9])\s+years?\s+"
+            r"(?:(?:working|relevant|industry|professional)\s+)?experience\b"
         ),
     ),
     (
@@ -139,7 +134,13 @@ def classify_student_eligibility(title: str | None, description: str | None) -> 
             continue
 
         numbers = [int(value) for value in match.groups() if value is not None]
-        if numbers and min(numbers) < 2:
+        if not numbers:
+            continue
+
+        if len(numbers) == 1 and numbers[0] < 2:
+            continue
+
+        if len(numbers) > 1 and max(numbers) < 2:
             continue
 
         return EligibilityDecision(

@@ -65,6 +65,7 @@ class EligibilityHelperTests(SimpleTestCase):
             "Minimum 3 years of professional experience",
             "At least 5 years experience in project management",
             "Minimum of 3 years experience within a similar role",
+            "1-3 years working experience in demand roles",
         )
 
         for sample in samples:
@@ -516,6 +517,29 @@ class EligibilityValidationPipelineTests(TestCase):
             (
                 'info',
                 'INELIGIBLE_FOR_STUDENTS_SKIPPED: Supply Chain Specialist | reason=minimum_years_experience_en',
+            ),
+            self.spider.logger.messages,
+        )
+
+    def test_drops_experience_range_listing_before_db_write(self):
+        item = {
+            'title': 'Demand Planner',
+            'company_name': 'Kraft Heinz',
+            'source_url': 'https://tr.linkedin.com/jobs/view/demand-planner-1',
+            'application_url': 'https://tr.linkedin.com/jobs/view/demand-planner-1',
+            'source_platform': 'linkedin',
+            'location': 'Istanbul, Turkiye',
+            'description': '1-3 years working experience in demand roles.',
+        }
+
+        with self.assertRaises(DropItem):
+            self.pipeline.process_item(item, self.spider)
+
+        self.assertFalse(Listing.objects.exists())
+        self.assertIn(
+            (
+                'info',
+                'INELIGIBLE_FOR_STUDENTS_SKIPPED: Demand Planner | reason=years_experience_range_en',
             ),
             self.spider.logger.messages,
         )
