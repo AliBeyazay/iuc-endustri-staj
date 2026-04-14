@@ -1,13 +1,8 @@
 import type { Metadata } from 'next'
 import { cache } from 'react'
 import { notFound } from 'next/navigation'
-import { getBackendApiBaseUrl } from '@/lib/backend-url'
 import { stripListingDescriptionLinks } from '@/lib/helpers'
-import {
-  PUBLIC_LISTINGS_REQUEST_TIMEOUT_MS,
-  PUBLIC_LISTINGS_REVALIDATE_SECONDS,
-} from '@/lib/public-listings-cache'
-import { getPublicSnapshotListingById } from '@/lib/public-listings-snapshot'
+import { loadListingById } from '@/lib/public-listings-source'
 import { Listing } from '@/types'
 import ListingDetailClient from './ListingDetailClient'
 
@@ -15,35 +10,14 @@ interface Props {
   params: Promise<{ id: string }>
 }
 
-const backendApiBaseUrl = getBackendApiBaseUrl()
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? `https://${process.env.VERCEL_URL ?? 'iuc-endustri-staj.vercel.app'}`)
   .replace(/\/$/, '')
 
 export const revalidate = 300
 
 const getListingById = cache(async (id: string): Promise<Listing | null> => {
-  try {
-    const response = await fetch(`${backendApiBaseUrl}/listings/${id}/`, {
-      headers: {
-        Accept: 'application/json',
-        'ngrok-skip-browser-warning': 'true',
-      },
-      next: { revalidate: PUBLIC_LISTINGS_REVALIDATE_SECONDS },
-      signal: AbortSignal.timeout(PUBLIC_LISTINGS_REQUEST_TIMEOUT_MS),
-    })
-
-    if (response.status === 404) {
-      return null
-    }
-
-    if (!response.ok) {
-      return getPublicSnapshotListingById(id)
-    }
-
-    return (await response.json()) as Listing
-  } catch {
-    return getPublicSnapshotListingById(id)
-  }
+  const { data } = await loadListingById(id)
+  return data
 })
 
 function buildMetaDescription(listing: Listing): string {

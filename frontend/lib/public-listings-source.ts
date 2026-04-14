@@ -94,6 +94,11 @@ export async function loadListingById(id: string): Promise<ListingLoadResult> {
     })
 
     if (response.status === 404) {
+      const snapshotListing = await getPublicSnapshotListingById(id)
+      if (snapshotListing) {
+        return { data: snapshotListing, source: 'snapshot', status: 200 }
+      }
+
       return { data: null, source: 'backend', status: 404 }
     }
 

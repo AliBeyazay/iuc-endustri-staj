@@ -8,6 +8,7 @@ import type { ListingsResponse, RawListing } from '@/app/listings/types'
 
 const SNAPSHOT_PATH = path.join(process.cwd(), 'lib', 'generated', 'public-listings-snapshot.json')
 const DEFAULT_PAGE_SIZE = 20
+const DEFAULT_SNAPSHOT_MAX_AGE_HOURS = 72
 const SEARCHABLE_FIELDS: Array<keyof Listing> = ['title', 'company_name', 'description', 'location']
 
 type SnapshotListing = Listing & {
@@ -22,6 +23,12 @@ type PublicListingsSnapshot = {
   featured_listings: HomepageFeaturedListing[]
 }
 
+export type PublicListingsSnapshotMetadata = {
+  generatedAt: string | null
+  ageMs: number | null
+  isFresh: boolean
+}
+
 const readPublicListingsSnapshot = cache(async (): Promise<PublicListingsSnapshot | null> => {
   try {
     const raw = await fs.readFile(SNAPSHOT_PATH, 'utf-8')
@@ -30,6 +37,53 @@ const readPublicListingsSnapshot = cache(async (): Promise<PublicListingsSnapsho
     return null
   }
 })
+
+function getSnapshotMaxAgeMs() {
+  const parsed = Number.parseInt(
+    process.env.PUBLIC_LISTINGS_SNAPSHOT_MAX_AGE_HOURS ?? `${DEFAULT_SNAPSHOT_MAX_AGE_HOURS}`,
+    10,
+  )
+  const maxAgeHours = Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_SNAPSHOT_MAX_AGE_HOURS
+  return maxAgeHours * 60 * 60 * 1000
+}
+
+function buildSnapshotMetadata(
+  snapshot: PublicListingsSnapshot | null,
+): PublicListingsSnapshotMetadata {
+  if (!snapshot?.generated_at) {
+    return {
+      generatedAt: null,
+      ageMs: null,
+      isFresh: false,
+    }
+  }
+
+  const generatedAtMs = Date.parse(snapshot.generated_at)
+  if (!Number.isFinite(generatedAtMs)) {
+    return {
+      generatedAt: snapshot.generated_at,
+      ageMs: null,
+      isFresh: false,
+    }
+  }
+
+  const ageMs = Date.now() - generatedAtMs
+  return {
+    generatedAt: snapshot.generated_at,
+    ageMs,
+    isFresh: ageMs >= 0 && ageMs <= getSnapshotMaxAgeMs(),
+  }
+}
+
+export async function getPublicListingsSnapshotMetadata(): Promise<PublicListingsSnapshotMetadata> {
+  return buildSnapshotMetadata(await readPublicListingsSnapshot())
+}
+
+async function readUsablePublicListingsSnapshot(): Promise<PublicListingsSnapshot | null> {
+  const snapshot = await readPublicListingsSnapshot()
+  const metadata = buildSnapshotMetadata(snapshot)
+  return metadata.isFresh ? snapshot : null
+}
 
 function normalizeSearchValue(value: string) {
   return value
@@ -152,7 +206,7 @@ function toRawListing(listing: SnapshotListing): RawListing {
 }
 
 export async function getPublicSnapshotFeaturedListings() {
-  const snapshot = await readPublicListingsSnapshot()
+  const snapshot = await readUsablePublicListingsSnapshot()
   if (!snapshot) {
     return []
   }
@@ -179,12 +233,12 @@ export async function getPublicSnapshotFeaturedListings() {
 }
 
 export async function getPublicSnapshotListingById(id: string) {
-  const snapshot = await readPublicListingsSnapshot()
+  const snapshot = await readUsablePublicListingsSnapshot()
   return snapshot?.listings.find((listing) => listing.id === id) ?? null
 }
 
 export async function buildPublicSnapshotListingsResponse(requestUrl: URL): Promise<ListingsResponse | null> {
-  const snapshot = await readPublicListingsSnapshot()
+  const snapshot = await readUsablePublicListingsSnapshot()
   if (!snapshot) {
     return null
   }
