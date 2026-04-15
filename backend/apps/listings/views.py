@@ -23,7 +23,7 @@ from .cache_keys import get_listing_list_cache_version
 from .filters import ListingFilter
 from .models import Application, Bookmark, InternshipJournal, JournalComment, Listing, Review, ScraperLog, Student
 from .public_listings import get_ordering_aggregate_annotations, get_public_listing_queryset
-from .sync import delete_listing_groups
+from .sync import delete_listing_groups, invalidate_listing_list_cache_if_unchanged
 from .serializers import (
     AdminListingListSerializer,
     AdminListingUpdateSerializer,
@@ -714,7 +714,9 @@ class AdminListingModerationDetailView(APIView):
             if moderation_note:
                 listing.moderation_note = moderation_note
             listing.moderated_at = now()
+            cache_version_before_save = get_listing_list_cache_version()
             listing.save(update_fields=['moderation_status', 'is_active', 'moderation_note', 'moderated_at', 'updated_at'])
+            invalidate_listing_list_cache_if_unchanged(cache_version_before_save)
             return Response(AdminListingListSerializer(listing).data)
 
         if action == 'reject':
@@ -723,16 +725,26 @@ class AdminListingModerationDetailView(APIView):
             if moderation_note:
                 listing.moderation_note = moderation_note
             listing.moderated_at = now()
+            cache_version_before_save = get_listing_list_cache_version()
             listing.save(update_fields=['moderation_status', 'is_active', 'moderation_note', 'moderated_at', 'updated_at'])
+            invalidate_listing_list_cache_if_unchanged(cache_version_before_save)
             return Response(AdminListingListSerializer(listing).data)
 
         serializer = AdminListingUpdateSerializer(listing, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        updated = serializer.save()
-        if 'moderation_status' in serializer.validated_data:
-            updated.moderated_at = now()
-            updated.save(update_fields=['moderated_at'])
-        return Response(AdminListingListSerializer(updated).data)
+        validated_data = serializer.validated_data
+        update_fields = list(validated_data.keys())
+        for field, value in validated_data.items():
+            setattr(listing, field, value)
+        if 'moderation_status' in validated_data:
+            listing.moderated_at = now()
+            update_fields.append('moderated_at')
+        if update_fields:
+            cache_version_before_save = get_listing_list_cache_version()
+            listing.save(update_fields=update_fields + ['updated_at'])
+            if {'moderation_status', 'is_active'} & validated_data.keys():
+                invalidate_listing_list_cache_if_unchanged(cache_version_before_save)
+        return Response(AdminListingListSerializer(listing).data)
 
     def delete(self, request, listing_id):
         listing = Listing.objects.filter(id=listing_id).first()

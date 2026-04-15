@@ -17,6 +17,7 @@ from django.http import QueryDict
 from django.test import RequestFactory, SimpleTestCase, TestCase, override_settings
 from django.utils import timezone
 from scrapy.exceptions import DropItem
+from rest_framework.test import APIClient
 
 from apps.listings.admin import ListingAdmin
 from apps.listings.cache_keys import get_listing_list_cache_version
@@ -79,6 +80,7 @@ class EligibilityHelperTests(SimpleTestCase):
 class ListingDeletionProtectionTests(TestCase):
     def setUp(self):
         cache.clear()
+        self.api_client = APIClient()
 
     def create_listing(self, **overrides):
         payload = {
@@ -92,6 +94,14 @@ class ListingDeletionProtectionTests(TestCase):
         }
         payload.update(overrides)
         return Listing.objects.create(**payload)
+
+    def create_admin_user(self, username='admin-user'):
+        return get_user_model().objects.create_superuser(
+            username=username,
+            iuc_email=f'{username}@iuc.edu.tr',
+            email=f'{username}@iuc.edu.tr',
+            password='test-pass-123',
+        )
 
     def test_deleting_listing_creates_suppressed_source_record(self):
         listing = self.create_listing()
@@ -160,6 +170,32 @@ class ListingDeletionProtectionTests(TestCase):
         self.assertGreater(after_create_version, initial_version)
         self.assertGreater(after_delete_version, after_create_version)
 
+    def test_delete_listing_groups_bumps_cache_version_when_group_deleted(self):
+        canonical = self.create_listing(
+            title='Delete Version Canonical',
+            source_url='https://example.com/listing/delete-version-canonical',
+        )
+        self.create_listing(
+            title='Delete Version Duplicate',
+            source_url='https://example.com/listing/delete-version-duplicate',
+            source_platform='anbea',
+            canonical_listing=canonical,
+        )
+        initial_version = get_listing_list_cache_version()
+
+        deleted_count = delete_listing_groups(Listing.objects.filter(id=canonical.id))
+
+        self.assertEqual(deleted_count, 2)
+        self.assertGreater(get_listing_list_cache_version(), initial_version)
+
+    def test_delete_listing_groups_without_matches_keeps_cache_version(self):
+        initial_version = get_listing_list_cache_version()
+
+        deleted_count = delete_listing_groups(Listing.objects.filter(title='missing-listing'))
+
+        self.assertEqual(deleted_count, 0)
+        self.assertEqual(get_listing_list_cache_version(), initial_version)
+
     def test_featured_update_bumps_cache_version(self):
         listing = self.create_listing()
         initial_version = get_listing_list_cache_version()
@@ -183,14 +219,113 @@ class ListingDeletionProtectionTests(TestCase):
         self.assertFalse(listing.is_active)
         self.assertGreater(get_listing_list_cache_version(), initial_version)
 
+    def test_admin_moderation_approve_restores_visibility_and_bumps_cache_version(self):
+        listing = self.create_listing(
+            title='Pending Approval Listing',
+            source_url='https://example.com/listing/pending-approval-listing',
+            is_active=False,
+            moderation_status='pending',
+        )
+        admin_user = self.create_admin_user('approve-admin')
+        initial_version = get_listing_list_cache_version()
+
+        before_response = self.client.get('/api/listings/?limit=50')
+        self.assertEqual(before_response.status_code, 200)
+        self.assertNotIn(listing.title, [item['title'] for item in before_response.json()['results']])
+
+        self.api_client.force_authenticate(user=admin_user)
+        response = self.api_client.patch(
+            f'/api/dashboard/admin/listings/{listing.id}/',
+            data=json.dumps({'action': 'approve', 'moderation_note': 'Looks good'}),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        listing.refresh_from_db()
+        self.assertEqual(listing.moderation_status, 'approved')
+        self.assertTrue(listing.is_active)
+        self.assertEqual(listing.moderation_note, 'Looks good')
+        self.assertGreater(get_listing_list_cache_version(), initial_version)
+
+        after_response = self.client.get('/api/listings/?limit=50')
+        self.assertEqual(after_response.status_code, 200)
+        self.assertIn(listing.title, [item['title'] for item in after_response.json()['results']])
+
+    def test_admin_moderation_reject_invalidates_cached_list_and_detail(self):
+        listing = self.create_listing(
+            title='Rejectable Listing',
+            source_url='https://example.com/listing/rejectable-listing',
+        )
+        admin_user = self.create_admin_user('reject-admin')
+        initial_list_response = self.client.get('/api/listings/?limit=50')
+
+        self.assertEqual(initial_list_response.status_code, 200)
+        self.assertIn(listing.title, [item['title'] for item in initial_list_response.json()['results']])
+        initial_version = get_listing_list_cache_version()
+
+        self.api_client.force_authenticate(user=admin_user)
+        response = self.api_client.patch(
+            f'/api/dashboard/admin/listings/{listing.id}/',
+            data=json.dumps({'action': 'reject', 'moderation_note': 'No longer public'}),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        listing.refresh_from_db()
+        self.assertEqual(listing.moderation_status, 'rejected')
+        self.assertFalse(listing.is_active)
+        self.assertGreater(get_listing_list_cache_version(), initial_version)
+
+        updated_list_response = self.client.get('/api/listings/?limit=50')
+        self.assertEqual(updated_list_response.status_code, 200)
+        self.assertNotIn(listing.title, [item['title'] for item in updated_list_response.json()['results']])
+
+        detail_response = self.client.get(f'/api/listings/{listing.id}/')
+        self.assertEqual(detail_response.status_code, 404)
+
+    def test_admin_serializer_is_active_update_bumps_cache_version(self):
+        listing = self.create_listing(
+            title='Serializer Visibility Listing',
+            source_url='https://example.com/listing/serializer-visibility-listing',
+        )
+        admin_user = self.create_admin_user('serializer-active-admin')
+        initial_version = get_listing_list_cache_version()
+
+        self.api_client.force_authenticate(user=admin_user)
+        response = self.api_client.patch(
+            f'/api/dashboard/admin/listings/{listing.id}/',
+            data=json.dumps({'is_active': False}),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        listing.refresh_from_db()
+        self.assertFalse(listing.is_active)
+        self.assertGreater(get_listing_list_cache_version(), initial_version)
+
+    def test_admin_serializer_moderation_note_update_keeps_cache_version(self):
+        listing = self.create_listing(
+            title='Moderation Note Listing',
+            source_url='https://example.com/listing/moderation-note-listing',
+        )
+        admin_user = self.create_admin_user('note-admin')
+        initial_version = get_listing_list_cache_version()
+
+        self.api_client.force_authenticate(user=admin_user)
+        response = self.api_client.patch(
+            f'/api/dashboard/admin/listings/{listing.id}/',
+            data=json.dumps({'moderation_note': 'Reviewed manually'}),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        listing.refresh_from_db()
+        self.assertEqual(listing.moderation_note, 'Reviewed manually')
+        self.assertEqual(get_listing_list_cache_version(), initial_version)
+
     @override_settings(ENVIRONMENT='dev', FRONTEND_URL='http://localhost:3000')
     def test_admin_index_shows_runtime_banner(self):
-        admin_user = get_user_model().objects.create_superuser(
-            username='admin',
-            iuc_email='admin@iuc.edu.tr',
-            email='admin@iuc.edu.tr',
-            password='test-pass-123',
-        )
+        admin_user = self.create_admin_user('admin')
         self.client.force_login(admin_user)
 
         response = self.client.get('/admin/')
@@ -212,12 +347,7 @@ class ListingDeletionProtectionTests(TestCase):
 
     def test_listing_api_hides_entries_with_admin_delete_log(self):
         listing = self.create_listing(title='Deleted Via Admin Log', company_name='Test Company')
-        admin_user = get_user_model().objects.create_superuser(
-            username='admin-log',
-            iuc_email='admin-log@iuc.edu.tr',
-            email='admin-log@iuc.edu.tr',
-            password='test-pass-123',
-        )
+        admin_user = self.create_admin_user('admin-log')
         LogEntry.objects.create(
             user=admin_user,
             content_type=ContentType.objects.get_for_model(Listing),

@@ -7,6 +7,9 @@ import uuid
 from .sync import invalidate_listing_list_cache, suppress_listing_source
 
 
+LISTING_CACHE_EXEMPT_UPDATE_FIELDS = frozenset({'moderation_note', 'moderated_at', 'updated_at'})
+
+
 class Student(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     student_no = models.CharField(max_length=10, unique=True, null=True, blank=True)
@@ -342,7 +345,11 @@ def suppress_listing_source_before_delete(sender, instance, **kwargs):
 
 
 @receiver(post_save, sender=Listing)
-def invalidate_listing_cache_after_save(sender, **kwargs):
+def invalidate_listing_cache_after_save(sender, created, update_fields=None, **kwargs):
+    if not created and update_fields is not None:
+        changed_fields = set(update_fields)
+        if not (changed_fields - LISTING_CACHE_EXEMPT_UPDATE_FIELDS):
+            return
     invalidate_listing_list_cache()
 
 

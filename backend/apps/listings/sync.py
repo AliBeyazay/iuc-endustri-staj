@@ -1,10 +1,17 @@
 from django.db.models import Q, QuerySet
 
-from .cache_keys import bump_listing_list_cache_version
+from .cache_keys import bump_listing_list_cache_version, get_listing_list_cache_version
 
 
 def invalidate_listing_list_cache() -> int:
     return bump_listing_list_cache_version()
+
+
+def invalidate_listing_list_cache_if_unchanged(previous_version: int) -> int:
+    current_version = get_listing_list_cache_version()
+    if current_version > previous_version:
+        return current_version
+    return invalidate_listing_list_cache()
 
 
 def update_listing_queryset(queryset: QuerySet, **updates) -> int:
@@ -58,5 +65,9 @@ def delete_listing_groups(queryset: QuerySet) -> int:
     if not group_ids:
         return 0
 
-    group_queryset.model.objects.filter(id__in=group_ids).delete()
-    return len(group_ids)
+    cache_version_before_delete = get_listing_list_cache_version()
+    _, deleted_breakdown = group_queryset.model.objects.filter(id__in=group_ids).delete()
+    deleted_count = deleted_breakdown.get(group_queryset.model._meta.label, 0)
+    if deleted_count:
+        invalidate_listing_list_cache_if_unchanged(cache_version_before_delete)
+    return deleted_count
