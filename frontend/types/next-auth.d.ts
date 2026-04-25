@@ -4,6 +4,7 @@ import { DefaultJWT } from 'next-auth/jwt'
 declare module 'next-auth' {
   interface Session extends DefaultSession {
     access_token: string
+    session_error?: string
     user: {
       id: string
       iuc_email: string
@@ -28,7 +29,9 @@ declare module 'next-auth' {
 declare module 'next-auth/jwt' {
   interface JWT extends DefaultJWT {
     access_token: string
+    access_token_exp?: number
     refresh_token: string
+    session_error?: string
     iuc_email: string
     student_no: string | null
     is_verified: boolean

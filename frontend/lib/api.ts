@@ -71,10 +71,17 @@ function getAccessTokenFromCookie() {
   return match ? decodeURIComponent(match[1]) : null
 }
 
-// Attach JWT on every request
+// Attach JWT on every request + abort if session already expired
 api.interceptors.request.use(async (config) => {
   if (typeof document !== 'undefined') {
     const session = await getSession()
+
+    // Session sunucu tarafında expire olduysa önceden login'e düşür
+    if ((session as any)?.session_error === 'RefreshTokenExpired') {
+      window.location.href = '/login?error=SessionExpired'
+      return Promise.reject(new Error('SessionExpired'))
+    }
+
     const accessToken = session?.access_token ?? getAccessTokenFromCookie()
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`
@@ -83,13 +90,66 @@ api.interceptors.request.use(async (config) => {
   return config
 })
 
-// Redirect on 401
+// 401 gelince reactive refresh + retry; iki kere başarısız olursa login'e yönlendir
+let _isRefreshing = false
+let _refreshSubscribers: Array<(token: string) => void> = []
+
+function _onRefreshed(token: string) {
+  _refreshSubscribers.forEach((cb) => cb(token))
+  _refreshSubscribers = []
+}
+
 api.interceptors.response.use(
   (res) => res,
-  (err) => {
-    if (err.response?.status === 401 && typeof window !== 'undefined') {
-      window.location.href = '/login'
+  async (err) => {
+    const originalRequest = err.config
+
+    if (
+      err.response?.status === 401 &&
+      !originalRequest._retry &&
+      typeof window !== 'undefined'
+    ) {
+      originalRequest._retry = true
+
+      if (_isRefreshing) {
+        // Başka bir istek halihazırda refresh yapıyor, sıraya gir
+        return new Promise((resolve) => {
+          _refreshSubscribers.push((newToken: string) => {
+            originalRequest.headers.Authorization = `Bearer ${newToken}`
+            resolve(api(originalRequest))
+          })
+        })
+      }
+
+      _isRefreshing = true
+
+      try {
+        const session = await getSession()
+        const refreshToken = (session as any)?.refresh_token
+
+        if (!refreshToken) throw new Error('no_refresh_token')
+
+        const refreshRes = await fetch('/backend-api/auth/token/refresh/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refresh: refreshToken }),
+        })
+
+        if (!refreshRes.ok) throw new Error('refresh_failed')
+
+        const { access } = await refreshRes.json()
+        _onRefreshed(access)
+        originalRequest.headers.Authorization = `Bearer ${access}`
+        return api(originalRequest)
+      } catch {
+        _refreshSubscribers = []
+        window.location.href = '/login?error=SessionExpired'
+        return Promise.reject(err)
+      } finally {
+        _isRefreshing = false
+      }
     }
+
     return Promise.reject(err)
   }
 )
