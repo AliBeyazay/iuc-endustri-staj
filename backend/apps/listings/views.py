@@ -281,6 +281,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class BookmarkViewSet(viewsets.ModelViewSet):
     serializer_class = BookmarkSerializer
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = ListingPageNumberPagination
 
     def get_queryset(self):
         return Bookmark.objects.filter(student=self.request.user).select_related('listing')
@@ -293,6 +294,7 @@ class BookmarkViewSet(viewsets.ModelViewSet):
 
 class ApplicationViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = ListingPageNumberPagination
 
     def get_queryset(self):
         return Application.objects.filter(student=self.request.user).select_related('listing')

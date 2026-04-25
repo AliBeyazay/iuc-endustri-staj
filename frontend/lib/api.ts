@@ -208,7 +208,7 @@ export async function fetchBookmarks(): Promise<BookmarkedListing[]> {
       listing: Listing
       bookmarked_at: string
     }>
-  >('/bookmarks/')
+  >('/bookmarks/?limit=100')
 
   return data.results.map(({ listing, bookmarked_at }) => ({
     ...listing,
@@ -226,7 +226,7 @@ export async function removeBookmark(listingId: string): Promise<void> {
 
 // Applications
 export async function fetchApplications(): Promise<Application[]> {
-  const { data } = await api.get<PaginatedResponse<Application>>('/applications/')
+  const { data } = await api.get<PaginatedResponse<Application>>('/applications/?limit=100')
   return data.results
 }
 
