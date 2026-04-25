@@ -22,6 +22,7 @@ from rest_framework.views import APIView
 from .cache_keys import get_listing_list_cache_version
 from .filters import ListingFilter
 from .models import Application, Bookmark, Listing, Review, ScraperLog, Student
+from .pagination import ListingPageNumberPagination
 from .public_listings import get_ordering_aggregate_annotations, get_public_listing_queryset
 from .sync import delete_listing_groups, invalidate_listing_list_cache_if_unchanged
 from .serializers import (
@@ -49,6 +50,7 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Listing.objects.filter(is_active=True)
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = ListingFilter
+    pagination_class = ListingPageNumberPagination
     search_fields = ['title', 'company_name', 'description', 'location']
     ordering_fields = [
         'created_at',
@@ -122,14 +124,9 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
         return f'listing-list:v{cache_version}:{digest}'
 
     def filter_queryset(self, queryset):
-        queryset = super().filter_queryset(queryset)
-        limit = self.request.query_params.get('limit')
-        if limit:
-            try:
-                return queryset[:int(limit)]
-            except (TypeError, ValueError):
-                return queryset
-        return queryset
+        # ?limit is now handled by ListingPageNumberPagination (page_size_query_param).
+        # No manual slice here — keeps count/next/previous correct.
+        return super().filter_queryset(queryset)
 
     @action(detail=True, methods=['get'])
     def similar(self, request, pk=None):
