@@ -24,6 +24,7 @@ from .filters import ListingFilter
 from .models import Application, Bookmark, Listing, Review, ScraperLog, Student
 from .pagination import ListingPageNumberPagination
 from .public_listings import get_ordering_aggregate_annotations, get_public_listing_queryset
+from .storage import upload_cv
 from .sync import delete_listing_groups, invalidate_listing_list_cache_if_unchanged
 from .serializers import (
     AdminListingListSerializer,
@@ -351,13 +352,11 @@ class CVUploadView(APIView):
         if not cv_file.name.endswith('.pdf'):
             return Response({'error': 'Sadece PDF yuklenebilir.'}, status=400)
 
-        path = os.path.join(settings.MEDIA_ROOT, 'cvs', f'{request.user.id}.pdf')
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, 'wb+') as handle:
-            for chunk in cv_file.chunks():
-                handle.write(chunk)
+        try:
+            cv_url = upload_cv(cv_file, str(request.user.id))
+        except Exception as exc:
+            return Response({'error': f'Dosya yuklenemedi: {exc}'}, status=500)
 
-        cv_url = f'{settings.MEDIA_URL}cvs/{request.user.id}.pdf'
         request.user.cv_url = cv_url
         request.user.save(update_fields=['cv_url'])
         return Response({'cv_url': cv_url})

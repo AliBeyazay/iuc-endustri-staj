@@ -162,3 +162,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LANGUAGE_CODE = 'tr-tr'
 TIME_ZONE     = 'Europe/Istanbul'
 USE_TZ        = True
+
+# ── CV / Dosya Depolama ──────────────────────────────────────────────
+# 'local'  → MEDIA_ROOT'a yaz (geliştirme ortamı)
+# 'r2'     → Cloudflare R2'ye yükle (production)
+CV_STORAGE_BACKEND   = os.environ.get('CV_STORAGE_BACKEND', 'local')
+R2_ACCOUNT_ID        = os.environ.get('R2_ACCOUNT_ID', '')
+R2_ACCESS_KEY_ID     = os.environ.get('R2_ACCESS_KEY_ID', '')
+R2_SECRET_ACCESS_KEY = os.environ.get('R2_SECRET_ACCESS_KEY', '')
+R2_BUCKET_NAME       = os.environ.get('R2_BUCKET_NAME', 'iuc-staj-cvs')
+R2_PUBLIC_URL        = os.environ.get('R2_PUBLIC_URL', '')  # https://pub-xxx.r2.dev
