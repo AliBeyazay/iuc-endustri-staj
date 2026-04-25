@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { getSession } from 'next-auth/react'
 import {
-  Application, ApplicationStatus, InternshipJournal, JournalComment, Listing, Review, UserProfile, DashboardStats,
+  Application, ApplicationStatus, Listing, Review, UserProfile, DashboardStats,
   BookmarkedListing, FilterState, NotificationPreferences, PaginatedResponse,
 } from '@/types'
 import { buildQueryString } from './helpers'
@@ -139,32 +139,6 @@ export async function createReview(
 }
 
 // ─── Bookmarks ───────────────────────────────────────────────────────────────
-
-export async function fetchInternshipJournals(listingId?: string): Promise<InternshipJournal[]> {
-  const query = listingId ? `?listing=${listingId}` : ''
-  const { data } = await api.get<PaginatedResponse<InternshipJournal>>(`/journals/${query}`)
-  return data.results
-}
-
-export async function createInternshipJournal(payload: {
-  listing_id?: string
-  title: string
-  content: string
-  internship_year: number
-  is_anonymous: boolean
-}): Promise<InternshipJournal> {
-  const { data } = await api.post<InternshipJournal>('/journals/', payload)
-  return data
-}
-
-export async function createJournalComment(payload: {
-  journal_id: string
-  content: string
-  is_anonymous: boolean
-}): Promise<JournalComment> {
-  const { data } = await api.post<JournalComment>('/journal-comments/', payload)
-  return data
-}
 
 export async function fetchBookmarks(): Promise<BookmarkedListing[]> {
   const { data } = await api.get<

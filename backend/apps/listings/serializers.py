@@ -10,8 +10,6 @@ from .models import (
     Application,
     Bookmark,
     EM_FOCUS_CHOICES,
-    InternshipJournal,
-    JournalComment,
     Listing,
     Review,
     Student,
@@ -311,106 +309,7 @@ class BookmarkSerializer(serializers.ModelSerializer):
         )[0]
 
 
-class JournalCommentListSerializer(serializers.ModelSerializer):
-    student_display_name = serializers.SerializerMethodField()
 
-    class Meta:
-        model = JournalComment
-        fields = ['id', 'journal', 'content', 'is_anonymous', 'created_at', 'student_display_name']
-        read_only_fields = ['id', 'created_at', 'student_display_name']
-
-    def get_student_display_name(self, obj):
-        if obj.is_anonymous:
-            return 'Anonim Öğrenci'
-        full_name = f'{obj.student.first_name} {obj.student.last_name}'.strip()
-        return full_name or obj.student.iuc_email
-
-
-class JournalCommentWriteSerializer(serializers.ModelSerializer):
-    journal_id = serializers.UUIDField(write_only=True)
-
-    class Meta:
-        model = JournalComment
-        fields = ['id', 'journal_id', 'content', 'is_anonymous', 'created_at']
-        read_only_fields = ['id', 'created_at']
-
-    def validate_content(self, value):
-        clean = value.strip()
-        if len(clean) < 2:
-            raise serializers.ValidationError('Yorum en az 2 karakter olmalı.')
-        return clean
-
-    def create(self, validated_data):
-        student = self.context['request'].user
-        journal_id = validated_data.pop('journal_id')
-        journal = InternshipJournal.objects.get(id=journal_id)
-        return JournalComment.objects.create(
-            student=student,
-            journal=journal,
-            **validated_data,
-        )
-
-
-class InternshipJournalListSerializer(serializers.ModelSerializer):
-    student_display_name = serializers.SerializerMethodField()
-    listing_title = serializers.CharField(source='listing.title', read_only=True)
-    listing_id = serializers.UUIDField(source='listing.id', read_only=True)
-    comments = JournalCommentListSerializer(many=True, read_only=True)
-    comments_count = serializers.IntegerField(source='comments.count', read_only=True)
-
-    class Meta:
-        model = InternshipJournal
-        fields = [
-            'id', 'title', 'content', 'internship_year', 'is_anonymous',
-            'likes_count', 'created_at', 'updated_at',
-            'student_display_name', 'listing_title', 'listing_id',
-            'comments_count', 'comments',
-        ]
-        read_only_fields = [
-            'id', 'likes_count', 'created_at', 'updated_at',
-            'student_display_name', 'listing_title', 'listing_id',
-        ]
-
-    def get_student_display_name(self, obj):
-        if obj.is_anonymous:
-            return 'Anonim Öğrenci'
-        full_name = f'{obj.student.first_name} {obj.student.last_name}'.strip()
-        return full_name or obj.student.iuc_email
-
-
-class InternshipJournalWriteSerializer(serializers.ModelSerializer):
-    listing_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
-
-    class Meta:
-        model = InternshipJournal
-        fields = [
-            'id', 'listing_id', 'title', 'content',
-            'internship_year', 'is_anonymous', 'created_at', 'updated_at',
-        ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
-
-    def validate_title(self, value):
-        if len(value.strip()) < 8:
-            raise serializers.ValidationError('Başlık en az 8 karakter olmalı.')
-        return value.strip()
-
-    def validate_content(self, value):
-        clean = value.strip()
-        if len(clean) < 120:
-            raise serializers.ValidationError('İçerik en az 120 karakter olmalı.')
-        return clean
-
-    def create(self, validated_data):
-        student = self.context['request'].user
-        listing_id = validated_data.pop('listing_id', None)
-        listing = None
-        if listing_id:
-            listing = Listing.objects.filter(id=listing_id).first()
-        return InternshipJournal.objects.create(
-            student=student,
-            listing=listing,
-            **validated_data,
-        )
 
 
 class ApplicationListSerializer(serializers.ModelSerializer):

@@ -21,7 +21,7 @@ from rest_framework.views import APIView
 
 from .cache_keys import get_listing_list_cache_version
 from .filters import ListingFilter
-from .models import Application, Bookmark, InternshipJournal, JournalComment, Listing, Review, ScraperLog, Student
+from .models import Application, Bookmark, Listing, Review, ScraperLog, Student
 from .public_listings import get_ordering_aggregate_annotations, get_public_listing_queryset
 from .sync import delete_listing_groups, invalidate_listing_list_cache_if_unchanged
 from .serializers import (
@@ -31,10 +31,6 @@ from .serializers import (
     ApplicationWriteSerializer,
     BookmarkSerializer,
     HomepageFeaturedListingSerializer,
-    InternshipJournalListSerializer,
-    InternshipJournalWriteSerializer,
-    JournalCommentListSerializer,
-    JournalCommentWriteSerializer,
     ListingListSerializer,
     ListingSerializer,
     NotificationPreferencesSerializer,
@@ -315,70 +311,6 @@ class ApplicationViewSet(viewsets.ModelViewSet):
             return ApplicationListSerializer
         return ApplicationWriteSerializer
 
-
-class InternshipJournalViewSet(viewsets.ModelViewSet):
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['listing']
-    search_fields = ['title', 'content']
-    ordering_fields = ['created_at', 'updated_at', 'likes_count']
-    ordering = ['-created_at']
-
-    def get_queryset(self):
-        return InternshipJournal.objects.select_related('student', 'listing').prefetch_related('comments__student')
-
-    def get_serializer_class(self):
-        if self.action in ['list', 'retrieve']:
-            return InternshipJournalListSerializer
-        return InternshipJournalWriteSerializer
-
-    def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            return [permissions.IsAuthenticated()]
-        return [permissions.AllowAny()]
-
-    def perform_update(self, serializer):
-        journal = self.get_object()
-        if journal.student != self.request.user:
-            raise PermissionDenied('Bu yazıyı sadece sahibi güncelleyebilir.')
-        serializer.save()
-
-    def destroy(self, request, *args, **kwargs):
-        journal = self.get_object()
-        if journal.student != request.user:
-            return Response(status=status.HTTP_403_FORBIDDEN)
-        return super().destroy(request, *args, **kwargs)
-
-
-class JournalCommentViewSet(viewsets.ModelViewSet):
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    filterset_fields = ['journal']
-    ordering_fields = ['created_at']
-    ordering = ['created_at']
-
-    def get_queryset(self):
-        return JournalComment.objects.select_related('student', 'journal')
-
-    def get_serializer_class(self):
-        if self.action in ['list', 'retrieve']:
-            return JournalCommentListSerializer
-        return JournalCommentWriteSerializer
-
-    def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            return [permissions.IsAuthenticated()]
-        return [permissions.AllowAny()]
-
-    def perform_update(self, serializer):
-        comment = self.get_object()
-        if comment.student != self.request.user:
-            raise PermissionDenied('Bu yorumu sadece sahibi güncelleyebilir.')
-        serializer.save()
-
-    def destroy(self, request, *args, **kwargs):
-        comment = self.get_object()
-        if comment.student != request.user:
-            return Response(status=status.HTTP_403_FORBIDDEN)
-        return super().destroy(request, *args, **kwargs)
 
 
 class ProfileView(APIView):

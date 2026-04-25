@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
-    ListingViewSet, ReviewViewSet, BookmarkViewSet, ApplicationViewSet, InternshipJournalViewSet, JournalCommentViewSet,
+    ListingViewSet, ReviewViewSet, BookmarkViewSet, ApplicationViewSet,
     ProfileView, CVUploadView, DashboardStatsView, EncodingQualityReportView, ScraperHealthReportView,
     HomepageFeaturedListingsView,
     AdminListingModerationListView, AdminListingModerationDetailView, AdminListingBulkDeleteView,
@@ -15,8 +15,6 @@ router.register('listings',  ListingViewSet,  basename='listing')
 router.register('reviews',   ReviewViewSet,   basename='review')
 router.register('bookmarks', BookmarkViewSet, basename='bookmark')
 router.register('applications', ApplicationViewSet, basename='application')
-router.register('journals', InternshipJournalViewSet, basename='journal')
-router.register('journal-comments', JournalCommentViewSet, basename='journal-comment')
 
 urlpatterns = [
     path('', include(router.urls)),
