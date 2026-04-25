@@ -126,7 +126,7 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=True, methods=['get'])
     def similar(self, request, pk=None):
         listing = self.get_object()
-        qs = self.get_queryset().exclude(id=listing.id)
+        qs = self.get_queryset().exclude(id=listing.id).select_related('canonical_listing')
 
         company = listing.company_name.strip().lower()
 
