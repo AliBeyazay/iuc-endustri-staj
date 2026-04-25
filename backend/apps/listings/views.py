@@ -68,17 +68,14 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
         return ListingSerializer
 
     def get_queryset(self):
+        # get_public_listing_queryset() already applies:
+        #   - Süresi geçmiş ilanları gizleme  (deadline_status='expired' veya application_deadline < bugün)
+        #   - Negatif anahtar kelime filtresi  (NegativeKeyword modeli, cache'li)
+        #   - Bozuk encoding gizleme           (title/company_name '?' içerenleri dışlar)
         qs = get_public_listing_queryset()
         exclude_id = self.request.query_params.get('exclude')
         if exclude_id:
             qs = qs.exclude(id=exclude_id)
-
-        # Süresi geçmiş ilanları gizle
-
-        # Negatif anahtar kelime filtresi
-
-        # Bozuk encoding'li ilanları gizle (? içeren title/company_name)
-
 
         aggregate_annotations = self._get_ordering_aggregate_annotations()
         if aggregate_annotations:
