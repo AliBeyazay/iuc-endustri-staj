@@ -14,6 +14,7 @@ import {
   removeBookmark,
   updateApplication,
   fetchListings,
+  fetchScraperHealth,
 } from '@/lib/api'
 import {
   Application,
@@ -22,6 +23,7 @@ import {
   DashboardStats,
   UserProfile,
   Listing,
+  ScraperHealthReport,
 } from '@/types'
 import { daysUntilDeadline, getAvatarColor, getDeadlineDisplay, getInitials, FOCUS_AREA_LABELS, FOCUS_AREA_COLORS, PLATFORM_LABELS, timeAgoTurkish } from '@/lib/helpers'
 import AuthedNavbar from '@/components/AuthedNavbar'
@@ -184,6 +186,10 @@ export default function DashboardPage() {
     shouldFetchProtectedData ? 'applications' : null,
     fetchApplications
   )
+  const { data: scraperHealth } = useSWR<ScraperHealthReport>(
+    shouldFetchProtectedData ? 'scraper-health' : null,
+    fetchScraperHealth
+  )
 
   const stats = statsData ?? null
   const profile = profileData ?? null
@@ -289,6 +295,72 @@ export default function DashboardPage() {
             </div>
           ))}
         </div>
+
+        {/* ── Sistem Sağlığı (Sadece Adminler İçin) ── */}
+        {profile?.is_staff && scraperHealth && (
+          <div className="mb-8 rounded-xl border border-[#d8ad43]/20 bg-[#d8ad43]/5 p-5 dark:border-[#d8ad43]/10">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="campus-heading text-lg font-bold text-[#132843] dark:text-[#e7edf4]">
+                Sistem Sağlığı (Scraper)
+              </h2>
+              <span className="text-xs text-gray-500 dark:text-[#e7edf4]/50">
+                Son 24 saat: {scraperHealth.totals.runs_in_window} çalışma
+              </span>
+            </div>
+            
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-4">
+              <div className="rounded-lg bg-white p-3 shadow-sm dark:bg-[#1a2d45]">
+                <p className="text-[10px] uppercase text-gray-500 dark:text-[#e7edf4]/50">Yeni İlanlar</p>
+                <p className="mt-1 text-2xl font-bold text-green-600 dark:text-green-400">{scraperHealth.totals.new_count}</p>
+              </div>
+              <div className="rounded-lg bg-white p-3 shadow-sm dark:bg-[#1a2d45]">
+                <p className="text-[10px] uppercase text-gray-500 dark:text-[#e7edf4]/50">Güncellenen</p>
+                <p className="mt-1 text-2xl font-bold text-blue-600 dark:text-blue-400">{scraperHealth.totals.updated_count}</p>
+              </div>
+              <div className="rounded-lg bg-white p-3 shadow-sm dark:bg-[#1a2d45]">
+                <p className="text-[10px] uppercase text-gray-500 dark:text-[#e7edf4]/50">Atlanan</p>
+                <p className="mt-1 text-2xl font-bold text-gray-600 dark:text-gray-400">{scraperHealth.totals.skipped_count}</p>
+              </div>
+              <div className="rounded-lg bg-white p-3 shadow-sm dark:bg-[#1a2d45]">
+                <p className="text-[10px] uppercase text-gray-500 dark:text-[#e7edf4]/50">Hatalar</p>
+                <p className="mt-1 text-2xl font-bold text-red-600 dark:text-red-400">{scraperHealth.totals.error_count}</p>
+              </div>
+            </div>
+
+            <div className="overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-white/10 dark:bg-[#1a2d45]">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-gray-50 text-[11px] uppercase text-gray-500 dark:bg-white/5 dark:text-[#e7edf4]/50">
+                  <tr>
+                    <th className="px-4 py-2 font-semibold">Platform</th>
+                    <th className="px-4 py-2 font-semibold">Son Çalışma</th>
+                    <th className="px-4 py-2 font-semibold text-right">Yeni</th>
+                    <th className="px-4 py-2 font-semibold text-right">Hata Oranı</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-white/5">
+                  {scraperHealth.spiders.map((spider) => (
+                    <tr key={spider.spider_name} className="hover:bg-gray-50/50 dark:hover:bg-white/5">
+                      <td className="px-4 py-2 font-medium text-[#132843] dark:text-[#e7edf4]">
+                        {PLATFORM_LABELS[spider.spider_name] ?? spider.spider_name}
+                      </td>
+                      <td className="px-4 py-2 text-gray-500 dark:text-[#e7edf4]/50">
+                        {spider.last_finished_at ? timeAgoTurkish(spider.last_finished_at) : 'Bilinmiyor'}
+                      </td>
+                      <td className="px-4 py-2 text-right text-green-600 dark:text-green-400">
+                        {spider.window.new_count > 0 ? `+${spider.window.new_count}` : '-'}
+                      </td>
+                      <td className="px-4 py-2 text-right">
+                        <span className={spider.window.error_rate_percent > 10 ? 'text-red-600 font-bold dark:text-red-400' : 'text-gray-500 dark:text-[#e7edf4]/50'}>
+                          %{spider.window.error_rate_percent}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
         {/* ── Başvuru Takip Panosu ── */}
         <div id="applications" className="mb-8">

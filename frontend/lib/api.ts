@@ -3,6 +3,7 @@ import { getSession } from 'next-auth/react'
 import {
   Application, ApplicationStatus, Listing, Review, UserProfile, DashboardStats,
   BookmarkedListing, FilterState, NotificationPreferences, PaginatedResponse,
+  ScraperHealthReport,
 } from '@/types'
 import { buildQueryString } from './helpers'
 import { getBackendApiBaseUrl } from './backend-url'
@@ -250,6 +251,11 @@ export async function updateApplication(
 
 export async function fetchDashboardStats(): Promise<DashboardStats> {
   const { data } = await api.get<DashboardStats>('/dashboard/stats/')
+  return data
+}
+
+export async function fetchScraperHealth(): Promise<ScraperHealthReport> {
+  const { data } = await api.get<ScraperHealthReport>('/dashboard/scraper-health/')
   return data
 }
 

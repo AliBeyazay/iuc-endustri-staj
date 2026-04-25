@@ -143,3 +143,41 @@ export interface PaginatedResponse<T> {
   next: string | null
   previous: string | null
 }
+
+export interface ScraperSpiderWindow {
+  run_count: number
+  new_count: number
+  updated_count: number
+  skipped_count: number
+  error_count: number
+  error_rate_percent: number
+}
+
+export interface ScraperSpiderRow {
+  spider_name: string
+  last_started_at: string | null
+  last_finished_at: string | null
+  last_duration_seconds: number | null
+  last_run: {
+    new_count: number
+    updated_count: number
+    skipped_count: number
+    error_count: number
+  }
+  window: ScraperSpiderWindow
+}
+
+export interface ScraperHealthReport {
+  generated_at: string
+  totals: {
+    spider_count: number
+    window_hours: number
+    runs_in_window: number
+    new_count: number
+    updated_count: number
+    skipped_count: number
+    error_count: number
+    error_rate_percent: number
+  }
+  spiders: ScraperSpiderRow[]
+}
