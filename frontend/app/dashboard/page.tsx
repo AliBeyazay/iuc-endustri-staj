@@ -13,6 +13,7 @@ import {
   fetchUserProfile,
   removeBookmark,
   updateApplication,
+  fetchListings,
 } from '@/lib/api'
 import {
   Application,
@@ -20,6 +21,7 @@ import {
   BookmarkedListing,
   DashboardStats,
   UserProfile,
+  Listing,
 } from '@/types'
 import { daysUntilDeadline, getAvatarColor, getDeadlineDisplay, getInitials, FOCUS_AREA_LABELS, FOCUS_AREA_COLORS, PLATFORM_LABELS, timeAgoTurkish } from '@/lib/helpers'
 import AuthedNavbar from '@/components/AuthedNavbar'
@@ -140,6 +142,17 @@ export default function DashboardPage() {
   const [showAll, setShowAll] = useState(false)
   const [addAppOpen, setAddAppOpen] = useState(false)
   const [addAppSearch, setAddAppSearch] = useState('')
+  const [debouncedAddAppSearch, setDebouncedAddAppSearch] = useState('')
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedAddAppSearch(addAppSearch.trim()), 300)
+    return () => clearTimeout(timer)
+  }, [addAppSearch])
+
+  const { data: searchResults, isValidating: searchLoading } = useSWR(
+    debouncedAddAppSearch ? ['searchListings', debouncedAddAppSearch] : null,
+    ([, search]) => fetchListings({ search })
+  )
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -315,13 +328,21 @@ export default function DashboardPage() {
                 <div className="max-h-64 space-y-1.5 overflow-y-auto">
                   {(() => {
                     const untrackedBookmarks = bookmarks.filter((b) => !trackedListingIds.has(b.id))
-                    const filtered = addAppSearch.trim()
+                    
+                    const searchMatchedBookmarks = addAppSearch.trim()
                       ? untrackedBookmarks.filter((b) =>
                           b.title.toLowerCase().includes(addAppSearch.toLowerCase()) ||
                           b.company_name.toLowerCase().includes(addAppSearch.toLowerCase())
                         )
                       : untrackedBookmarks
-                    if (untrackedBookmarks.length === 0) {
+                      
+                    const apiResults = searchResults?.results.filter(
+                      listing => !trackedListingIds.has(listing.id) && !searchMatchedBookmarks.some(b => b.id === listing.id)
+                    ) || []
+                    
+                    const displayListings = addAppSearch.trim() ? [...searchMatchedBookmarks, ...apiResults] : searchMatchedBookmarks
+
+                    if (untrackedBookmarks.length === 0 && !addAppSearch.trim()) {
                       return (
                         <div className="py-6 text-center">
                           <p className="text-sm text-gray-500 dark:text-[#e7edf4]/50">Tüm kayıtlı ilanlar zaten takipte</p>
@@ -334,10 +355,13 @@ export default function DashboardPage() {
                         </div>
                       )
                     }
-                    if (filtered.length === 0) {
+                    if (displayListings.length === 0 && searchLoading) {
+                      return <p className="py-4 text-center text-sm text-gray-400 dark:text-[#e7edf4]/40">Aranıyor...</p>
+                    }
+                    if (displayListings.length === 0) {
                       return <p className="py-4 text-center text-sm text-gray-400 dark:text-[#e7edf4]/40">Sonuç bulunamadı</p>
                     }
-                    return filtered.map((b) => (
+                    return displayListings.map((b) => (
                       <button
                         key={b.id}
                         onClick={async () => {
@@ -354,6 +378,9 @@ export default function DashboardPage() {
                           <p className="truncate text-sm font-medium text-[#132843] dark:text-[#e7edf4]">{b.title}</p>
                           <p className="truncate text-[11px] text-gray-500 dark:text-[#e7edf4]/50">{b.company_name}</p>
                         </div>
+                        {apiResults.some(res => res.id === b.id) && (
+                          <span className="shrink-0 rounded bg-blue-50 px-1.5 py-0.5 text-[9px] font-medium text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">Yeni</span>
+                        )}
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0 text-gray-300 dark:text-[#e7edf4]/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                         </svg>
