@@ -70,20 +70,9 @@ EM_FOCUS_CHOICES = [
     ('diger', 'Diger'),
 ]
 
-SOURCE_PLATFORM_CHOICES = [
-    ('linkedin', 'LinkedIn'),
-    ('kariyer', 'Kariyer.net'),
-    ('youthall', 'Youthall'),
-    ('anbea', 'Anbea Kampus'),
-    ('boomerang', 'Boomerang'),
-    ('toptalent', 'TopTalent'),
-    ('savunma', 'Savunma Kariyer'),
-    ('odtu_kpm', 'ODTU KPM'),
-    ('bogazici_km', 'Bogazici Kariyer'),
-    ('ytu_orkam', 'YTU ORKAM'),
-    ('itu_kariyer', 'ITU Kariyer'),
-    ('pythiango', 'PythianGo'),
-]
+# SOURCE_PLATFORM_CHOICES kaldırıldı — source_platform artık serbest metin.
+# Yeni platform eklemek için sadece scraper spider yazılması yeterli,
+# migration veya kod değişikliği gerekmez.
 
 INTERNSHIP_TYPE_CHOICES = [
     ('zorunlu', 'Zorunlu Staj'),
@@ -127,7 +116,7 @@ class Listing(models.Model):
     company_logo_url = models.URLField(max_length=500, null=True, blank=True)
     source_url = models.URLField(max_length=500, unique=True, db_index=True)
     application_url = models.URLField(max_length=500, null=True, blank=True)
-    source_platform = models.CharField(max_length=20, choices=SOURCE_PLATFORM_CHOICES)
+    source_platform = models.CharField(max_length=30, db_index=True)
     em_focus_area = models.CharField(max_length=30, choices=EM_FOCUS_CHOICES, default='diger')
     secondary_em_focus_area = models.CharField(max_length=30, choices=EM_FOCUS_CHOICES, null=True, blank=True)
     em_focus_confidence = models.DecimalField(max_digits=5, decimal_places=2, default=0)
@@ -192,7 +181,7 @@ class Listing(models.Model):
 
 class SuppressedListingSource(models.Model):
     source_url = models.URLField(max_length=500, unique=True, db_index=True)
-    source_platform = models.CharField(max_length=20, choices=SOURCE_PLATFORM_CHOICES, blank=True, default='')
+    source_platform = models.CharField(max_length=30, blank=True, default='', db_index=True)
     listing_title = models.CharField(max_length=255, blank=True, default='')
     company_name = models.CharField(max_length=255, blank=True, default='')
     suppressed_reason = models.CharField(max_length=50, default='manual_delete')
