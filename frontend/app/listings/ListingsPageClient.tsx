@@ -10,14 +10,14 @@ import useSWR from 'swr'
 import PublicSiteHeader from '@/components/PublicSiteHeader'
 import { useRecentlyViewed } from '@/hooks'
 import { buildDefaultListingsSWRKey } from './listings-query'
-import type { ListingsResponse, RawListing, Listing } from './types'
+import type { PaginatedResponse, Listing } from '@/types'
 import {
   extractSmartSearchIntent,
   normalizeSearchValue,
 } from './search-intent'
 import { FOCUS_AREA_LABELS, PLATFORM_LABELS } from '@/lib/helpers'
 import { rankListingsBySearch } from './listing-score'
-import { normalizeListing, getListingSummary } from './listing-normalizer'
+import { getListingSummary } from './listing-normalizer'
 
 type SortOption = 'newest' | 'deadline' | 'company' | 'popular' | 'top_rated'
 type SectorOption = { label: string; value: string; icon: string }
@@ -99,13 +99,13 @@ function getEmploymentTypeLabel(type?: string | null) {
 }
 
 function getWorkModelLabel(item: Listing) {
-  const location = `${item.location ?? ''} ${item.city ?? ''}`.toLowerCase()
+  const location = `${item.location ?? ''}`.toLowerCase()
   if (location.includes('hibrit') || location.includes('hybrid')) return 'Hibrit'
   if (location.includes('remote') || location.includes('uzaktan')) return 'Uzaktan'
   if (location.includes('onsite') || location.includes('ofis') || location.includes('yerinde')) {
     return 'Yerinde'
   }
-  return item.location || item.city || 'Konum'
+  return item.location || 'Konum'
 }
 
 function getOrderingValue(sortBy: SortOption) {
@@ -266,7 +266,7 @@ function FilterPanel({
 }
 
 type ListingsPageClientProps = {
-  initialData: ListingsResponse | null
+  initialData: PaginatedResponse<Listing> | null
   initialSWRKey: string
 }
 
@@ -375,7 +375,7 @@ export default function ListingsPageClient({
     talentOnly,
   ])
 
-  const listingsFetcher = useCallback(async (url: string): Promise<ListingsResponse> => {
+  const listingsFetcher = useCallback(async (url: string): Promise<PaginatedResponse<Listing>> => {
     const response = await fetch(url)
     if (!response.ok) throw new Error('İlanlar alınamadı.')
     return response.json()
@@ -383,7 +383,7 @@ export default function ListingsPageClient({
 
   const shouldUseInitialData = Boolean(initialData) && swrKey === initialSWRKey
 
-  const { data: swrData, error: swrError, isLoading: loading } = useSWR<ListingsResponse>(
+  const { data: swrData, error: swrError, isLoading: loading } = useSWR<PaginatedResponse<Listing>>(
     swrKey,
     listingsFetcher,
     {
@@ -403,8 +403,7 @@ export default function ListingsPageClient({
       : Array.isArray(swrData?.results)
         ? swrData.results
         : []
-    const normalizedItems = items.map(normalizeListing)
-    return rankListingsBySearch(normalizedItems, debouncedQuery)
+    return rankListingsBySearch(items as Listing[], debouncedQuery)
   }, [swrData, debouncedQuery])
 
   const totalCount = useMemo(() => {
@@ -482,9 +481,6 @@ export default function ListingsPageClient({
       if (item.location && normalizeSearchValue(item.location).includes(normalizedQuery)) {
         matches.add(item.location)
       }
-      if (item.city && normalizeSearchValue(item.city).includes(normalizedQuery)) {
-        matches.add(item.city)
-      }
     })
 
     return Array.from(matches).slice(0, 8)
@@ -492,7 +488,7 @@ export default function ListingsPageClient({
 
   const urgentCount = useMemo(() => {
     return listings.filter((item) => {
-      const left = daysLeft(item.deadline)
+      const left = daysLeft(item.application_deadline)
       return left != null && left >= 0 && left <= 7
     }).length
   }, [listings])
@@ -992,14 +988,14 @@ export default function ListingsPageClient({
                             </span>
                             <span className="inline-flex items-center gap-1.5">
                               <Clock3 size={14} />
-                              {formatDate(item.deadline)}
+                              {formatDate(item.application_deadline)}
                             </span>
                           </div>
 
                           {/* Employment Type Tag */}
                           <div className="mt-3">
                             <span className="inline-block rounded-md border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-600 dark:border-white/10 dark:bg-white/5 dark:text-gray-300">
-                              {getEmploymentTypeLabel(item.employment_type)}
+                              {getEmploymentTypeLabel(item.internship_type)}
                             </span>
                           </div>
                         </div>

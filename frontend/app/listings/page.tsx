@@ -2,11 +2,11 @@ import { loadListingsResponse } from '@/lib/public-listings-source'
 import ListingsPageClient from './ListingsPageClient'
 import { buildDefaultListingsApiQuery, buildDefaultListingsSWRKey } from './listings-query'
 import { Suspense } from 'react'
-import type { ListingsResponse } from './types'
+import type { PaginatedResponse, Listing } from '@/types'
 
 export const revalidate = 300
 
-async function getInitialListings(): Promise<ListingsResponse | null> {
+async function getInitialListings(): Promise<PaginatedResponse<Listing> | null> {
   const requestUrl = new URL(`https://fallback.local/api/listings?${buildDefaultListingsApiQuery()}`)
   const { data } = await loadListingsResponse(requestUrl)
   return data

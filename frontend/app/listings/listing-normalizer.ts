@@ -1,34 +1,5 @@
-import type { RawListing, Listing } from './types'
+import { Listing } from '@/types'
 import { FOCUS_AREA_LABELS, PLATFORM_LABELS } from '@/lib/helpers'
-
-export function normalizeListing(item: RawListing): Listing {
-  const primarySectorKey = item.em_focus_area?.replace('ı', 'i') ?? null
-  const secondarySectorKey = item.secondary_em_focus_area?.replace('ı', 'i') ?? null
-
-  return {
-    id: String(item.id),
-    title: item.title,
-    company_name: item.company_name,
-    company_logo_url: item.company_logo_url ?? null,
-    location: item.location ?? null,
-    city: item.city ?? null,
-    sector: primarySectorKey ? (FOCUS_AREA_LABELS[primarySectorKey] ?? primarySectorKey) : null,
-    secondary_sector: secondarySectorKey
-      ? (FOCUS_AREA_LABELS[secondarySectorKey] ?? secondarySectorKey)
-      : null,
-    confidence: typeof item.em_focus_confidence === 'number' ? item.em_focus_confidence : null,
-    source_platform: item.source_platform ?? null,
-    source_platform_label: item.source_platform
-      ? (PLATFORM_LABELS[item.source_platform as keyof typeof PLATFORM_LABELS] ?? item.source_platform)
-      : null,
-    is_talent_program: Boolean(item.is_talent_program),
-    employment_type: item.internship_type ?? null,
-    deadline: item.application_deadline ?? null,
-    url: item.application_url ?? item.source_url ?? null,
-    description: item.description ?? null,
-    created_at: item.created_at ?? null,
-  }
-}
 
 export function cleanSummaryText(raw?: string | null) {
   if (!raw) return ''
@@ -121,5 +92,6 @@ export function getListingSummary(item: Listing) {
 
     return trimSummarySentence(summary)
   }
-  return `${item.company_name} için yayınlanan bu ilan, ${item.sector?.toLowerCase() ?? 'ilgili alanlarda'} kariyer hedefleyen öğrenciler için derlendi.`
+  const sectorLabel = item.em_focus_area ? (FOCUS_AREA_LABELS[item.em_focus_area] ?? item.em_focus_area) : 'ilgili alanlarda'
+  return `${item.company_name} için yayınlanan bu ilan, ${sectorLabel.toLowerCase()} kariyer hedefleyen öğrenciler için derlendi.`
 }

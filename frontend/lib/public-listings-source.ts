@@ -1,7 +1,6 @@
 import 'server-only'
 
-import type { HomepageFeaturedListing, Listing } from '@/types'
-import type { ListingsResponse } from '@/app/listings/types'
+import type { HomepageFeaturedListing, Listing, PaginatedResponse } from '@/types'
 import { getBackendApiBaseUrl } from '@/lib/backend-url'
 import {
   buildPublicSnapshotListingsResponse,
@@ -16,7 +15,7 @@ import {
 type DataSource = 'backend' | 'snapshot' | null
 
 type ListingsLoadResult = {
-  data: ListingsResponse | null
+  data: PaginatedResponse<Listing> | null
   source: DataSource
 }
 
@@ -71,7 +70,7 @@ export async function loadListingsResponse(requestUrl: URL): Promise<ListingsLoa
   const pathname = `/listings/${requestUrl.search}`
 
   try {
-    const data = await fetchBackendJson<ListingsResponse>(pathname)
+    const data = await fetchBackendJson<PaginatedResponse<Listing>>(pathname)
     if (data !== null) {
       return { data, source: 'backend' }
     }

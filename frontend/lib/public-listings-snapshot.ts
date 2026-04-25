@@ -3,8 +3,7 @@ import 'server-only'
 import { cache } from 'react'
 import { promises as fs } from 'fs'
 import path from 'path'
-import type { HomepageFeaturedListing, Listing } from '@/types'
-import type { ListingsResponse, RawListing } from '@/app/listings/types'
+import type { HomepageFeaturedListing, Listing, PaginatedResponse } from '@/types'
 
 const SNAPSHOT_PATH = path.join(process.cwd(), 'lib', 'generated', 'public-listings-snapshot.json')
 const DEFAULT_PAGE_SIZE = 20
@@ -201,7 +200,7 @@ function buildPageLink(requestUrl: URL, page: number) {
   return `${url.pathname}?${url.searchParams.toString()}`
 }
 
-function toRawListing(listing: SnapshotListing): RawListing {
+function toRawListing(listing: SnapshotListing): Listing {
   return listing
 }
 
@@ -237,7 +236,7 @@ export async function getPublicSnapshotListingById(id: string) {
   return snapshot?.listings.find((listing) => listing.id === id) ?? null
 }
 
-export async function buildPublicSnapshotListingsResponse(requestUrl: URL): Promise<ListingsResponse | null> {
+export async function buildPublicSnapshotListingsResponse(requestUrl: URL): Promise<PaginatedResponse<Listing> | null> {
   const snapshot = await readUsablePublicListingsSnapshot()
   if (!snapshot) {
     return null

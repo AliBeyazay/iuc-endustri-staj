@@ -1,4 +1,4 @@
-import type { Listing } from './types'
+import { Listing } from '@/types'
 import {
   extractSmartSearchIntent,
   COMPANY_QUERY_LABELS,
@@ -13,11 +13,13 @@ export function getListingSearchScore(
 ) {
   const title = normalizeSearchValue(listing.title)
   const company = normalizeSearchValue(listing.company_name)
-  const location = normalizeSearchValue(`${listing.location ?? ''} ${listing.city ?? ''}`)
+  const location = normalizeSearchValue(listing.location ?? '')
   const platform = normalizeSearchValue(
-    listing.source_platform_label ?? listing.source_platform ?? '',
+    PLATFORM_LABELS[listing.source_platform as keyof typeof PLATFORM_LABELS] ?? listing.source_platform ?? '',
   )
-  const sector = normalizeSearchValue(`${listing.sector ?? ''} ${listing.secondary_sector ?? ''}`)
+  const primarySector = listing.em_focus_area ? (FOCUS_AREA_LABELS[listing.em_focus_area] ?? listing.em_focus_area) : ''
+  const secondarySector = listing.secondary_em_focus_area ? (FOCUS_AREA_LABELS[listing.secondary_em_focus_area] ?? listing.secondary_em_focus_area) : ''
+  const sector = normalizeSearchValue(`${primarySector} ${secondarySector}`)
   const description = normalizeSearchValue(listing.description ?? '')
   const companyAndTitle = `${company} ${title}`
 
