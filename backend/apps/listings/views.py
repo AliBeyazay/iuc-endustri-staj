@@ -723,9 +723,9 @@ class AccountStatusView(APIView):
         }
 
         if not student.is_verified:
+            _send_otp(student)
             response_data.update({
-                'debug_otp': _send_otp(student),
-                'delivery_method': 'onscreen',
+                'delivery_method': 'email',
             })
 
         return Response(response_data)
@@ -776,11 +776,10 @@ class RegisterView(APIView):
             student.set_password(data['password'])
             student.save()
 
-        otp = _send_otp(student)
+        _send_otp(student)
         response_data = {
-            'message': 'Kayıt başarılı. Doğrulama kodu oluşturuldu.',
-            'debug_otp': otp,
-            'delivery_method': 'onscreen',
+            'message': 'Kayıt başarılı. Doğrulama kodu e-posta adresinize gönderildi.',
+            'delivery_method': 'email',
         }
         return Response(response_data, status=201)
 
@@ -814,11 +813,10 @@ class ResendOTPView(APIView):
         except Student.DoesNotExist:
             return Response({'error': 'Kullanici bulunamadi.'}, status=404)
 
-        otp = _send_otp(student)
+        _send_otp(student)
         response_data = {
-            'message': 'OTP yeniden olusturuldu.',
-            'debug_otp': otp,
-            'delivery_method': 'onscreen',
+            'message': 'OTP yeniden olusturuldu ve e-posta adresinize gonderildi.',
+            'delivery_method': 'email',
         }
         return Response(response_data)
 
@@ -850,10 +848,16 @@ class ResetPasswordView(APIView):
         return Response({'message': 'Şifre güncellendi.'})
 
 
-def _send_otp(student: Student) -> str:
+def _send_otp(student: Student) -> None:
     otp = str(random.randint(100000, 999999))
     _cache_set(f'otp:{student.iuc_email}', otp, timeout=600)
-    return otp
+    
+    send_mail(
+        subject='IUC Staj - Doğrulama Kodu',
+        message=f'İÜC Staj Platformu için doğrulama kodunuz: {otp}\n\nBu kod 10 dakika geçerlidir.',
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[student.iuc_email],
+    )
 
 
 def _verify_otp(student: Student, otp: str) -> bool:
