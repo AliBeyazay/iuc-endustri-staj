@@ -503,6 +503,8 @@ class ListingDeletionProtectionTests(TestCase):
         self.assertEqual(popular_response.json()['results'][0]['title'], 'Most Bookmarked')
         self.assertEqual(top_rated_response.json()['results'][0]['title'], 'Highest Rated')
 
+        # bookmark_count ve average_rating artık denormalize model alanı —
+        # runtime annotation olarak eklenmez, doğrudan model üzerinden sıralanır.
         popular_view = ListingViewSet()
         popular_view.action = 'list'
         popular_view.request = SimpleNamespace(query_params=QueryDict('ordering=-bookmark_count'))
@@ -513,10 +515,10 @@ class ListingDeletionProtectionTests(TestCase):
         top_rated_view.request = SimpleNamespace(query_params=QueryDict('ordering=-average_rating'))
         top_rated_annotations = top_rated_view.get_queryset().query.annotations
 
-        self.assertIn('bookmark_count', popular_annotations)
+        self.assertNotIn('bookmark_count', popular_annotations)
         self.assertNotIn('average_rating', popular_annotations)
-        self.assertIn('average_rating', top_rated_annotations)
         self.assertNotIn('bookmark_count', top_rated_annotations)
+        self.assertNotIn('average_rating', top_rated_annotations)
 
 
 class DummyLogger:
