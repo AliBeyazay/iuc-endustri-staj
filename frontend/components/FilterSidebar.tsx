@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { ChevronDown, Sparkles } from 'lucide-react'
+import { useState, useMemo, useEffect } from 'react'
+import { ChevronDown, Sparkles, X } from 'lucide-react'
 import { FilterState, SourcePlatform } from '@/types'
 import { FOCUS_AREA_LIST, PLATFORM_LABELS } from '@/lib/helpers'
 
@@ -10,6 +10,7 @@ interface Props {
   onFiltersChange: (next: Partial<FilterState>) => void
   listingCounts?: Record<string, number>
   isOpen?: boolean
+  onClose?: () => void
 }
 
 function Section({
@@ -60,25 +61,67 @@ export default function FilterSidebar({
   onFiltersChange,
   listingCounts = {},
   isOpen = false,
+  onClose,
 }: Props) {
   function toggleArray<T extends string>(arr: T[], val: T): T[] {
     return arr.includes(val) ? arr.filter((v) => v !== val) : [...arr, val]
   }
+
+  const platformEntries = useMemo(() => 
+    Object.entries(PLATFORM_LABELS) as [SourcePlatform, string][],
+    []
+  )
 
   const hasAnyFilter =
     filters.em_focus_area.length > 0 ||
     filters.source_platform.length > 0 ||
     filters.is_talent_program
 
+  useEffect(() => {
+    if (typeof window !== 'undefined' && isOpen && window.innerWidth < 1024) {
+      document.body.style.overflow = 'hidden'
+    } else if (typeof document !== 'undefined') {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      if (typeof document !== 'undefined') {
+        document.body.style.overflow = ''
+      }
+    }
+  }, [isOpen])
+
   return (
-    <aside
-      className={[
-        'mx-3 mt-3 lg:sticky lg:top-3 lg:mt-0 lg:h-[calc(100vh-118px)] lg:w-[280px] lg:min-w-[280px]',
-        isOpen ? 'block' : 'hidden',
-        'lg:block',
-      ].join(' ')}
-    >
-      <div className="campus-card h-full overflow-y-auto rounded-[28px] px-4 py-4">
+    <>
+      {/* Backdrop for mobile */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 z-[60] bg-black/30 backdrop-blur-sm lg:hidden"
+          onClick={onClose}
+        />
+      )}
+      
+      <aside
+        className={[
+          'z-[70] transition-all duration-300',
+          isOpen 
+            ? 'fixed inset-y-0 right-0 w-full max-w-[300px] block' 
+            : 'hidden lg:block lg:sticky lg:top-3 lg:h-[calc(100vh-118px)] lg:w-[280px] lg:min-w-[280px]',
+          'lg:z-0 lg:static',
+        ].join(' ')}
+      >
+        <div className="campus-card flex h-full flex-col overflow-hidden rounded-none lg:rounded-[28px]">
+          <div className="flex items-center justify-between px-4 py-4 lg:hidden">
+            <h2 className="text-lg font-bold text-[#132843] dark:text-[#e7edf4]">Filtreler</h2>
+            <button 
+              onClick={onClose}
+              className="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-4 py-4 custom-scrollbar">
+
         <div className="mb-5 rounded-3xl bg-[#132843] px-4 py-4 text-[#eef3fa] shadow-[0_18px_40px_rgba(10,21,35,0.2)]">
           <p className="campus-heading text-[11px] text-[#f0cf7a]">Akilli Filtreler</p>
           <p className="mt-2 text-sm font-semibold">Daha hizli ele, daha iyi eslesme yakala.</p>
@@ -136,7 +179,7 @@ export default function FilterSidebar({
         <hr className="my-4 border-[#d8ad43]/16" />
 
         <Section title="Platform" defaultOpen={false}>
-          {(Object.entries(PLATFORM_LABELS) as [SourcePlatform, string][]).map(([val, lbl]) => (
+          {platformEntries.map(([val, lbl]) => (
             <CheckItem
               key={val}
               label={lbl}
@@ -167,7 +210,9 @@ export default function FilterSidebar({
             Filtreleri Temizle
           </button>
         )}
-      </div>
-    </aside>
+          </div>
+        </div>
+      </aside>
+    </>
   )
 }
