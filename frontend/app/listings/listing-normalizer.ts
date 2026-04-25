@@ -1,5 +1,5 @@
 import type { RawListing, Listing } from './types'
-import { DISPLAY_PLATFORM_LABELS, DISPLAY_SECTOR_LABELS } from './search-intent'
+import { FOCUS_AREA_LABELS, PLATFORM_LABELS } from '@/lib/helpers'
 
 export function normalizeListing(item: RawListing): Listing {
   const primarySectorKey = item.em_focus_area?.replace('ı', 'i') ?? null
@@ -12,14 +12,14 @@ export function normalizeListing(item: RawListing): Listing {
     company_logo_url: item.company_logo_url ?? null,
     location: item.location ?? null,
     city: item.city ?? null,
-    sector: primarySectorKey ? (DISPLAY_SECTOR_LABELS[primarySectorKey] ?? primarySectorKey) : null,
+    sector: primarySectorKey ? (FOCUS_AREA_LABELS[primarySectorKey] ?? primarySectorKey) : null,
     secondary_sector: secondarySectorKey
-      ? (DISPLAY_SECTOR_LABELS[secondarySectorKey] ?? secondarySectorKey)
+      ? (FOCUS_AREA_LABELS[secondarySectorKey] ?? secondarySectorKey)
       : null,
     confidence: typeof item.em_focus_confidence === 'number' ? item.em_focus_confidence : null,
     source_platform: item.source_platform ?? null,
     source_platform_label: item.source_platform
-      ? (DISPLAY_PLATFORM_LABELS[item.source_platform] ?? item.source_platform)
+      ? (PLATFORM_LABELS[item.source_platform as keyof typeof PLATFORM_LABELS] ?? item.source_platform)
       : null,
     is_talent_program: Boolean(item.is_talent_program),
     employment_type: item.internship_type ?? null,

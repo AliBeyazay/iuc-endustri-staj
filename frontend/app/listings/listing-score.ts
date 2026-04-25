@@ -2,10 +2,9 @@ import type { Listing } from './types'
 import {
   extractSmartSearchIntent,
   COMPANY_QUERY_LABELS,
-  DISPLAY_PLATFORM_LABELS,
-  DISPLAY_SECTOR_LABELS,
   normalizeSearchValue,
 } from './search-intent'
+import { FOCUS_AREA_LABELS, PLATFORM_LABELS } from '@/lib/helpers'
 
 export function getListingSearchScore(
   listing: Listing,
@@ -35,14 +34,14 @@ export function getListingSearchScore(
   })
 
   queryIntent.platformKeys.forEach((platformKey) => {
-    const platformLabel = normalizeSearchValue(DISPLAY_PLATFORM_LABELS[platformKey] ?? platformKey)
+    const platformLabel = normalizeSearchValue(PLATFORM_LABELS[platformKey as keyof typeof PLATFORM_LABELS] ?? platformKey)
     if (platform.includes(platformLabel)) {
       score += 70
     }
   })
 
   queryIntent.sectorKeys.forEach((sectorKey) => {
-    const sectorLabel = normalizeSearchValue(DISPLAY_SECTOR_LABELS[sectorKey] ?? sectorKey)
+    const sectorLabel = normalizeSearchValue(FOCUS_AREA_LABELS[sectorKey] ?? sectorKey)
     if (sector.includes(sectorLabel)) {
       score += 60
     }

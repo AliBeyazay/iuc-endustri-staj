@@ -11,11 +11,10 @@ import { useRecentlyViewed } from '@/hooks'
 import { buildDefaultListingsSWRKey } from './listings-query'
 import type { ListingsResponse, RawListing, Listing } from './types'
 import {
-  DISPLAY_SECTOR_LABELS,
-  DISPLAY_PLATFORM_LABELS,
   extractSmartSearchIntent,
   normalizeSearchValue,
 } from './search-intent'
+import { FOCUS_AREA_LABELS, PLATFORM_LABELS } from '@/lib/helpers'
 import { rankListingsBySearch } from './listing-score'
 import { normalizeListing, getListingSummary } from './listing-normalizer'
 
@@ -146,7 +145,7 @@ function buildListingsApiQuery(params: {
   const platformKeys = new Set<string>()
 
   params.selectedSectors.forEach((sectorLabel) => {
-    const sectorKey = Object.entries(DISPLAY_SECTOR_LABELS).find(
+    const sectorKey = Object.entries(FOCUS_AREA_LABELS).find(
       ([, value]) => value === sectorLabel,
     )?.[0]
     if (sectorKey) {
@@ -163,7 +162,7 @@ function buildListingsApiQuery(params: {
   })
 
   params.selectedPlatforms.forEach((platformLabel) => {
-    const platformKey = Object.entries(DISPLAY_PLATFORM_LABELS).find(
+    const platformKey = Object.entries(PLATFORM_LABELS).find(
       ([, value]) => value === platformLabel,
     )?.[0]
     if (platformKey) {

@@ -1,64 +1,4 @@
-export const SECTOR_LABELS: Record<string, string> = {
-  imalat_metal_makine: 'İmalat, Metal ve Makine',
-  otomotiv_yan_sanayi: 'Otomotiv ve Yan Sanayi',
-  yazilim_bilisim_teknoloji: 'Yazılım, Bilişim ve Teknoloji',
-  hizmet_finans_danismanlik: 'Hizmet, Finans ve Danışmanlık',
-  eticaret_perakende_fmcg: 'E-Ticaret, Perakende ve FMCG',
-  savunma_havacilik_enerji: 'Savunma, Havacılık ve Enerji',
-  gida_kimya_saglik: 'Gıda, Kimya ve Sağlık',
-  lojistik_tasimacilik: 'Lojistik ve Taşımacılık',
-  'lojistik_tasimacil\u0131k': 'Lojistik ve Ta\u015f\u0131mac\u0131l\u0131k',
-  lojistik_ta\u015fimacilik: 'Lojistik ve Ta\u015f\u0131mac\u0131l\u0131k',
-  tekstil_moda: 'Tekstil ve Moda',
-  insaat_yapi_malzemeleri: 'İnşaat ve Yapı Malzemeleri',
-  diger: 'Diğer',
-}
-
-export const PLATFORM_LABELS: Record<string, string> = {
-  linkedin: 'LinkedIn',
-  kariyer: 'Kariyer.net',
-  youthall: 'Youthall',
-  anbea: 'Anbean Kampüs',
-  boomerang: 'Boomerang',
-  toptalent: 'TopTalent',
-  savunma: 'Savunma Kariyer',
-  odtu_kpm: 'ODTÜ KPM',
-  bogazici_km: 'Boğaziçi Kariyer',
-  ytu_orkam: 'YTU ORKAM',
-  pythiango: 'PythianGo',
-  itu_kariyer: 'İTÜ Kariyer',
-}
-
-export const DISPLAY_SECTOR_LABELS: Record<string, string> = {
-  imalat_metal_makine: 'İmalat, Metal ve Makine',
-  otomotiv_yan_sanayi: 'Otomotiv ve Yan Sanayi',
-  yazilim_bilisim_teknoloji: 'Yazılım, Bilişim ve Teknoloji',
-  hizmet_finans_danismanlik: 'Hizmet, Finans ve Danışmanlık',
-  eticaret_perakende_fmcg: 'E-Ticaret, Perakende ve FMCG',
-  savunma_havacilik_enerji: 'Savunma, Havacılık ve Enerji',
-  gida_kimya_saglik: 'Gıda, Kimya ve Sağlık',
-  lojistik_tasimacilik: 'Lojistik ve Taşımacılık',
-  'lojistik_tasimacilÄ±k': 'Lojistik ve Taşımacılık',
-  lojistik_taÅŸimacilik: 'Lojistik ve Taşımacılık',
-  tekstil_moda: 'Tekstil ve Moda',
-  insaat_yapi_malzemeleri: 'İnşaat ve Yapı Malzemeleri',
-  diger: 'Diğer',
-}
-
-export const DISPLAY_PLATFORM_LABELS: Record<string, string> = {
-  linkedin: 'LinkedIn',
-  kariyer: 'Kariyer.net',
-  youthall: 'Youthall',
-  anbea: 'Anbean Kampüs',
-  boomerang: 'Boomerang',
-  toptalent: 'TopTalent',
-  savunma: 'Savunma Kariyer',
-  odtu_kpm: 'ODTÜ KPM',
-  bogazici_km: 'Boğaziçi Kariyer',
-  ytu_orkam: 'YTÜ ORKAM',
-  itu_kariyer: 'İTÜ Kariyer',
-  pythiango: 'PythianGo',
-}
+import { FOCUS_AREA_LABELS, PLATFORM_LABELS } from '@/lib/helpers'
 
 export const PLATFORM_QUERY_ALIASES: Record<string, string[]> = {
   linkedin: ['linkedin'],
@@ -127,7 +67,7 @@ export function getMatchedSectorKeys(query: string) {
   const normalizedQuery = normalizeSearchValue(query)
   if (!normalizedQuery) return []
 
-  return Object.entries(DISPLAY_SECTOR_LABELS)
+  return Object.entries(FOCUS_AREA_LABELS)
     .filter(([, label]) => normalizeSearchValue(label).includes(normalizedQuery))
     .map(([key]) => key)
 }
@@ -136,7 +76,7 @@ export function getMatchedPlatformKeys(query: string) {
   const normalizedQuery = normalizeSearchValue(query)
   if (!normalizedQuery) return []
 
-  return Object.entries(DISPLAY_PLATFORM_LABELS)
+  return Object.entries(PLATFORM_LABELS)
     .filter(([, label]) => normalizeSearchValue(label).includes(normalizedQuery))
     .map(([key]) => key)
 }
@@ -177,11 +117,11 @@ function getQueryMatches(
 }
 
 function getSmartMatchedSectorKeys(query: string) {
-  return getQueryMatches(query, DISPLAY_SECTOR_LABELS)
+  return getQueryMatches(query, FOCUS_AREA_LABELS)
 }
 
 function getSmartMatchedPlatformKeys(query: string) {
-  return getQueryMatches(query, DISPLAY_PLATFORM_LABELS, PLATFORM_QUERY_ALIASES)
+  return getQueryMatches(query, PLATFORM_LABELS, PLATFORM_QUERY_ALIASES)
 }
 
 function getIgnoredQueryTokens(
@@ -210,8 +150,8 @@ export function extractSmartSearchIntent(query: string) {
   const platformKeys = getSmartMatchedPlatformKeys(query)
   const companyKeys = getQueryMatches(query, COMPANY_QUERY_LABELS, COMPANY_QUERY_ALIASES)
   const ignoredTokens = new Set<string>([
-    ...getIgnoredQueryTokens(sectorKeys, DISPLAY_SECTOR_LABELS),
-    ...getIgnoredQueryTokens(platformKeys, DISPLAY_PLATFORM_LABELS, PLATFORM_QUERY_ALIASES),
+    ...getIgnoredQueryTokens(sectorKeys, FOCUS_AREA_LABELS),
+    ...getIgnoredQueryTokens(platformKeys, PLATFORM_LABELS, PLATFORM_QUERY_ALIASES),
     ...getIgnoredQueryTokens(companyKeys, COMPANY_QUERY_LABELS, COMPANY_QUERY_ALIASES),
   ])
 
