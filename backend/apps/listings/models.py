@@ -1,5 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models import Avg, F
+from django.db.models.functions import Greatest
 from django.db.models.signals import post_delete, post_save, pre_delete
 from django.dispatch import receiver
 import uuid
@@ -167,6 +169,16 @@ class Listing(models.Model):
         related_name='duplicate_listings',
         db_index=True,
     )
+    bookmark_count  = models.PositiveIntegerField(
+        default=0,
+        db_index=True,
+        help_text='Denormalize: Bookmark sayısı. post_save/post_delete sinyalleriyle güncellenir.',
+    )
+    average_rating  = models.FloatField(
+        default=0.0,
+        db_index=True,
+        help_text='Denormalize: Ortalama puan. Review sinyalleriyle güncellenir.',
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -305,3 +317,39 @@ def invalidate_listing_cache_after_save(sender, created, update_fields=None, **k
 @receiver(post_delete, sender=Listing)
 def invalidate_listing_cache_after_delete(sender, **kwargs):
     invalidate_listing_list_cache()
+
+
+# ── Bookmark count denorm ——————————————————————————————————
+
+@receiver(post_save, sender='listings.Bookmark')
+def update_bookmark_count_on_save(sender, instance, created, **kwargs):
+    if created:
+        Listing.objects.filter(pk=instance.listing_id).update(
+            bookmark_count=Greatest(F('bookmark_count') + 1, 0),
+        )
+
+
+@receiver(post_delete, sender='listings.Bookmark')
+def update_bookmark_count_on_delete(sender, instance, **kwargs):
+    Listing.objects.filter(pk=instance.listing_id).update(
+        bookmark_count=Greatest(F('bookmark_count') - 1, 0),
+    )
+
+
+# ── Average rating denorm —————————————————————————————————
+
+@receiver(post_save, sender='listings.Review')
+def update_average_rating_on_save(sender, instance, **kwargs):
+    _refresh_average_rating(instance.listing_id)
+
+
+@receiver(post_delete, sender='listings.Review')
+def update_average_rating_on_delete(sender, instance, **kwargs):
+    _refresh_average_rating(instance.listing_id)
+
+
+def _refresh_average_rating(listing_id):
+    avg = Review.objects.filter(listing_id=listing_id).aggregate(v=Avg('rating'))['v']
+    Listing.objects.filter(pk=listing_id).update(
+        average_rating=avg if avg is not None else 0.0,
+    )

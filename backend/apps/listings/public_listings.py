@@ -3,8 +3,8 @@ from datetime import date
 from django.contrib.admin.models import DELETION, LogEntry
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
-from django.db.models import Avg, CharField, Count, FloatField, Q, Value
-from django.db.models.functions import Coalesce, Concat
+from django.db.models import CharField, Q, Value
+from django.db.models.functions import Concat
 
 from .cache_keys import get_listing_list_cache_version
 from .models import Listing, NegativeKeyword
@@ -96,21 +96,3 @@ def get_public_listing_queryset(*, only_approved: bool = False, only_featured: b
 
     return queryset
 
-
-def get_ordering_aggregate_annotations(requested_ordering: str):
-    requested_fields = {
-        item.strip().lstrip('-')
-        for item in requested_ordering.split(',')
-        if item.strip()
-    }
-
-    annotations = {}
-    if 'bookmark_count' in requested_fields:
-        annotations['bookmark_count'] = Count('bookmarked_by', distinct=True)
-    if 'average_rating' in requested_fields:
-        annotations['average_rating'] = Coalesce(
-            Avg('reviews__rating'),
-            Value(0.0),
-            output_field=FloatField(),
-        )
-    return annotations

@@ -23,7 +23,7 @@ from .cache_keys import get_listing_list_cache_version
 from .filters import ListingFilter
 from .models import Application, Bookmark, Listing, Review, ScraperLog, Student
 from .pagination import ListingPageNumberPagination
-from .public_listings import get_ordering_aggregate_annotations, get_public_listing_queryset
+from .public_listings import get_public_listing_queryset
 from .storage import upload_cv
 from .sync import delete_listing_groups, invalidate_listing_list_cache_if_unchanged
 from .serializers import (
@@ -80,15 +80,8 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
         if exclude_id:
             qs = qs.exclude(id=exclude_id)
 
-        aggregate_annotations = self._get_ordering_aggregate_annotations()
-        if aggregate_annotations:
-            qs = qs.annotate(**aggregate_annotations)
-
+        # bookmark_count ve average_rating artık denormalize model alanı — annotation yok.
         return qs
-
-    def _get_ordering_aggregate_annotations(self):
-        requested_ordering = self.request.query_params.get('ordering', '')
-        return get_ordering_aggregate_annotations(requested_ordering)
 
     def list(self, request, *args, **kwargs):
         try:
