@@ -489,10 +489,11 @@ class BaseEMSpider(scrapy.Spider):
 
     def parse_deadline(self, raw: Optional[str]) -> Optional[date]:
         """
-        Parse deadline from various source formats.
-        Returns None if date is in the past, unparseable, or missing.
+        Tarihi DB'ye kaydetmek için parse eder. Geçmiş tarihler de saklanır;
+        deadline_status compute_deadline_status() tarafından 'expired' olarak
+        işaretlenir ve public queryset'ten gizlenir.
         """
-        return parse_deadline_string(raw, allow_past=False)
+        return parse_deadline_string(raw, allow_past=True)
 
     def compute_deadline_status(self, deadline: Optional[date]) -> str:
         if deadline is None:
