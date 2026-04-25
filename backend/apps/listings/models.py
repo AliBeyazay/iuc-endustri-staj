@@ -187,6 +187,22 @@ class Listing(models.Model):
         verbose_name = 'İlan'
         verbose_name_plural = 'İlanlar'
 
+    def save(self, *args, **kwargs):
+        # Compute deadline status if not manually set to a special state like 'upcoming'
+        # or if application_deadline is provided.
+        from apps.listings.deadline_audit import compute_deadline_status
+        
+        if self.application_deadline:
+            self.deadline_status = compute_deadline_status(self.application_deadline)
+        elif self.deadline_status != 'upcoming':
+            self.deadline_status = 'unknown'
+        
+        # Auto-deactivate if expired
+        if self.deadline_status == 'expired':
+            self.is_active = False
+
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f'{self.title} - {self.company_name}'
 
