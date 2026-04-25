@@ -709,7 +709,13 @@ class AccountStatusView(APIView):
         }
 
         if not student.is_verified:
-            _send_otp(student)
+            try:
+                _send_otp(student)
+            except Exception:
+                return Response(
+                    {'error': 'Doğrulama kodu gönderilemedi. Lütfen daha sonra tekrar deneyin.'},
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE,
+                )
             response_data.update({
                 'delivery_method': 'email',
             })
@@ -762,7 +768,13 @@ class RegisterView(APIView):
             student.set_password(data['password'])
             student.save()
 
-        _send_otp(student)
+        try:
+            _send_otp(student)
+        except Exception:
+            return Response(
+                {'error': 'Doğrulama kodu gönderilemedi. Lütfen daha sonra tekrar deneyin.'},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
         response_data = {
             'message': 'Kayıt başarılı. Doğrulama kodu e-posta adresinize gönderildi.',
             'delivery_method': 'email',
@@ -799,9 +811,15 @@ class ResendOTPView(APIView):
         except Student.DoesNotExist:
             return Response({'error': 'Kullanici bulunamadi.'}, status=404)
 
-        _send_otp(student)
+        try:
+            _send_otp(student)
+        except Exception:
+            return Response(
+                {'error': 'Doğrulama kodu gönderilemedi. Lütfen daha sonra tekrar deneyin.'},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
         response_data = {
-            'message': 'OTP yeniden olusturuldu ve e-posta adresinize gonderildi.',
+            'message': 'OTP yeniden oluşturuldu ve e-posta adresinize gönderildi.',
             'delivery_method': 'email',
         }
         return Response(response_data)
@@ -835,15 +853,21 @@ class ResetPasswordView(APIView):
 
 
 def _send_otp(student: Student) -> None:
+    """OTP üretip e-posta ile gönderir. SMTP hatasında exception fırlatır."""
     otp = str(random.randint(100000, 999999))
     _cache_set(f'otp:{student.iuc_email}', otp, timeout=600)
-    
-    send_mail(
-        subject='IUC Staj - Doğrulama Kodu',
-        message=f'İÜC Staj Platformu için doğrulama kodunuz: {otp}\n\nBu kod 10 dakika geçerlidir.',
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[student.iuc_email],
-    )
+    try:
+        send_mail(
+            subject='IUC Staj - Doğrulama Kodu',
+            message=f'İÜC Staj Platformu için doğrulama kodunuz: {otp}\n\nBu kod 10 dakika geçerlidir.',
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[student.iuc_email],
+            fail_silently=False,
+        )
+    except Exception as exc:
+        # Cache'deki OTP'yi temizle — gönderilemedi, kullanılmamalı
+        _cache_delete(f'otp:{student.iuc_email}')
+        raise exc
 
 
 def _verify_otp(student: Student, otp: str) -> bool:
