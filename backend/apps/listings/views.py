@@ -347,7 +347,7 @@ class CVUploadView(APIView):
             return Response({'error': 'Dosya bulunamadi.'}, status=400)
         if cv_file.size > 5 * 1024 * 1024:
             return Response({'error': "Dosya 5MB'dan buyuk olamaz."}, status=400)
-        if not cv_file.name.endswith('.pdf'):
+        if cv_file.content_type != 'application/pdf':
             return Response({'error': 'Sadece PDF yuklenebilir.'}, status=400)
 
         try:
