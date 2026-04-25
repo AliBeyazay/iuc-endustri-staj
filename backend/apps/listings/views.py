@@ -18,6 +18,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.throttling import ScopedRateThrottle
 
 from .cache_keys import get_listing_list_cache_version
 from .filters import ListingFilter
@@ -257,6 +258,8 @@ class HomepageFeaturedListingsView(APIView):
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'review'
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['listing']
 
