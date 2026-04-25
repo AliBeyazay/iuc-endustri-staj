@@ -11,19 +11,12 @@ export type EMFocusArea =
   | 'insaat_yapi_malzemeleri'
   | 'diger'
 
-export type SourcePlatform =
-  | 'linkedin'
-  | 'kariyer'
-  | 'youthall'
-  | 'anbea'
-  | 'boomerang'
-  | 'toptalent'
-  | 'savunma'
-  | 'odtu_kpm'
-  | 'bogazici_km'
-  | 'ytu_orkam'
-  | 'itu_kariyer'
-  | 'pythiango'
+/**
+ * Platform key'leri backend'de serbest metin olarak saklanır (source_platform CharField).
+ * Bilinen key'ler PLATFORM_LABELS'da tanımlıdır; bilinmeyenler raw key olarak gösterilir.
+ * Yeni platform eklenince PLATFORM_LABELS'a eklenmesi yeterli — migration gerekmez.
+ */
+export type SourcePlatform = string
 
 export type InternshipType = 'zorunlu' | 'gonullu' | 'belirsiz'
 export type CompanyOrigin = 'yerli' | 'yabanci' | 'belirsiz'

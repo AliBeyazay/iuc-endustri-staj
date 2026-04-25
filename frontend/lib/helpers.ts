@@ -28,7 +28,7 @@ export const FOCUS_AREA_COLORS: Record<string, string> = {
   diger: 'bg-[rgba(216,173,67,0.14)] text-[#8f670b] border border-[rgba(216,173,67,0.18)] dark:text-[#f0cf7a] dark:bg-[rgba(216,173,67,0.12)]',
 }
 
-export const PLATFORM_LABELS: Record<SourcePlatform, string> = {
+export const PLATFORM_LABELS: Record<string, string> = {
   linkedin: 'LinkedIn',
   kariyer: 'Kariyer.net',
   youthall: 'Youthall',
