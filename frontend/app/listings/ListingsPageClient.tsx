@@ -3,6 +3,7 @@
 import type { Dispatch, SetStateAction } from 'react'
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import Link from 'next/link'
+import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { BriefcaseBusiness, Clock3, MapPin, History } from 'lucide-react'
 import useSWR from 'swr'
@@ -275,20 +276,48 @@ export default function ListingsPageClient({
 }: ListingsPageClientProps) {
   const { data: session, status } = useSession()
 
-  const [query, setQuery] = useState('')
-  const [debouncedQuery, setDebouncedQuery] = useState('')
-  const [selectedSectors, setSelectedSectors] = useState<string[]>([])
-  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([])
-  const [talentOnly, setTalentOnly] = useState(false)
-  const [sortBy, setSortBy] = useState<SortOption>('newest')
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const pathname = usePathname()
+
+  const [query, setQuery] = useState(searchParams.get('q') || '')
+  const [debouncedQuery, setDebouncedQuery] = useState(searchParams.get('q') || '')
+  const [selectedSectors, setSelectedSectors] = useState<string[]>(searchParams.getAll('sector'))
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(searchParams.getAll('platform'))
+  const [talentOnly, setTalentOnly] = useState(searchParams.get('talent') === 'true')
+  const [sortBy, setSortBy] = useState<SortOption>((searchParams.get('sort') as SortOption) || 'newest')
   const [recentSearches, setRecentSearches] = useState<string[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
-  const [currentPage, setCurrentPage] = useState(1)
+  const [currentPage, setCurrentPage] = useState(Number(searchParams.get('page')) || 1)
 
   const searchBoxRef = useRef<HTMLDivElement>(null)
   const { recentItems, clearAll: clearRecentlyViewed } = useRecentlyViewed()
 
+  useEffect(() => {
+    const params = new URLSearchParams()
+    if (debouncedQuery) params.set('q', debouncedQuery)
+    if (sortBy !== 'newest') params.set('sort', sortBy)
+    if (currentPage > 1) params.set('page', String(currentPage))
+    if (talentOnly) params.set('talent', 'true')
+    selectedSectors.forEach((s) => params.append('sector', s))
+    selectedPlatforms.forEach((p) => params.append('platform', p))
+
+    const newUrl = `${pathname}?${params.toString()}`
+    if (searchParams.toString() !== params.toString()) {
+      router.replace(newUrl, { scroll: false })
+    }
+  }, [
+    debouncedQuery,
+    sortBy,
+    currentPage,
+    talentOnly,
+    selectedSectors,
+    selectedPlatforms,
+    pathname,
+    router,
+    searchParams,
+  ])
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedQuery(query.trim()), 300)
     return () => clearTimeout(timer)
