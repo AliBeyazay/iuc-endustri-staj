@@ -27,6 +27,8 @@ import {
 } from '@/types'
 import { daysUntilDeadline, getAvatarColor, getDeadlineDisplay, getInitials, FOCUS_AREA_LABELS, FOCUS_AREA_COLORS, PLATFORM_LABELS, timeAgoTurkish } from '@/lib/helpers'
 import AuthedNavbar from '@/components/AuthedNavbar'
+import DashboardSkeleton from './DashboardSkeleton'
+
 function BookmarkCard({
   listing,
   onRemove,
@@ -247,12 +249,8 @@ export default function DashboardPage() {
     student_no: '+ Öğrenci no ekle',
   }
 
-  if (status === 'loading') {
-    return (
-      <div className="flex min-h-screen items-center justify-center px-6 text-sm text-gray-500 dark:text-[#e7edf4]/50">
-        Dashboard yükleniyor...
-      </div>
-    )
+  if (status === 'loading' || (shouldFetchProtectedData && (!profile || !stats))) {
+    return <DashboardSkeleton />
   }
 
   if (status === 'unauthenticated') {

@@ -7,8 +7,10 @@ import useSWR from 'swr'
 import { fetchUserProfile, updateUserProfile, uploadCV } from '@/lib/api'
 import { UserProfile } from '@/types'
 import { getAvatarColor, getInitials } from '@/lib/helpers'
-import ThemeToggle from '@/components/ThemeToggle'
+import { FileText, Pencil, Upload, Bell, CheckCircle2, ChevronRight } from 'lucide-react'
 import AuthedNavbar from '@/components/AuthedNavbar'
+import ProfileSkeleton from './ProfileSkeleton'
+import ThemeToggle from '@/components/ThemeToggle'
 
 function ProfileEdit({
   profile,
@@ -98,12 +100,8 @@ export default function ProfilePage() {
 
   const profile = profileData ?? null
 
-  if (status === 'loading') {
-    return (
-      <div className="flex min-h-screen items-center justify-center px-6 text-sm text-gray-500 dark:text-[#e7edf4]/50">
-        Profil yükleniyor...
-      </div>
-    )
+  if (status === 'loading' || (status === 'authenticated' && !profile)) {
+    return <ProfileSkeleton />
   }
 
   if (status === 'unauthenticated') return null
