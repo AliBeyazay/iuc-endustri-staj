@@ -25,14 +25,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         listings_qs = (
             get_public_listing_queryset()
-            .annotate(
-                bookmark_count=Count('bookmarked_by', distinct=True),
-                average_rating=Coalesce(
-                    Avg('reviews__rating'),
-                    Value(0.0),
-                    output_field=FloatField(),
-                ),
-            )
             .order_by('-created_at')
         )
         featured_qs = (
