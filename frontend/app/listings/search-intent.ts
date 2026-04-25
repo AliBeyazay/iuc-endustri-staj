@@ -63,22 +63,41 @@ export function normalizeSearchValue(value: string) {
     .trim()
 }
 
+type SearchableItem = {
+  key: string
+  candidates: string[]
+}
+
+function buildSearchableItems(labels: Record<string, string>, aliasMap: Record<string, string[]> = {}): SearchableItem[] {
+  return Object.entries(labels).map(([key, label]) => ({
+    key,
+    candidates: [
+      normalizeSearchValue(label),
+      ...(aliasMap[key] ?? []).map(normalizeSearchValue)
+    ]
+  }))
+}
+
+const SEARCHABLE_SECTORS = buildSearchableItems(FOCUS_AREA_LABELS)
+const SEARCHABLE_PLATFORMS = buildSearchableItems(PLATFORM_LABELS, PLATFORM_QUERY_ALIASES)
+const SEARCHABLE_COMPANIES = buildSearchableItems(COMPANY_QUERY_LABELS, COMPANY_QUERY_ALIASES)
+
 export function getMatchedSectorKeys(query: string) {
   const normalizedQuery = normalizeSearchValue(query)
   if (!normalizedQuery) return []
 
-  return Object.entries(FOCUS_AREA_LABELS)
-    .filter(([, label]) => normalizeSearchValue(label).includes(normalizedQuery))
-    .map(([key]) => key)
+  return SEARCHABLE_SECTORS
+    .filter(({ candidates }) => candidates[0].includes(normalizedQuery))
+    .map(({ key }) => key)
 }
 
 export function getMatchedPlatformKeys(query: string) {
   const normalizedQuery = normalizeSearchValue(query)
   if (!normalizedQuery) return []
 
-  return Object.entries(PLATFORM_LABELS)
-    .filter(([, label]) => normalizeSearchValue(label).includes(normalizedQuery))
-    .map(([key]) => key)
+  return SEARCHABLE_PLATFORMS
+    .filter(({ candidates }) => candidates[0].includes(normalizedQuery))
+    .map(({ key }) => key)
 }
 
 export function tokenizeNormalizedSearchValue(value: string) {
@@ -89,22 +108,13 @@ export function tokenizeNormalizedSearchValue(value: string) {
     .filter((token) => token.length >= 2)
 }
 
-function getQueryMatches(
-  query: string,
-  labels: Record<string, string>,
-  aliasMap: Record<string, string[]> = {},
-) {
+function getQueryMatches(query: string, items: SearchableItem[]) {
   const normalizedQuery = normalizeSearchValue(query)
   const queryTokens = tokenizeNormalizedSearchValue(query)
   if (!normalizedQuery && queryTokens.length === 0) return []
 
-  return Object.entries(labels)
-    .filter(([key, label]) => {
-      const candidates = [
-        normalizeSearchValue(label),
-        ...(aliasMap[key] ?? []).map((alias) => normalizeSearchValue(alias)),
-      ]
-
+  return items
+    .filter(({ candidates }) => {
       return candidates.some((candidate) => {
         if (normalizedQuery && candidate.includes(normalizedQuery)) {
           return true
@@ -113,15 +123,15 @@ function getQueryMatches(
         return queryTokens.some((token) => candidate.includes(token) || token.includes(candidate))
       })
     })
-    .map(([key]) => key)
+    .map(({ key }) => key)
 }
 
 function getSmartMatchedSectorKeys(query: string) {
-  return getQueryMatches(query, FOCUS_AREA_LABELS)
+  return getQueryMatches(query, SEARCHABLE_SECTORS)
 }
 
 function getSmartMatchedPlatformKeys(query: string) {
-  return getQueryMatches(query, PLATFORM_LABELS, PLATFORM_QUERY_ALIASES)
+  return getQueryMatches(query, SEARCHABLE_PLATFORMS)
 }
 
 function getIgnoredQueryTokens(
@@ -148,7 +158,7 @@ function getIgnoredQueryTokens(
 export function extractSmartSearchIntent(query: string) {
   const sectorKeys = getSmartMatchedSectorKeys(query)
   const platformKeys = getSmartMatchedPlatformKeys(query)
-  const companyKeys = getQueryMatches(query, COMPANY_QUERY_LABELS, COMPANY_QUERY_ALIASES)
+  const companyKeys = getQueryMatches(query, SEARCHABLE_COMPANIES)
   const ignoredTokens = new Set<string>([
     ...getIgnoredQueryTokens(sectorKeys, FOCUS_AREA_LABELS),
     ...getIgnoredQueryTokens(platformKeys, PLATFORM_LABELS, PLATFORM_QUERY_ALIASES),
