@@ -365,18 +365,34 @@ class DashboardStatsView(APIView):
 
     def get(self, request):
         today = date.today()
+        cache_key = f"dashboard_global_stats_{today.isoformat()}"
+        
+        try:
+            stats = cache.get(cache_key)
+        except Exception:
+            stats = None
+
+        if stats is None:
+            stats = {
+                'total_active_listings': Listing.objects.filter(is_active=True).count(),
+                'new_listings_today': Listing.objects.filter(
+                    is_active=True,
+                    created_at__date=today,
+                ).count(),
+                'listings_expiring_soon': Listing.objects.filter(
+                    is_active=True,
+                    application_deadline__lte=today + timedelta(days=7),
+                    application_deadline__gte=today,
+                ).count(),
+            }
+            try:
+                cache.set(cache_key, stats, timeout=300)
+            except Exception:
+                pass
+
         return Response({
-            'total_active_listings': Listing.objects.filter(is_active=True).count(),
+            **stats,
             'bookmarks_count': Bookmark.objects.filter(student=request.user).count(),
-            'new_listings_today': Listing.objects.filter(
-                is_active=True,
-                created_at__date=today,
-            ).count(),
-            'listings_expiring_soon': Listing.objects.filter(
-                is_active=True,
-                application_deadline__lte=today + timedelta(days=7),
-                application_deadline__gte=today,
-            ).count(),
         })
 
 
