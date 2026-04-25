@@ -21,3 +21,23 @@ export type RawListing = {
 }
 
 export type ListingsResponse = PaginatedResponse<RawListing>
+
+export type Listing = {
+  id: string
+  title: string
+  company_name: string
+  company_logo_url: string | null
+  location: string | null
+  city: string | null
+  sector: string | null
+  secondary_sector: string | null
+  confidence: number | null
+  source_platform: string | null
+  source_platform_label: string | null
+  is_talent_program: boolean
+  employment_type: string | null
+  deadline: string | null
+  url: string | null
+  description: string | null
+  created_at: string | null
+}
