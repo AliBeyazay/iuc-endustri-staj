@@ -2,15 +2,14 @@ import hashlib
 import os
 import random
 import re
-import traceback
+import secrets
 from collections import Counter
 from datetime import date, timedelta
-from time import time
 
 from django.conf import settings
 from django.core.cache import cache
 from django.core.mail import send_mail
-from django.db.models import Avg, Case, IntegerField, Q, Value, When
+from django.db.models import Case, IntegerField, Q, Value, When
 from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, permissions, status, viewsets
@@ -42,7 +41,6 @@ from .serializers import (
     StudentProfileSerializer,
 )
 
-_volatile_cache_store: dict[str, tuple[str, float]] = {}
 LISTING_LIST_CACHE_TTL_SECONDS = 300
 HOMEPAGE_FEATURED_CACHE_TTL_SECONDS = 300
 ENCODING_QUALITY_CACHE_TTL_SECONDS = 300
@@ -102,13 +100,9 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
                 except Exception:
                     pass
             return response
-        except Exception as exc:
+        except Exception:
             return Response(
-                {
-                    'error': str(exc),
-                    'type': exc.__class__.__name__,
-                    'traceback': traceback.format_exc().splitlines()[-8:],
-                },
+                {'error': 'İlan listesi alınamadı.'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -218,10 +212,8 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=True, methods=['get'])
     def reviews(self, request, pk=None):
         listing = self.get_object()
-        reviews = listing.reviews.all()
-        avg = reviews.aggregate(avg=Avg('rating'))['avg']
-        serializer = ReviewSerializer(reviews, many=True)
-        return Response({'results': serializer.data, 'average_rating': avg})
+        serializer = ReviewSerializer(listing.reviews.all(), many=True)
+        return Response({'results': serializer.data, 'average_rating': listing.average_rating})
 
 
 class HomepageFeaturedListingsView(APIView):
@@ -267,9 +259,21 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return Review.objects.all()
 
     def get_permissions(self):
-        if self.action in ['create', 'destroy']:
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
             return [permissions.IsAuthenticated()]
         return [permissions.AllowAny()]
+
+    def update(self, request, *args, **kwargs):
+        review = self.get_object()
+        if review.student != request.user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        return super().update(request, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        review = self.get_object()
+        if review.student != request.user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        return super().partial_update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
         review = self.get_object()
@@ -349,6 +353,10 @@ class CVUploadView(APIView):
             return Response({'error': "Dosya 5MB'dan buyuk olamaz."}, status=400)
         if cv_file.content_type != 'application/pdf':
             return Response({'error': 'Sadece PDF yuklenebilir.'}, status=400)
+        header = cv_file.read(5)
+        cv_file.seek(0)
+        if header != b'%PDF-':
+            return Response({'error': 'Sadece PDF yuklenebilir.'}, status=400)
 
         try:
             cv_url = upload_cv(cv_file, str(request.user.id))
@@ -365,8 +373,8 @@ class DashboardStatsView(APIView):
 
     def get(self, request):
         today = date.today()
-        cache_key = f"dashboard_global_stats_{today.isoformat()}"
-        
+        cache_key = f"dashboard_global_stats_v{get_listing_list_cache_version()}"
+
         try:
             stats = cache.get(cache_key)
         except Exception:
@@ -631,9 +639,10 @@ class AdminListingModerationListView(APIView):
         except ValueError:
             limit = 200
 
+        total_count = queryset.count()
         rows = queryset[:limit]
         serializer = AdminListingListSerializer(rows, many=True)
-        return Response({'results': serializer.data, 'count': queryset.count()})
+        return Response({'results': serializer.data, 'count': total_count})
 
 
 class AdminListingModerationDetailView(APIView):
@@ -805,6 +814,8 @@ class RegisterView(APIView):
 
 class VerifyOTPView(APIView):
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'otp'
 
     def post(self, request):
         email = (request.data.get('email') or '').strip().lower()
@@ -824,6 +835,8 @@ class VerifyOTPView(APIView):
 
 class ResendOTPView(APIView):
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'otp_resend'
 
     def post(self, request):
         email = (request.data.get('email') or '').strip().lower()
@@ -900,7 +913,7 @@ def _verify_otp(student: Student, otp: str) -> bool:
 
 
 def _send_password_reset(student: Student):
-    token = hashlib.sha256(f'{student.id}{now().timestamp()}'.encode()).hexdigest()
+    token = secrets.token_urlsafe(32)
     _cache_set(f'reset:{token}', str(student.id), timeout=900)
     reset_url = f'{settings.FRONTEND_URL}/reset-password?token={token}'
     send_mail(
@@ -923,28 +936,20 @@ def _verify_reset_token(token: str):
 
 
 def _cache_set(key: str, value: str, *, timeout: int) -> None:
-    try:
-        cache.set(key, value, timeout=timeout)
-    except Exception:
-        _volatile_cache_store[key] = (value, time() + timeout)
+    # Redis hatası fırlatılsın — caller 503 dönmeli, bellekte fallback yok.
+    # Birden fazla Gunicorn worker'da süreç-içi dict tutarsız doğrulamaya yol açar.
+    cache.set(key, value, timeout=timeout)
 
 
 def _cache_get(key: str):
     try:
         return cache.get(key)
     except Exception:
-        stored = _volatile_cache_store.get(key)
-        if not stored:
-            return None
-        value, expires_at = stored
-        if expires_at <= time():
-            _volatile_cache_store.pop(key, None)
-            return None
-        return value
+        return None
 
 
 def _cache_delete(key: str) -> None:
     try:
         cache.delete(key)
     except Exception:
-        _volatile_cache_store.pop(key, None)
+        pass

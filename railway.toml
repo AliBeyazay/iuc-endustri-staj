@@ -1,10 +1,28 @@
+# Railway Backend Servisi
+# Dashboard'da şu servisleri ayrı ayrı oluştur:
+#   1. PostgreSQL  → Add Plugin > PostgreSQL
+#   2. Redis        → Add Plugin > Redis
+#   3. backend      → bu dosya (repo root, bu toml)
+#   4. celery       → ayrı servis, startCommand farklı
+#   5. celery-beat  → ayrı servis, startCommand farklı
+#   6. Frontend     → Vercel'e deploy et (ücretsiz)
+
 [build]
 dockerfilePath = "backend/Dockerfile"
 buildContext = "backend"
 watchPatterns = ["backend/**"]
 
 [deploy]
+startCommand = "python manage.py migrate --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --timeout 120"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
+
+# Celery Worker servisi için Railway'de yeni servis oluştururken:
+# startCommand = "celery -A config worker --loglevel=warning --concurrency=2"
+# dockerfilePath = "backend/Dockerfile.scraper"
+
+# Celery Beat servisi için Railway'de yeni servis oluştururken:
+# startCommand = "celery -A config beat --loglevel=warning --scheduler django_celery_beat.schedulers:DatabaseScheduler"
+# dockerfilePath = "backend/Dockerfile.scraper"

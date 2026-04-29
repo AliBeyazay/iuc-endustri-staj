@@ -1,14 +1,15 @@
 databases:
   - name: iuc-staj-db
-    plan: free
+    plan: starter        # $7/ay — production için starter+ önerilir
     databaseName: iuc_staj_db
     user: iuc_staj_user
 
 services:
+  # ── Backend (Django + Gunicorn) ──────────────────────────────
   - type: web
     name: iuc-staj-backend
     runtime: docker
-    plan: free
+    plan: starter
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
     healthCheckPath: /health
@@ -25,29 +26,118 @@ services:
         value: https://iuc-endustri-staj.vercel.app
       - key: FRONTEND_URL
         value: https://iuc-endustri-staj.vercel.app
+      - key: USE_SQLITE
+        value: "False"
       - key: DATABASE_URL
         fromDatabase:
           name: iuc-staj-db
           property: connectionString
-      - key: PGDATABASE
+      - key: DB_NAME
         fromDatabase:
           name: iuc-staj-db
           property: database
-      - key: PGUSER
+      - key: DB_USER
         fromDatabase:
           name: iuc-staj-db
           property: user
-      - key: PGPASSWORD
+      - key: DB_PASSWORD
         fromDatabase:
           name: iuc-staj-db
           property: password
-      - key: PGHOST
+      - key: DB_HOST
         fromDatabase:
           name: iuc-staj-db
           property: host
-      - key: PGPORT
+      - key: DB_PORT
         fromDatabase:
           name: iuc-staj-db
           property: port
-      - key: USE_SQLITE
-        value: "False"
+      - key: REDIS_URL
+        fromService:
+          name: iuc-staj-redis
+          type: redis
+          property: connectionString
+      - key: CV_STORAGE_BACKEND
+        value: r2
+      - key: R2_ACCOUNT_ID
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET_NAME
+        value: iuc-staj-cvs
+      - key: R2_PUBLIC_URL
+        sync: false
+
+  # ── Celery Worker ────────────────────────────────────────────
+  - type: worker
+    name: iuc-staj-celery
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./backend/Dockerfile.scraper
+    dockerContext: ./backend
+    startCommand: celery -A config worker --loglevel=warning --concurrency=2
+    envVars:
+      - key: APP_ENV
+        value: prod
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings.prod
+      - key: DATABASE_URL
+        fromDatabase:
+          name: iuc-staj-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: iuc-staj-redis
+          type: redis
+          property: connectionString
+      - key: SECRET_KEY
+        fromService:
+          name: iuc-staj-backend
+          type: web
+          envVarKey: SECRET_KEY
+      - key: CV_STORAGE_BACKEND
+        value: r2
+      - key: R2_ACCOUNT_ID
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET_NAME
+        value: iuc-staj-cvs
+
+  # ── Celery Beat (zamanlayıcı) ────────────────────────────────
+  - type: worker
+    name: iuc-staj-celery-beat
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./backend/Dockerfile.scraper
+    dockerContext: ./backend
+    startCommand: celery -A config beat --loglevel=warning --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    envVars:
+      - key: APP_ENV
+        value: prod
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings.prod
+      - key: DATABASE_URL
+        fromDatabase:
+          name: iuc-staj-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: iuc-staj-redis
+          type: redis
+          property: connectionString
+      - key: SECRET_KEY
+        fromService:
+          name: iuc-staj-backend
+          type: web
+          envVarKey: SECRET_KEY
+
+  # ── Redis ────────────────────────────────────────────────────
+  - type: redis
+    name: iuc-staj-redis
+    plan: starter        # $10/ay
+    maxmemoryPolicy: allkeys-lru

@@ -118,7 +118,9 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'anon': '100/day',
         'user': '1000/day',
-        'review': '5/minute',  # Anti-spam for reviews and bookmarks
+        'review': '5/minute',
+        'otp': '5/minute',        # OTP brute-force koruması
+        'otp_resend': '3/minute', # OTP yeniden gönderme spam koruması
     }
 }
 
