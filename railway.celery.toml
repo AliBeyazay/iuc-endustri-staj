@@ -1,0 +1,17 @@
+# ── Celery Worker ────────────────────────────────────────────────────────────
+# Railway Dashboard'da backend servisinin yanına yeni bir servis ekle:
+#   New Service → GitHub Repo (aynı repo) → bu dosyayı seç
+#   veya: Settings > Deploy > Config File Path = railway.celery.toml
+#
+# Env var'ları backend servisiyle aynı — Railway'de "Reference Variable" kullan:
+#   ${{backend.DATABASE_URL}}, ${{backend.REDIS_URL}} vb.
+
+[build]
+dockerfilePath = "backend/Dockerfile.scraper"
+buildContext    = "backend"
+watchPatterns   = ["backend/**"]
+
+[deploy]
+startCommand = "celery -A config worker --loglevel=warning --concurrency=2 -Q default,celery"
+restartPolicyType       = "ON_FAILURE"
+restartPolicyMaxRetries = 10
