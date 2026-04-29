@@ -1,0 +1,26 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /app/iuc-staj
+            git pull origin main
+            docker compose -f docker-compose.prod.yml build --no-cache backend celery celery-beat frontend
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            docker compose -f docker-compose.prod.yml exec -T backend python manage.py migrate --noinput
+            docker compose -f docker-compose.prod.yml exec -T backend python manage.py collectstatic --noinput --clear
+            docker image prune -f
+            echo "Deploy tamamlandi"

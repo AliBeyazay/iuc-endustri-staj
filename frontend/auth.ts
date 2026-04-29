@@ -108,7 +108,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         // Register or fetch user from Django
         try {
-          await fetch(`${API_URL}/auth/google/`, {
+          const res = await fetch(`${API_URL}/auth/google/`, {
             method:  'POST',
             headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
             body:    JSON.stringify({
@@ -118,6 +118,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               avatar_url: profile?.picture,
             }),
           })
+          if (!res.ok) {
+            console.error('Google backend registration failed', res.status)
+            return false
+          }
         } catch {
           return false
         }

@@ -13,4 +13,8 @@ if [ "${RUN_DEMO_SEED:-false}" = "true" ]; then
   python manage.py seed_demo_listings
 fi
 
-exec gunicorn config.wsgi:application --bind 0.0.0.0:${PORT:-8000}
+exec gunicorn config.wsgi:application \
+  --bind 0.0.0.0:${PORT:-8000} \
+  --workers ${GUNICORN_WORKERS:-3} \
+  --timeout 120 \
+  --access-logfile -
