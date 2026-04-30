@@ -8,6 +8,7 @@ from .views import (
     NotificationPreferencesView,
     CheckEmailView, AccountStatusView, RegisterView, VerifyOTPView,
     ResendOTPView, ForgotPasswordView, ResetPasswordView,
+    GoogleSyncView, GoogleTokenView,
 )
 
 router = DefaultRouter()
@@ -41,4 +42,6 @@ urlpatterns = [
     path('auth/resend-otp/',        ResendOTPView.as_view()),
     path('auth/forgot-password/',   ForgotPasswordView.as_view()),
     path('auth/reset-password/',    ResetPasswordView.as_view()),
+    path('auth/google/',            GoogleSyncView.as_view()),
+    path('auth/google/token/',      GoogleTokenView.as_view()),
 ]

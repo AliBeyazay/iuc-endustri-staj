@@ -31,6 +31,16 @@ CSRF_COOKIE_SECURE          = True
 SECURE_BROWSER_XSS_FILTER   = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS             = 'DENY'
+SECURE_HSTS_SECONDS         = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD         = True
+
+# CSRF — trust the Vercel frontend and Railway/Render backend domains
+_csrf_origins = os.environ.get(
+    'CSRF_TRUSTED_ORIGINS',
+    'https://iuc-endustri-staj.vercel.app',
+)
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_origins.split(',') if o.strip()]
 
 # Static files via WhiteNoise
 STATIC_ROOT = BASE_DIR / 'staticfiles'

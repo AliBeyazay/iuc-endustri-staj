@@ -1,8 +1,10 @@
 import hashlib
+import json as _json
 import os
 import random
 import re
 import secrets
+import urllib.request
 from collections import Counter
 from datetime import date, timedelta
 
@@ -953,3 +955,89 @@ def _cache_delete(key: str) -> None:
         cache.delete(key)
     except Exception:
         pass
+
+
+# ─── Google OAuth ─────────────────────────────────────────────────────────────
+
+_IUC_DOMAINS = ('@ogr.iuc.edu.tr', '@iuc.edu.tr')
+
+
+class GoogleSyncView(APIView):
+    """
+    POST /api/auth/google/
+    Called server-side by NextAuth signIn callback to create/sync the
+    Google-authenticated user in the Django database.
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        email = (request.data.get('email') or '').strip().lower()
+        name = (request.data.get('name') or '').strip()
+        avatar_url = request.data.get('avatar_url') or None
+
+        if not email or not any(email.endswith(d) for d in _IUC_DOMAINS):
+            return Response({'error': 'Geçersiz e-posta'}, status=status.HTTP_400_BAD_REQUEST)
+
+        first_name = name.split()[0] if name else email.split('@')[0].split('.')[0].title()
+        last_name = ' '.join(name.split()[1:]) if name and len(name.split()) > 1 else ''
+
+        user, _ = Student.objects.get_or_create(
+            iuc_email=email,
+            defaults={
+                'username': email.split('@')[0],
+                'first_name': first_name,
+                'last_name': last_name,
+                'is_verified': True,
+                'is_active': True,
+            },
+        )
+
+        update_fields = []
+        if not user.is_verified:
+            user.is_verified = True
+            update_fields.append('is_verified')
+        if avatar_url and user.avatar_url != avatar_url:
+            user.avatar_url = avatar_url
+            update_fields.append('avatar_url')
+        if update_fields:
+            user.save(update_fields=update_fields)
+
+        return Response({'status': 'ok'})
+
+
+class GoogleTokenView(APIView):
+    """
+    POST /api/auth/google/token/
+    Called server-side by NextAuth jwt callback. Verifies the Google ID
+    token with Google's tokeninfo endpoint, then issues Django JWT tokens.
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        from rest_framework_simplejwt.tokens import RefreshToken
+
+        id_token = (request.data.get('id_token') or '').strip()
+        if not id_token:
+            return Response({'error': 'id_token gerekli'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            url = f'https://www.googleapis.com/oauth2/v3/tokeninfo?id_token={id_token}'
+            with urllib.request.urlopen(url, timeout=5) as resp:
+                token_data = _json.loads(resp.read().decode())
+        except Exception:
+            return Response({'error': 'Token doğrulaması başarısız'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        email = (token_data.get('email') or '').strip().lower()
+        if not email or not any(email.endswith(d) for d in _IUC_DOMAINS):
+            return Response({'error': 'IÜC e-posta adresi gerekli'}, status=status.HTTP_403_FORBIDDEN)
+
+        try:
+            user = Student.objects.get(iuc_email=email)
+        except Student.DoesNotExist:
+            return Response(
+                {'error': 'Kullanıcı bulunamadı. Önce giriş sayfasını ziyaret edin.'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        refresh = RefreshToken.for_user(user)
+        return Response({'access': str(refresh.access_token), 'refresh': str(refresh)})
