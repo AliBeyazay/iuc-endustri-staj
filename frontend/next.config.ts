@@ -1,26 +1,6 @@
 import type { NextConfig } from 'next'
 
-// /backend-api/* → Django backend proxy
-// Docker: API_INTERNAL_URL=http://backend:8000/api, local: http://localhost:8000/api
-function getBackendOrigin() {
-  const internal = process.env.API_INTERNAL_URL ?? ''
-  if (internal) return internal.replace(/\/api\/?$/, '')
-  const pub = process.env.NEXT_PUBLIC_API_URL ?? ''
-  if (pub && pub.startsWith('http')) return pub.replace(/\/api\/?$/, '')
-  return 'http://localhost:8000'
-}
-
 const nextConfig: NextConfig = {
-  skipTrailingSlashRedirect: true,
-  async rewrites() {
-    const backendOrigin = getBackendOrigin()
-    return [
-      {
-        source: '/backend-api/:path*',
-        destination: `${backendOrigin}/api/:path*`,
-      },
-    ]
-  },
   images: {
     dangerouslyAllowSVG: true,
     remotePatterns: [

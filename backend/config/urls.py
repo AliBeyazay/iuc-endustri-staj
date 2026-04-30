@@ -24,8 +24,9 @@ urlpatterns = [
     path('health/', healthcheck, name='healthcheck'),
 
     # JWT auth (email+password login)
-    path('api/auth/login/',   CustomTokenObtainPairView.as_view(),  name='token_obtain'),
-    path('api/auth/refresh/', TokenRefreshView.as_view(),     name='token_refresh'),
+    path('api/auth/login/',          CustomTokenObtainPairView.as_view(), name='token_obtain'),
+    path('api/auth/token/refresh/',  TokenRefreshView.as_view(),          name='token_refresh'),
+    path('api/auth/refresh/',        TokenRefreshView.as_view(),          name='token_refresh_legacy'),
 
     # App API routes
     path('api/', include('apps.listings.urls')),
