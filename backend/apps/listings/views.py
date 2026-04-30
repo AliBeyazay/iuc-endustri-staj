@@ -1,5 +1,6 @@
 import hashlib
 import json as _json
+import logging
 import os
 import random
 import re
@@ -7,6 +8,8 @@ import secrets
 import urllib.request
 from collections import Counter
 from datetime import date, timedelta
+
+logger = logging.getLogger(__name__)
 
 from django.conf import settings
 from django.core.cache import cache
@@ -103,6 +106,7 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
                     pass
             return response
         except Exception:
+            logger.exception('ListingViewSet.list() failed')
             return Response(
                 {'error': 'İlan listesi alınamadı.'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,

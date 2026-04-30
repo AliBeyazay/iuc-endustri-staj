@@ -205,7 +205,7 @@ function toRawListing(listing: SnapshotListing): Listing {
 }
 
 export async function getPublicSnapshotFeaturedListings() {
-  const snapshot = await readUsablePublicListingsSnapshot()
+  const snapshot = (await readUsablePublicListingsSnapshot()) ?? (await readPublicListingsSnapshot())
   if (!snapshot) {
     return []
   }
@@ -232,12 +232,12 @@ export async function getPublicSnapshotFeaturedListings() {
 }
 
 export async function getPublicSnapshotListingById(id: string) {
-  const snapshot = await readUsablePublicListingsSnapshot()
+  const snapshot = (await readUsablePublicListingsSnapshot()) ?? (await readPublicListingsSnapshot())
   return snapshot?.listings.find((listing) => listing.id === id) ?? null
 }
 
 export async function buildPublicSnapshotListingsResponse(requestUrl: URL): Promise<PaginatedResponse<Listing> | null> {
-  const snapshot = await readUsablePublicListingsSnapshot()
+  const snapshot = (await readUsablePublicListingsSnapshot()) ?? (await readPublicListingsSnapshot())
   if (!snapshot) {
     return null
   }
