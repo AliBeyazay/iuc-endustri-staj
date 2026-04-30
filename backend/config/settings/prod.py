@@ -35,11 +35,14 @@ SECURE_HSTS_SECONDS         = 31536000  # 1 year
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD         = True
 
-# CSRF — trust the Vercel frontend and Railway/Render backend domains
-_csrf_origins = os.environ.get(
-    'CSRF_TRUSTED_ORIGINS',
+# CSRF — trust the Vercel frontend and Railway/Render backend domains.
+# Override via CSRF_TRUSTED_ORIGINS env var (comma-separated) if needed.
+_csrf_default = ','.join([
     'https://iuc-endustri-staj.vercel.app',
-)
+    'https://*.railway.app',
+    'https://*.onrender.com',
+])
+_csrf_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', _csrf_default)
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_origins.split(',') if o.strip()]
 
 # Static files via WhiteNoise
