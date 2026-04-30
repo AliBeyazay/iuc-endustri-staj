@@ -112,8 +112,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
     'DEFAULT_THROTTLE_CLASSES': [
-        'rest_framework.throttling.AnonRateThrottle',
-        'rest_framework.throttling.UserRateThrottle'
+        'config.throttle.SafeAnonRateThrottle',
+        'config.throttle.SafeUserRateThrottle'
     ],
     'DEFAULT_THROTTLE_RATES': {
         'anon': '100/day',
@@ -137,11 +137,14 @@ CELERY_TIMEZONE          = 'Europe/Istanbul'
 CELERY_BEAT_SCHEDULER    = 'django_celery_beat.schedulers:DatabaseScheduler'
 CELERY_BEAT_SCHEDULE      = build_celery_beat_schedule(crontab)
 
-if USE_SQLITE:
+# ── Cache Configuration ──────────────────────────────────────────────
+# Use LocMemCache by default and for dev. Try Redis if REDIS_URL is set,
+# but fall back to LocMemCache if Redis is unavailable.
+if USE_SQLITE or not os.environ.get('REDIS_URL'):
     CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-            'LOCATION': 'iuc-staj-dev',
+            'LOCATION': 'iuc-staj-cache',
         }
     }
 else:
@@ -149,6 +152,14 @@ else:
         'default': {
             'BACKEND': 'django.core.cache.backends.redis.RedisCache',
             'LOCATION': os.environ.get('REDIS_URL', 'redis://localhost:6379/1'),
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+                'CONNECTION_POOL_KWARGS': {'max_connections': 50, 'retry_on_timeout': True},
+                'SOCKET_CONNECT_TIMEOUT': 5,  # 5 second timeout
+                'SOCKET_TIMEOUT': 5,
+                'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
+                'IGNORE_EXCEPTIONS': True,  # Gracefully handle Redis errors
+            },
         }
     }
 

@@ -22,7 +22,8 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.throttling import ScopedRateThrottle
+
+from config.throttle import SafeScopedRateThrottle
 
 from .cache_keys import get_listing_list_cache_version
 from .filters import ListingFilter
@@ -256,7 +257,7 @@ class HomepageFeaturedListingsView(APIView):
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    throttle_classes = [ScopedRateThrottle]
+    throttle_classes = [SafeScopedRateThrottle]
     throttle_scope = 'review'
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['listing']
@@ -820,7 +821,7 @@ class RegisterView(APIView):
 
 class VerifyOTPView(APIView):
     permission_classes = [permissions.AllowAny]
-    throttle_classes = [ScopedRateThrottle]
+    throttle_classes = [SafeScopedRateThrottle]
     throttle_scope = 'otp'
 
     def post(self, request):
@@ -841,7 +842,7 @@ class VerifyOTPView(APIView):
 
 class ResendOTPView(APIView):
     permission_classes = [permissions.AllowAny]
-    throttle_classes = [ScopedRateThrottle]
+    throttle_classes = [SafeScopedRateThrottle]
     throttle_scope = 'otp_resend'
 
     def post(self, request):
