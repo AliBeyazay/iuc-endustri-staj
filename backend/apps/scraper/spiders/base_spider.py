@@ -30,6 +30,33 @@ class BaseEMSpider(scrapy.Spider):
         "logistics", "manufacturing", "automotive", "defence", "defense",
     ]
 
+    # Tier-1: EM'e özgü terimler — title VEYA description'da geçmesi yeterli
+    STRONG_EM_KEYWORDS = [
+        "endustri muhendisi", "endustri muhendisligi",
+        "industrial engineer", "industrial engineering",
+        "uretim planlama", "production planning",
+        "tedarik zinciri", "supply chain",
+        "kalite yonetimi", "quality management",
+        "yalin uretim", "lean manufacturing",
+        "stok yonetimi", "inventory management",
+        "surec iyilestirme", "process improvement", "process engineer",
+        "is etudü",
+    ]
+
+    # Tier-2: genel endüstri/rol terimleri — YALNIZCA title'da geçmesi kabul edilir;
+    # description'da tek başına yeterli değil (false positive riski yüksek)
+    TITLE_ONLY_EM_KEYWORDS = [
+        "imalat", "uretim", "manufacturing", "fabrika",
+        "otomotiv", "automotive",
+        "savunma", "defence", "defense",
+        "havacilik", "aerospace", "aviation",
+        "lojistik", "logistics",
+        "operasyon", "operations",
+        "kalite",
+        "proje yonetimi", "project management",
+        "veri analitigi",
+    ]
+
     EM_SECTOR_RULES = {
         "imalat_metal_makine": {
             "positive": [
@@ -323,37 +350,21 @@ class BaseEMSpider(scrapy.Spider):
         return False
 
     def filter_by_keywords(self, title: str, description: str) -> bool:
-        combined = self.normalize_turkish(f"{title} {description}")
-        all_kw = [
-            "endustri muhendisi",
-            "endustri muhendisligi",
-            "uretim planlama",
-            "tedarik zinciri",
-            "kalite yonetimi",
-            "yalin uretim",
-            "proje yonetimi",
-            "veri analitigi",
-            "operasyon",
-            "lojistik",
-            "imalat",
-            "otomotiv",
-            "savunma",
-            "havacilik",
-            "industrial engineering",
-            "industrial engineer",
-            "supply chain",
-            "quality management",
-            "lean manufacturing",
-            "production planning",
-            "project management",
-            "operations",
-            "logistics",
-            "manufacturing",
-            "automotive",
-            "defence",
-            "defense",
-        ]
-        return any(self.normalize_turkish(kw) in combined for kw in all_kw)
+        norm_title = self.normalize_turkish(title or "")
+        norm_desc = self.normalize_turkish(description or "")
+
+        # Tier-1: güçlü EM sinyali — title veya description'da yeterli
+        for kw in self.STRONG_EM_KEYWORDS:
+            nkw = self.normalize_turkish(kw)
+            if nkw in norm_title or nkw in norm_desc:
+                return True
+
+        # Tier-2: genel endüstri terimi — yalnızca title'da geçiyorsa kabul et
+        for kw in self.TITLE_ONLY_EM_KEYWORDS:
+            if self.normalize_turkish(kw) in norm_title:
+                return True
+
+        return False
 
     def targets_associate_degree(self, title: str, description: str) -> bool:
         text = self.normalize_turkish(f"{title} {description}")

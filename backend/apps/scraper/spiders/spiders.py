@@ -707,6 +707,10 @@ class KariyerSpider(BaseEMSpider):
             self.logger.info("KARIYER_SKIPPED_EXPIRED: %s", title)
             return
 
+        if not self.filter_by_keywords(title, description):
+            self.logger.info("KARIYER_SKIPPED_NOT_EM: %s", title)
+            return
+
         location_match = re.search(r"Kaydet Basvur (.+?) \d+ gun once guncellendi", self.normalize_turkish(text))
         location = location_match.group(1).strip().title() if location_match else ""
 
@@ -862,22 +866,50 @@ class LinkedInSpider(BaseEMSpider):
         self.logger.info("LINKEDIN_QUERY_COUNT: %s", len(urls))
         return urls
 
+    @staticmethod
+    def _kw_match(keyword: str, text: str) -> bool:
+        """Kelime sınırı ile eşleşme — 'ik' → 'lojistik' false positive'ini önler."""
+        return bool(re.search(rf"\b{re.escape(keyword)}\b", text))
+
     def score_em_relevance(self, title: str, description: str) -> int:
-        combined = self.normalize_turkish(f"{title} {description}")
-        score = 0
+        norm_title = self.normalize_turkish(title)
+        norm_desc = self.normalize_turkish(description)
+        title_score = 0
+        desc_score = 0
+        _T = 2  # title eşleşmesi 2× ağırlık taşır
+
         for keyword in self.EM_HIGH_SIGNAL_KEYWORDS:
-            if self.normalize_turkish(keyword) in combined:
-                score += self.EM_SCORE_WEIGHTS["high"]
+            nkw = self.normalize_turkish(keyword)
+            if self._kw_match(nkw, norm_title):
+                title_score += self.EM_SCORE_WEIGHTS["high"] * _T
+            elif self._kw_match(nkw, norm_desc):
+                desc_score += self.EM_SCORE_WEIGHTS["high"]
+
         for keyword in self.EM_MEDIUM_SIGNAL_KEYWORDS:
-            if self.normalize_turkish(keyword) in combined:
-                score += self.EM_SCORE_WEIGHTS["medium"]
+            nkw = self.normalize_turkish(keyword)
+            if self._kw_match(nkw, norm_title):
+                title_score += self.EM_SCORE_WEIGHTS["medium"] * _T
+            elif self._kw_match(nkw, norm_desc):
+                desc_score += self.EM_SCORE_WEIGHTS["medium"]
+
         for keyword in self.EM_LOW_SIGNAL_KEYWORDS:
-            if self.normalize_turkish(keyword) in combined:
-                score += self.EM_SCORE_WEIGHTS["low"]
+            nkw = self.normalize_turkish(keyword)
+            if self._kw_match(nkw, norm_title):
+                title_score += self.EM_SCORE_WEIGHTS["low"] * _T
+            elif self._kw_match(nkw, norm_desc):
+                desc_score += self.EM_SCORE_WEIGHTS["low"]
+
         for keyword in self.EM_NEGATIVE_SIGNAL_KEYWORDS:
-            if self.normalize_turkish(keyword) in combined:
-                score += self.EM_SCORE_WEIGHTS["negative"]
-        return score
+            nkw = self.normalize_turkish(keyword)
+            if self._kw_match(nkw, norm_title) or self._kw_match(nkw, norm_desc):
+                title_score += self.EM_SCORE_WEIGHTS["negative"]
+
+        # Title sinyali yoksa description tek başına yüksek eşiği (≥6) karşılamalı.
+        # Bu kural "Sosyal Medya Stajyeri" açıklamasındaki "operations+planning" gibi
+        # zayıf description eşleşmelerinden kaynaklanan false positive'leri önler.
+        if title_score <= 0:
+            return desc_score if desc_score >= 6 else 0
+        return title_score + desc_score
 
     def start_requests(self):
         for url in self.build_search_urls():
