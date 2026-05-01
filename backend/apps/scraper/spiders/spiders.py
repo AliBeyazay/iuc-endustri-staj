@@ -831,6 +831,8 @@ class LinkedInSpider(BaseEMSpider):
         "medium": 2,
         "low": 1,
         "negative": -4,
+        "context_confirm": 2,      # EM context keyword reinforces score
+        "context_disqualify": -3,  # Non-EM context keyword reduces score
     }
     EM_HIGH_SIGNAL_KEYWORDS = [
         "endustri muhendisligi",
@@ -890,6 +892,52 @@ class LinkedInSpider(BaseEMSpider):
         "audit",
         "tax",
     ]
+    # Contextual keywords that confirm EM focus (disambiguate ambiguous keywords like "operasyon")
+    EM_CONTEXT_CONFIRM_KEYWORDS = [
+        "imalat",        # manufacturing
+        "uretim",        # production
+        "fabrika",       # factory
+        "fabrika",       # factory
+        "fabrika akislari", # factory flows
+        "montaj",        # assembly
+        "tedarik",       # supply
+        "zincir",        # chain
+        "kalite kontrol", # quality control
+        "iş kesintisiz",  # business continuity
+        "otomasyion",    # automation
+        "makine",        # machine
+        "ekipman",       # equipment
+        "teknoloji",     # technology (in manufacturing context)
+    ]
+    # Contextual keywords that disqualify EM focus (indicate non-EM like retail/e-commerce)
+    NON_EM_CONTEXT_KEYWORDS = [
+        "perakende",     # retail
+        "satış",         # sales
+        "ticaret",       # commerce
+        "e-ticaret",     # e-commerce
+        "eticaret",      # e-commerce
+        "mağaza",        # store
+        "musteri",       # customer service
+        "sosyal medya",  # social media
+        "dijital",       # digital
+        "pazarlama",     # marketing
+        "creative",      # creative
+        "design",        # design
+        "grafik",        # graphic
+    ]
+    # Ambiguous keywords - only count if context confirms EM
+    AMBIGUOUS_KEYWORDS = [
+        "operasyon",
+        "operations",
+        "planlama",
+        "planning",
+        "analiz",
+        "analysis",
+        "koordinasyon", # coordination
+        "coordination",
+        "proje",         # project
+        "project",
+    ]
     MIN_EM_RELEVANCE_SCORE = 3
 
     def build_search_urls(self) -> list[str]:
@@ -925,6 +973,18 @@ class LinkedInSpider(BaseEMSpider):
         desc_score = 0
         _T = 2  # title eşleşmesi 2× ağırlık taşır
 
+        # Check for EM confirming and disqualifying context
+        has_em_context = any(
+            self._kw_match(self.normalize_turkish(kw), norm_title) or 
+            self._kw_match(self.normalize_turkish(kw), norm_desc)
+            for kw in self.EM_CONTEXT_CONFIRM_KEYWORDS
+        )
+        has_non_em_context = any(
+            self._kw_match(self.normalize_turkish(kw), norm_title) or 
+            self._kw_match(self.normalize_turkish(kw), norm_desc)
+            for kw in self.NON_EM_CONTEXT_KEYWORDS
+        )
+
         for keyword in self.EM_HIGH_SIGNAL_KEYWORDS:
             nkw = self.normalize_turkish(keyword)
             if self._kw_match(nkw, norm_title):
@@ -934,10 +994,31 @@ class LinkedInSpider(BaseEMSpider):
 
         for keyword in self.EM_MEDIUM_SIGNAL_KEYWORDS:
             nkw = self.normalize_turkish(keyword)
+            # Skip ambiguous keywords here - they'll be handled separately with context
+            if keyword in self.AMBIGUOUS_KEYWORDS:
+                continue
             if self._kw_match(nkw, norm_title):
                 title_score += self.EM_SCORE_WEIGHTS["medium"] * _T
             elif self._kw_match(nkw, norm_desc):
                 desc_score += self.EM_SCORE_WEIGHTS["medium"]
+
+        # Handle ambiguous keywords with context awareness
+        for keyword in self.AMBIGUOUS_KEYWORDS:
+            nkw = self.normalize_turkish(keyword)
+            if self._kw_match(nkw, norm_title):
+                # Ambiguous keyword in title - use context to decide
+                if has_em_context and not has_non_em_context:
+                    title_score += self.EM_SCORE_WEIGHTS["medium"] * _T + self.EM_SCORE_WEIGHTS["context_confirm"]
+                elif has_non_em_context:
+                    title_score += self.EM_SCORE_WEIGHTS["context_disqualify"]
+                # else: neutral context - don't count it
+            elif self._kw_match(nkw, norm_desc):
+                # Ambiguous keyword in description - use context to decide
+                if has_em_context and not has_non_em_context:
+                    desc_score += self.EM_SCORE_WEIGHTS["medium"] + self.EM_SCORE_WEIGHTS["context_confirm"]
+                elif has_non_em_context:
+                    desc_score += self.EM_SCORE_WEIGHTS["context_disqualify"]
+                # else: neutral context - don't count it
 
         for keyword in self.EM_LOW_SIGNAL_KEYWORDS:
             nkw = self.normalize_turkish(keyword)
