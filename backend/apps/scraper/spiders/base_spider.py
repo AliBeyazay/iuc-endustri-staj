@@ -142,9 +142,12 @@ class BaseEMSpider(scrapy.Spider):
 
     COMPANY_SECTOR_HINTS = {
         "imalat_metal_makine": [
-            "borusan holding", "bsh ev aletleri", "schneider electric",
-            "sisecam", "kordsa", "beko", "koc holding", "zorlu holding",
-            "dogan holding",
+            "borusan holding", "bsh ev aletleri", "b/s/h", "bsh turkiye",
+            "schneider electric", "sisecam", "kordsa", "beko", "arcelik",
+            "vestel", "koc holding", "zorlu holding", "dogan holding",
+            "oyak maden", "oyak maden metalurji", "bias muhendislik",
+            "golgeart", "ermetal", "oerlikon", "sandvik", "trumpf",
+            "bilkent holding", "assan aluminyum", "assan panel",
         ],
         "otomotiv_yan_sanayi": [
             "borusan otomotiv", "toyota turkiye", "bosch", "turktraktor",
@@ -152,23 +155,35 @@ class BaseEMSpider(scrapy.Spider):
             "togg", "otokoc otomotiv", "ford otosan", "otokar",
             "mercedes-benz turk", "mercedes benz turk", "oyak-renault",
             "oyak renault", "dogus otomotiv", "volkswagen", "seat", "porsche",
+            "prometeon", "continental", "faurecia", "denso", "brembo",
+            "trelleborg", "magna international", "mann+hummel", "mann hummel",
+            "teklas", "valeo", "knorr-bremse", "knorr bremse",
         ],
         "yazilim_bilisim_teknoloji": [
-            "turk telekom grubu", "amazon", "softtech", "sap", "microsoft",
-            "vodafone", "paribu", "oracle", "intel", "hepsiburada",
+            "turk telekom grubu", "turk telekom", "amazon", "softtech", "sap",
+            "microsoft", "vodafone", "paribu", "oracle", "intel", "hepsiburada",
             "hepsiburada.com", "sahibinden", "sahibinden.com", "ibm",
             "turkcell", "huawei", "getir", "trendyol", "google", "apple",
             "samsung", "iyzico", "garanti bbva teknoloji", "intertech",
-            "yemeksepeti", "yemeksepeti.com",
+            "yemeksepeti", "yemeksepeti.com", "logo yazilim", "karel",
+            "i2i systems", "medianova", "coderspace", "epam", "epam turkiye",
+            "akakce", "ciceksepeti", "gratis", "n11", "teknosa",
+            "turkcell teknoloji", "fibabanka teknoloji",
         ],
         "hizmet_finans_danismanlik": [
             "kuveyt turk katilim bankasi", "kpmg", "ing", "mckinsey",
-            "mckinsey & company", "turkiye is bankasi", "boston consulting group",
-            "bcg", "hsbc", "garanti bbva", "turkiye finans katilim bankasi",
-            "ziraat bankasi", "teb", "teb bnp paribas", "yapi kredi bankasi",
+            "mckinsey & company", "turkiye is bankasi", "is bankasi",
+            "boston consulting group", "bcg", "hsbc", "garanti bbva",
+            "turkiye finans katilim bankasi", "ziraat bankasi", "teb",
+            "teb bnp paribas", "yapi kredi bankasi", "yapi kredi",
             "pwc", "pricewaterhousecoopers", "deloitte", "fiba grubu",
             "turkiye sigorta", "allianz", "qnb", "halkbank", "denizbank",
             "akbank", "ey", "ernst & young", "merkez bankasi",
+            "sompo", "sompo sigorta", "axa sigorta", "mapfre sigorta",
+            "bupa acibadem", "halk sigorta", "zurich sigorta", "metlife",
+            "aviva", "euler hermes", "marsh", "coface",
+            "token finansal", "papara", "ininal", "fibabanka",
+            "odea bank", "burgan bank", "alternatifbank",
         ],
         "eticaret_perakende_fmcg": [
             "migros", "turk tuborg", "boyner", "eti", "mey diageo",
@@ -182,22 +197,45 @@ class BaseEMSpider(scrapy.Spider):
             "british american tobacco", "bat", "anadolu efes", "jti",
             "japan tobacco international", "pladis", "ulker",
             "coca-cola icecek", "coca cola icecek", "cci", "nestle", "penti",
+            "hayat kimya", "tchibo", "kraft heinz", "beiersdorf", "nivea",
+            "reckitt", "henkel", "kao", "sc johnson",
         ],
         "savunma_havacilik_enerji": [
             "tei", "turk havacilik ve uzay sanayii", "tusas", "fnss", "stm",
             "baykar", "aselsan", "havelsan", "roketsan", "pegasus",
             "turk hava yollari", "thy", "tav havalimanlari", "enerjisa enerji",
             "enerjisa", "petrol ofisi", "siemens", "socar turkiye",
-            "tupras", "kale grubu", "tubitak",
+            "tupras", "kale grubu", "tubitak", "cotesa", "mkek",
+            "sstek", "isbir elektrik", "aygaz", "botas",
         ],
         "gida_kimya_saglik": [
             "sanofi", "johnson & johnson", "johnson johnson", "abdi ibrahim",
-            "novartis", "bilim ilac", "pfizer", "henkel", "astrazeneca",
-            "bayer", "nobel ilac", "roche",
+            "novartis", "bilim ilac", "pfizer", "astrazeneca",
+            "bayer", "nobel ilac", "roche", "dimes", "boston scientific",
+            "medtronic", "abbvie", "merck", "eczacibasi ilac",
+            "biofarma", "santa farma", "onko ilac", "koçak farma",
+            "kocak farma", "sanovel", "deva holding", "bio farma",
         ],
-        "lojistik_tasimacilık": ["dhl group"],
-        "tekstil_moda": ["penti"],
-        "insaat_yapi_malzemeleri": ["cimsa", "eczacibasi toplulugu"],
+        "lojistik_tasimacilık": [
+            "dhl group", "dhl supply chain", "dhl express",
+            "ups", "fedex", "geodis", "ceva logistics",
+            "db schenker", "kuehne nagel", "kuhne nagel", "maersk",
+            "aramex", "yurtici kargo", "mng kargo", "borsa istanbul",
+            "ekol lojistik", "horoz lojistik", "ntv lojistik",
+        ],
+        "tekstil_moda": [
+            "penti", "koton", "defacto", "zara turkiye", "lcw",
+            "lc waikiki tekstil", "bershka", "pull and bear",
+            "kiğılı", "kigili", "altinyildiz", "pierre cardin",
+            "ipekyol", "vakko", "adl group", "orka group",
+        ],
+        "insaat_yapi_malzemeleri": [
+            "cimsa", "eczacibasi toplulugu", "eczacibasi yapi",
+            "lafarge", "vitra", "kaleseramik", "seranit",
+            "dogus insaat", "limak holding", "kalyon insaat",
+            "ic insaat", "enka insaat", "ant yapi", "yapi merkezi",
+            "tekfen insaat",
+        ],
     }
 
     SECTOR_SCORE_WEIGHTS = {
@@ -447,7 +485,7 @@ class BaseEMSpider(scrapy.Spider):
         primary = best_sector
         secondary = second_sector if second_sector and second_best_score >= 2 else None
 
-        if best_score < 3 or confidence < 35 or best_score - second_best_score < 2:
+        if best_score < 2 or confidence < 25 or best_score - second_best_score < 2:
             primary = "diger"
 
         return {
