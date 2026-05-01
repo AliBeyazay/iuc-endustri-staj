@@ -15,6 +15,12 @@ def compute_deadline_status(deadline: date | None) -> str:
     if deadline is None:
         return "unknown"
 
+    if isinstance(deadline, str):
+        try:
+            deadline = date.fromisoformat(deadline)
+        except (ValueError, TypeError):
+            return "unknown"
+
     today = date.today()
     if deadline < today:
         return "expired"

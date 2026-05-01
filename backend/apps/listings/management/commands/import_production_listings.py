@@ -1,4 +1,5 @@
 import json
+from datetime import date
 from decimal import Decimal
 from pathlib import Path
 
@@ -49,7 +50,7 @@ class Command(BaseCommand):
                 "location": self.fit("location", payload.get("location", "")),
                 "description": payload.get("description", ""),
                 "requirements": payload.get("requirements", ""),
-                "application_deadline": payload.get("application_deadline") or None,
+                "application_deadline": self.parse_date(payload.get("application_deadline")),
                 "deadline_status": payload.get("deadline_status") or "unknown",
                 "is_active": bool(payload.get("is_active", True)),
                 "is_talent_program": bool(payload.get("is_talent_program", False)),
@@ -71,6 +72,14 @@ class Command(BaseCommand):
                 f"Production listings imported. created={created} updated={updated} total={Listing.objects.count()}"
             )
         )
+
+    def parse_date(self, value):
+        if not value:
+            return None
+        try:
+            return date.fromisoformat(str(value))
+        except (ValueError, TypeError):
+            return None
 
     def parse_decimal(self, value):
         if value in (None, ""):
