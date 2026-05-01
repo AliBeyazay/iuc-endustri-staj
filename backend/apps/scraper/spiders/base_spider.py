@@ -148,6 +148,9 @@ class BaseEMSpider(scrapy.Spider):
             "oyak maden", "oyak maden metalurji", "bias muhendislik",
             "golgeart", "ermetal", "oerlikon", "sandvik", "trumpf",
             "bilkent holding", "assan aluminyum", "assan panel",
+            "eaton", "eaton turkiye", "signify", "philips lighting",
+            "abb", "abb turkiye", "emerson", "parker hannifin",
+            "smc corporation", "norgren", "festo", "igus",
         ],
         "otomotiv_yan_sanayi": [
             "borusan otomotiv", "toyota turkiye", "bosch", "turktraktor",
@@ -158,6 +161,9 @@ class BaseEMSpider(scrapy.Spider):
             "prometeon", "continental", "faurecia", "denso", "brembo",
             "trelleborg", "magna international", "mann+hummel", "mann hummel",
             "teklas", "valeo", "knorr-bremse", "knorr bremse",
+            "goodyear", "goodyear tire", "autoliv", "phinia",
+            "borgwarner", "schaeffler", "zf friedrichshafen", "zf turkey",
+            "hella", "mahle", "plastic omnium",
         ],
         "yazilim_bilisim_teknoloji": [
             "turk telekom grubu", "turk telekom", "amazon", "softtech", "sap",
@@ -171,6 +177,8 @@ class BaseEMSpider(scrapy.Spider):
             "turkcell teknoloji", "fibabanka teknoloji",
         ],
         "hizmet_finans_danismanlik": [
+            "kiwa", "kiwa turkiye", "bureau veritas", "tuv sud", "tuv nord",
+            "intertek", "sgs turkiye", "sgs group",
             "kuveyt turk katilim bankasi", "kpmg", "ing", "mckinsey",
             "mckinsey & company", "turkiye is bankasi", "is bankasi",
             "boston consulting group", "bcg", "hsbc", "garanti bbva",
@@ -201,12 +209,16 @@ class BaseEMSpider(scrapy.Spider):
             "reckitt", "henkel", "kao", "sc johnson",
         ],
         "savunma_havacilik_enerji": [
-            "tei", "turk havacilik ve uzay sanayii", "tusas", "fnss", "stm",
+            "tei", "tusas engine", "turk havacilik ve uzay sanayii", "tusas", "fnss", "stm",
             "baykar", "aselsan", "havelsan", "roketsan", "pegasus",
             "turk hava yollari", "thy", "tav havalimanlari", "enerjisa enerji",
             "enerjisa", "petrol ofisi", "siemens", "socar turkiye",
             "tupras", "kale grubu", "tubitak", "cotesa", "mkek",
             "sstek", "isbir elektrik", "aygaz", "botas",
+            "alstom", "alstom turkiye", "shell", "shell turkiye",
+            "altinay", "altinay savunma", "aramco", "saudi aramco",
+            "ge aviation", "rolls-royce", "rolls royce", "safran",
+            "thales", "leonardo", "airbus", "boeing", "honeywell",
         ],
         "gida_kimya_saglik": [
             "sanofi", "johnson & johnson", "johnson johnson", "abdi ibrahim",
@@ -215,6 +227,9 @@ class BaseEMSpider(scrapy.Spider):
             "medtronic", "abbvie", "merck", "eczacibasi ilac",
             "biofarma", "santa farma", "onko ilac", "koçak farma",
             "kocak farma", "sanovel", "deva holding", "bio farma",
+            "bimed", "bimed teknik", "biomet", "stryker", "zimmer",
+            "becton dickinson", "bd medical", "fresenius", "baxter",
+            "abbvie turkiye", "eli lilly", "lilly turkiye",
         ],
         "lojistik_tasimacilık": [
             "dhl group", "dhl supply chain", "dhl express",
