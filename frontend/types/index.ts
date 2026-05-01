@@ -131,6 +131,7 @@ export interface FilterState {
   internship_type: InternshipType[]
   company_origin: CompanyOrigin[]
   source_platform: SourcePlatform[]
+  location: string[]
   is_talent_program?: boolean
   search: string
   ordering: string

@@ -251,6 +251,7 @@ export async function buildPublicSnapshotListingsResponse(requestUrl: URL): Prom
   const internshipTypes = new Set(searchParams.getAll('internship_type'))
   const companyOrigins = new Set(searchParams.getAll('company_origin'))
   const sourcePlatforms = new Set(searchParams.getAll('source_platform'))
+  const locations = new Set(searchParams.getAll('location'))
   const deadlineStatuses = new Set(searchParams.getAll('deadline_status'))
   const talentOnly = searchParams.get('is_talent_program') === 'true'
 
@@ -268,6 +269,7 @@ export async function buildPublicSnapshotListingsResponse(requestUrl: URL): Prom
     if (internshipTypes.size > 0 && !internshipTypes.has(listing.internship_type)) return false
     if (companyOrigins.size > 0 && !companyOrigins.has(listing.company_origin)) return false
     if (sourcePlatforms.size > 0 && !sourcePlatforms.has(listing.source_platform)) return false
+    if (locations.size > 0 && !locations.has(listing.location)) return false
     if (deadlineStatuses.size > 0 && !deadlineStatuses.has(listing.deadline_status)) return false
     if (talentOnly && !listing.is_talent_program) return false
 

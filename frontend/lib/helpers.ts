@@ -51,6 +51,19 @@ export const PROGRAM_TYPE_LABELS: Record<string, string> = {
   akademi_bootcamp: 'Akademi / Bootcamp',
 }
 
+export const LOCATION_LIST: { value: string; label: string }[] = [
+  { value: 'İstanbul',  label: 'İstanbul' },
+  { value: 'Ankara',    label: 'Ankara' },
+  { value: 'İzmir',     label: 'İzmir' },
+  { value: 'Bursa',     label: 'Bursa' },
+  { value: 'Kocaeli',   label: 'Kocaeli' },
+  { value: 'Antalya',   label: 'Antalya' },
+  { value: 'Eskişehir', label: 'Eskişehir' },
+  { value: 'Uzak',      label: 'Uzak (Remote)' },
+  { value: 'Hibrit',    label: 'Hibrit' },
+  { value: 'Türkiye',   label: 'Tüm Türkiye' },
+]
+
 export const FOCUS_AREA_LIST: { value: EMFocusArea; label: string }[] = [
   { value: 'imalat_metal_makine', label: 'İmalat, Metal ve Makine' },
   { value: 'otomotiv_yan_sanayi', label: 'Otomotiv ve Yan Sanayi' },
@@ -370,6 +383,7 @@ export function buildQueryString(filters: Partial<FilterState>): string {
   filters.internship_type?.forEach((v) => params.append('internship_type', v))
   filters.company_origin?.forEach((v) => params.append('company_origin', v))
   filters.source_platform?.forEach((v) => params.append('source_platform', v))
+  filters.location?.forEach((v) => params.append('location', v))
 
   return params.toString()
 }

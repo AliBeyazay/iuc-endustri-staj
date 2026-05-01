@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { ChevronDown, Sparkles, X } from 'lucide-react'
 import { FilterState, SourcePlatform } from '@/types'
-import { FOCUS_AREA_LIST, PLATFORM_LABELS } from '@/lib/helpers'
+import { FOCUS_AREA_LIST, LOCATION_LIST, PLATFORM_LABELS } from '@/lib/helpers'
 
 interface Props {
   filters: FilterState
@@ -74,6 +74,7 @@ export default function FilterSidebar({
 
   const hasAnyFilter =
     filters.em_focus_area.length > 0 ||
+    filters.location.length > 0 ||
     filters.source_platform.length > 0 ||
     filters.is_talent_program
 
@@ -178,6 +179,25 @@ export default function FilterSidebar({
 
         <hr className="my-4 border-[#d8ad43]/16" />
 
+        <Section title="Konum" defaultOpen={false}>
+          {LOCATION_LIST.map(({ value, label }) => (
+            <CheckItem
+              key={value}
+              label={label}
+              checked={filters.location.includes(value)}
+              count={listingCounts[`loc_${value}`]}
+              onChange={() =>
+                onFiltersChange({
+                  location: toggleArray(filters.location, value),
+                  page: 1,
+                })
+              }
+            />
+          ))}
+        </Section>
+
+        <hr className="my-4 border-[#d8ad43]/16" />
+
         <Section title="Platform" defaultOpen={false}>
           {platformEntries.map(([val, lbl]) => (
             <CheckItem
@@ -200,6 +220,7 @@ export default function FilterSidebar({
             onClick={() =>
               onFiltersChange({
                 em_focus_area: [],
+                location: [],
                 source_platform: [],
                 is_talent_program: undefined,
                 page: 1,

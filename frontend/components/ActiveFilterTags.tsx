@@ -1,7 +1,7 @@
 'use client'
 
 import { FilterState } from '@/types'
-import { FOCUS_AREA_LABELS, PLATFORM_LABELS } from '@/lib/helpers'
+import { FOCUS_AREA_LABELS, PLATFORM_LABELS, LOCATION_LIST } from '@/lib/helpers'
 
 interface Props {
   filters: FilterState
@@ -21,8 +21,11 @@ function Pill({ label, onRemove }: { label: string; onRemove: () => void }) {
 }
 
 export default function ActiveFilterTags({ filters, onRemove, onClearAll }: Props) {
+  const locationLabels = Object.fromEntries(LOCATION_LIST.map((l) => [l.value, l.label]))
+
   const hasAny =
     filters.em_focus_area.length > 0 ||
+    filters.location.length > 0 ||
     filters.source_platform.length > 0 ||
     filters.is_talent_program
 
@@ -34,6 +37,9 @@ export default function ActiveFilterTags({ filters, onRemove, onClearAll }: Prop
 
       {filters.em_focus_area.map((v) => (
         <Pill key={v} label={FOCUS_AREA_LABELS[v] ?? v} onRemove={() => onRemove('em_focus_area', v)} />
+      ))}
+      {filters.location.map((v) => (
+        <Pill key={v} label={locationLabels[v] ?? v} onRemove={() => onRemove('location', v)} />
       ))}
       {filters.source_platform.map((v) => (
         <Pill key={v} label={PLATFORM_LABELS[v]} onRemove={() => onRemove('source_platform', v)} />

@@ -360,8 +360,55 @@ class BaseEMSpider(scrapy.Spider):
         text = re.sub(r"\s+", " ", text)
         return text.strip()
 
-    def normalize_location(self, text: str) -> str:
-        return self.clean_text(text or "")
+    LOCATION_CANONICAL_MAP: tuple[tuple[str, str], ...] = (
+        ("istanbul",    "İstanbul"),
+        ("izmir",       "İzmir"),
+        ("ankara",      "Ankara"),
+        ("bursa",       "Bursa"),
+        ("kocaeli",     "Kocaeli"),
+        ("gebze",       "Kocaeli"),
+        ("izmit",       "Kocaeli"),
+        ("antalya",     "Antalya"),
+        ("eskisehir",   "Eskişehir"),
+        ("konya",       "Konya"),
+        ("mersin",      "Mersin"),
+        ("gaziantep",   "Gaziantep"),
+        ("adana",       "Adana"),
+        ("kayseri",     "Kayseri"),
+        ("denizli",     "Denizli"),
+        ("samsun",      "Samsun"),
+        ("trabzon",     "Trabzon"),
+        # Istanbul districts
+        ("sisli",       "İstanbul"),
+        ("kadikoy",     "İstanbul"),
+        ("besiktas",    "İstanbul"),
+        ("levent",      "İstanbul"),
+        ("maslak",      "İstanbul"),
+        ("atasehir",    "İstanbul"),
+        ("kartal",      "İstanbul"),
+        ("tuzla",       "İstanbul"),
+        ("pendik",      "İstanbul"),
+        ("sariyer",     "İstanbul"),
+        ("umraniye",    "İstanbul"),
+        ("maltepe",     "İstanbul"),
+        # Remote / hybrid
+        ("uzak",        "Uzak"),
+        ("remote",      "Uzak"),
+        ("home office", "Uzak"),
+        ("uzaktan",     "Uzak"),
+        ("hibrit",      "Hibrit"),
+        ("hybrid",      "Hibrit"),
+    )
+
+    def normalize_location(self, raw: str) -> str:
+        text = self.clean_text(raw or "")
+        if not text:
+            return "Türkiye"
+        norm = self.normalize_turkish(text)
+        for prefix, canonical in self.LOCATION_CANONICAL_MAP:
+            if prefix in norm:
+                return canonical
+        return "Türkiye"
 
     def contains_any_keyword(self, text: str, keywords: list[str]) -> bool:
         normalized = self.normalize_turkish(text or "")

@@ -21,6 +21,7 @@ class ListingFilter(django_filters.FilterSet):
         choices=Listing._meta.get_field('company_origin').choices
     )
     source_platform  = CharInFilter(field_name='source_platform', lookup_expr='in')
+    location         = CharInFilter(field_name='location', lookup_expr='in')
     is_talent_program = django_filters.BooleanFilter()
     deadline_status  = django_filters.MultipleChoiceFilter(
         choices=Listing._meta.get_field('deadline_status').choices
@@ -30,7 +31,7 @@ class ListingFilter(django_filters.FilterSet):
         model  = Listing
         fields = [
             'em_focus_area', 'internship_type', 'company_origin',
-            'source_platform', 'is_talent_program', 'deadline_status',
+            'source_platform', 'location', 'is_talent_program', 'deadline_status',
         ]
 
     def filter_em_focus_area(self, queryset, _name, value):
