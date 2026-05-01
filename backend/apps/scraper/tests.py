@@ -30,6 +30,7 @@ from apps.scraper.youthall_company_names import (
     dedupe_company_names,
     extract_company_names_from_html,
 )
+from apps.listings.models import Listing
 
 
 class YouthallDescriptionExtractionTests(SimpleTestCase):
@@ -594,3 +595,60 @@ class CeleryBeatSyncCommandTests(TestCase):
             managed_names,
         )
         self.assertEqual(PeriodicTask.objects.filter(name='all-scrape').count(), 1)
+
+
+class MeasureSectorsCommandTests(TestCase):
+    def create_listing(self, **overrides):
+        index = Listing.objects.count() + 1
+        payload = {
+            'title': f'Measure Listing {index}',
+            'company_name': f'Example Company {index}',
+            'source_url': f'https://example.com/measure/{index}',
+            'application_url': f'https://example.com/measure/{index}/apply',
+            'source_platform': 'linkedin',
+            'em_focus_area': 'diger',
+            'secondary_em_focus_area': None,
+            'em_focus_confidence': 10,
+            'internship_type': 'belirsiz',
+            'company_origin': 'belirsiz',
+            'location': 'Istanbul',
+            'description': 'Support operations and improvement projects.',
+            'is_active': True,
+        }
+        payload.update(overrides)
+        return Listing.objects.create(**payload)
+
+    def test_measure_sectors_prints_distribution_and_examples(self):
+        self.create_listing(
+            title='Other Example',
+            em_focus_area='diger',
+            em_focus_confidence=12,
+        )
+        self.create_listing(
+            title='Software Example',
+            em_focus_area='yazilim_bilisim_teknoloji',
+            em_focus_confidence=82,
+        )
+        self.create_listing(
+            title='Canonical Parent',
+            em_focus_area='diger',
+            em_focus_confidence=22,
+        )
+        duplicate = self.create_listing(
+            title='Duplicate Child',
+            em_focus_area='diger',
+            em_focus_confidence=99,
+        )
+        canonical = Listing.objects.get(title='Canonical Parent')
+        duplicate.canonical_listing = canonical
+        duplicate.save(update_fields=['canonical_listing'])
+
+        output = StringIO()
+        call_command('measure_sectors', sample_size=5, stdout=output)
+        rendered = output.getvalue()
+
+        self.assertIn('Toplam aktif kanonik ilan: 3', rendered)
+        self.assertIn('yazilim_bilisim_teknoloji', rendered)
+        self.assertIn("--- 'diger' sinifindaki 5 ornek ilan ---", rendered)
+        self.assertIn('Other Example', rendered)
+        self.assertNotIn('Duplicate Child', rendered)
