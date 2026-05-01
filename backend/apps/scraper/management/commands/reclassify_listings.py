@@ -32,10 +32,16 @@ class Command(BaseCommand):
                 listing.source_platform or '',
             )
             new_sector = result['primary']
+            new_secondary = result['secondary']
             new_conf = result['confidence']
 
-            if new_sector != listing.em_focus_area or new_conf != float(listing.em_focus_confidence or 0):
+            if (
+                new_sector != listing.em_focus_area
+                or new_secondary != listing.secondary_em_focus_area
+                or new_conf != float(listing.em_focus_confidence or 0)
+            ):
                 listing.em_focus_area = new_sector
+                listing.secondary_em_focus_area = new_secondary
                 listing.em_focus_confidence = new_conf
                 to_update.append(listing)
                 changed += 1
@@ -43,7 +49,7 @@ class Command(BaseCommand):
         if not dry_run and to_update:
             Listing.objects.bulk_update(
                 to_update,
-                ['em_focus_area', 'em_focus_confidence'],
+                ['em_focus_area', 'secondary_em_focus_area', 'em_focus_confidence'],
                 batch_size=batch_size,
             )
 

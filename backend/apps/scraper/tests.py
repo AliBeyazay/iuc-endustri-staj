@@ -18,6 +18,7 @@ from apps.scraper.tasks import (
     _linkedin_retry_delay,
     _should_retry_linkedin_rate_limit,
 )
+from apps.scraper.spiders.base_spider import BaseEMSpider
 from apps.scraper.spiders.spiders import LinkedInSpider, has_listing_keywords
 from apps.scraper.spiders.spiders import (
     PythianGoSpider,
@@ -300,6 +301,35 @@ class LinkedInTaskHelperTests(SimpleTestCase):
                 {'new_count': 2, 'updated_count': 0, 'skipped_count': 0, 'error_count': 0},
             )
         )
+
+
+class BaseEMSpiderSectorClassificationTests(SimpleTestCase):
+    def setUp(self):
+        self.spider = BaseEMSpider()
+
+    def test_keeps_company_hint_backed_sector_as_primary_when_scores_are_close(self):
+        result = self.spider.get_sector_classification(
+            "Digital Internship Program",
+            "Brand analytics and digital reporting projects.",
+            "L'Oreal",
+            "linkedin",
+        )
+
+        self.assertEqual(result["primary"], "eticaret_perakende_fmcg")
+        self.assertEqual(result["secondary"], "yazilim_bilisim_teknoloji")
+        self.assertLess(result["confidence"], 25)
+
+    def test_uses_best_sector_as_secondary_when_primary_falls_back_to_diger(self):
+        result = self.spider.get_sector_classification(
+            "Brand Digital Internship Program",
+            "Analytics projects.",
+            "Example Company",
+            "linkedin",
+        )
+
+        self.assertEqual(result["primary"], "diger")
+        self.assertEqual(result["secondary"], "yazilim_bilisim_teknoloji")
+        self.assertLess(result["confidence"], 25)
 
 
 class DeadlineParsingHelperTests(SimpleTestCase):

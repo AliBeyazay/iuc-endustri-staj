@@ -431,18 +431,28 @@ class BaseEMSpider(scrapy.Spider):
         weights = {**self.SECTOR_SCORE_WEIGHTS, **self.SOURCE_WEIGHT_ADJUSTMENTS.get(source_platform, {})}
 
         scores = {}
+        sector_signals = {}
 
         for sector, rules in self.EM_SECTOR_RULES.items():
             score = 0
+            signals = {
+                "title_positive_hits": 0,
+                "company_positive_hits": 0,
+                "description_positive_hits": 0,
+                "company_hint_hits": 0,
+            }
 
             for keyword in rules.get("positive", []):
                 normalized_keyword = self.normalize_turkish(keyword)
                 if normalized_keyword in normalized_title:
                     score += weights["title_positive"]
+                    signals["title_positive_hits"] += 1
                 if normalized_keyword in normalized_company:
                     score += weights["company_positive"]
+                    signals["company_positive_hits"] += 1
                 if normalized_keyword in normalized_description:
                     score += weights["description_positive"]
+                    signals["description_positive_hits"] += 1
 
             for keyword in rules.get("negative", []):
                 normalized_keyword = self.normalize_turkish(keyword)
@@ -457,10 +467,12 @@ class BaseEMSpider(scrapy.Spider):
                 normalized_hint = self.normalize_turkish(company_hint)
                 if normalized_hint in normalized_company:
                     score += weights["company_hint"]
+                    signals["company_hint_hits"] += 1
                 elif normalized_hint in normalized_title:
                     score += weights["title_company_hint"]
 
             scores[sector] = score
+            sector_signals[sector] = signals
 
         if not scores:
             return {"primary": "diger", "secondary": None, "confidence": 0.0, "scores": {}}
@@ -484,9 +496,22 @@ class BaseEMSpider(scrapy.Spider):
 
         primary = best_sector
         secondary = second_sector if second_sector and second_best_score >= 2 else None
+        best_signals = sector_signals.get(best_sector, {})
+        has_meaningful_signal = best_score >= 2
+        has_decisive_signal = confidence >= 25 and best_score - second_best_score >= 2
+        has_strong_sector_evidence = (
+            best_signals.get("company_hint_hits", 0) > 0
+            or (best_signals.get("title_positive_hits", 0) + best_signals.get("company_positive_hits", 0)) >= 2
+        )
 
-        if best_score < 2 or confidence < 25 or best_score - second_best_score < 2:
+        # Keep "diger" for genuinely weak/ambiguous cases, but don't discard
+        # a strong best-sector signal just because the runner-up is close.
+        if not has_meaningful_signal:
             primary = "diger"
+            secondary = None
+        elif not has_decisive_signal and not has_strong_sector_evidence:
+            primary = "diger"
+            secondary = best_sector if best_score > second_best_score else None
 
         return {
             "primary": primary,

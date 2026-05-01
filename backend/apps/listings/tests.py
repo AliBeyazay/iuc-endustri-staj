@@ -219,6 +219,7 @@ class ListingDeletionProtectionTests(TestCase):
         self.assertFalse(listing.is_active)
         self.assertGreater(get_listing_list_cache_version(), initial_version)
 
+
     def test_admin_moderation_approve_restores_visibility_and_bumps_cache_version(self):
         listing = self.create_listing(
             title='Pending Approval Listing',
@@ -519,6 +520,52 @@ class ListingDeletionProtectionTests(TestCase):
         self.assertNotIn('average_rating', popular_annotations)
         self.assertNotIn('bookmark_count', top_rated_annotations)
         self.assertNotIn('average_rating', top_rated_annotations)
+
+
+class ListingSecondaryFocusFilterTests(TestCase):
+    def setUp(self):
+        cache.clear()
+        self.api_client = APIClient()
+
+    def create_listing(self, **overrides):
+        index = Listing.objects.count() + 1
+        payload = {
+            'title': f'Test Listing {index}',
+            'company_name': f'Test Company {index}',
+            'source_url': f'https://example.com/listing/{index}',
+            'application_url': f'https://example.com/apply/{index}',
+            'source_platform': 'youthall',
+            'location': 'Istanbul',
+            'description': 'Test description',
+            'application_deadline': date.today() + timedelta(days=30),
+            'em_focus_area': 'diger',
+        }
+        payload.update(overrides)
+        return Listing.objects.create(**payload)
+
+    def test_em_focus_area_filter_matches_primary_and_secondary_focus(self):
+        primary_match = self.create_listing(
+            title='Software Primary',
+            em_focus_area='yazilim_bilisim_teknoloji',
+        )
+        secondary_match = self.create_listing(
+            title='Software Secondary',
+            secondary_em_focus_area='yazilim_bilisim_teknoloji',
+        )
+        other_listing = self.create_listing(
+            title='Finance Listing',
+            em_focus_area='hizmet_finans_danismanlik',
+        )
+
+        response = self.api_client.get('/api/listings/', {
+            'em_focus_area': ['yazilim_bilisim_teknoloji'],
+        })
+
+        self.assertEqual(response.status_code, 200)
+        returned_ids = {item['id'] for item in response.json()['results']}
+        self.assertIn(str(primary_match.id), returned_ids)
+        self.assertIn(str(secondary_match.id), returned_ids)
+        self.assertNotIn(str(other_listing.id), returned_ids)
 
 
 class DummyLogger:

@@ -1,4 +1,5 @@
 import django_filters
+from django.db.models import Q
 
 from .models import Listing
 
@@ -10,7 +11,8 @@ class CharInFilter(django_filters.BaseInFilter, django_filters.CharFilter):
 
 class ListingFilter(django_filters.FilterSet):
     em_focus_area    = django_filters.MultipleChoiceFilter(
-        choices=Listing._meta.get_field('em_focus_area').choices
+        choices=Listing._meta.get_field('em_focus_area').choices,
+        method='filter_em_focus_area',
     )
     internship_type  = django_filters.MultipleChoiceFilter(
         choices=Listing._meta.get_field('internship_type').choices
@@ -30,3 +32,10 @@ class ListingFilter(django_filters.FilterSet):
             'em_focus_area', 'internship_type', 'company_origin',
             'source_platform', 'is_talent_program', 'deadline_status',
         ]
+
+    def filter_em_focus_area(self, queryset, _name, value):
+        if not value:
+            return queryset
+        return queryset.filter(
+            Q(em_focus_area__in=value) | Q(secondary_em_focus_area__in=value)
+        ).distinct()
