@@ -82,13 +82,16 @@ RAW_DATE_PATTERN = (
 
 NORMALIZED_TEXT_PATTERNS = (
     rf"basvuru tarihi[:\s]+(?:\d{{1,2}}[./-]\d{{1,2}}[./-]\d{{4}}\s*[–-]\s*)?({NORMALIZED_DATE_PATTERN})",
-    rf"(?:son basvuru|son basvuru tarihi|ilan bitis tarihi)[:\s]+({NORMALIZED_DATE_PATTERN})",
+    rf"(?:son basvuru|son basvuru tarihi|ilan bitis tarihi|basvuru son tarihi)[:\s]+({NORMALIZED_DATE_PATTERN})",
+    rf"({NORMALIZED_DATE_PATTERN})\s+tarihine kadar\s+(?:basvur|kabul)",
 )
 
 RAW_TEXT_PATTERNS = (
-    rf"(?:Application Deadline|Job Posting End Date|Deadline)[:\s]+({RAW_DATE_PATTERN})",
+    rf"(?:Application Deadline|Job Posting End Date|Deadline|Closing[- ]?[Dd]ate)[:\s]+({RAW_DATE_PATTERN})",
     rf"Last day to apply(?: is)?[:\s]+({RAW_DATE_PATTERN})",
-    rf"Apply till[:\s]+({RAW_DATE_PATTERN})",
+    rf"Apply (?:till|by|before)[:\s]+({RAW_DATE_PATTERN})",
+    rf"Closes?(?: on)?[:\s]+({RAW_DATE_PATTERN})",
+    rf"Applications? (?:close|due)(?: by)?[:\s]+({RAW_DATE_PATTERN})",
 )
 
 NORMALIZED_SIGNAL_PATTERNS = (

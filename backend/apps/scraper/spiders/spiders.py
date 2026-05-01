@@ -648,8 +648,6 @@ def extract_deadline_from_remote_page(spider: BaseEMSpider, url: str) -> date | 
 
     return None
 
-def extract_deadline_from_remote_page(spider: BaseEMSpider, url: str) -> date | None:
-    return extract_deadline_from_remote_page_helper(url, allow_past=False)
 
 
 class KariyerSpider(BaseEMSpider):
@@ -703,9 +701,15 @@ class KariyerSpider(BaseEMSpider):
         raw_dl = page_title.rsplit("-", 1)[-1].strip()
         deadline = self.parse_deadline(raw_dl)
 
-        if raw_dl and deadline is None:
+        # Only skip if the suffix IS a valid date that's already expired.
+        # Non-date suffixes (e.g. "Bosch", "kariyer.net") must not drop the listing.
+        if deadline is not None and deadline < date.today():
             self.logger.info("KARIYER_SKIPPED_EXPIRED: %s", title)
             return
+
+        # Title suffix didn't yield a date — try the full page text.
+        if deadline is None:
+            deadline = extract_deadline_from_text(text)
 
         if not self.filter_by_keywords(title, description):
             self.logger.info("KARIYER_SKIPPED_NOT_EM: %s", title)
@@ -966,6 +970,11 @@ class LinkedInSpider(BaseEMSpider):
         )
         raw_dl = response.css("span.closing-time::text, span[class*='deadline']::text").get()
         deadline = self.parse_deadline(raw_dl)
+
+        # span.closing-time is absent in LinkedIn's static HTML (JS-rendered).
+        # Try the description text as a fallback.
+        if deadline is None and desc:
+            deadline = extract_deadline_from_text(desc)
 
         if raw_dl and deadline is None:
             self.logger.info("LINKEDIN_SKIPPED_EXPIRED: %s", title)
