@@ -7,7 +7,9 @@ python manage.py migrate
 python manage.py ensure_admin
 python manage.py reset_password
 python manage.py verify_students
-python manage.py import_production_listings
+
+# Import production listings - allow to fail without stopping server
+python manage.py import_production_listings || echo "Warning: import_production_listings failed but server will continue"
 
 if [ "${RUN_DEMO_SEED:-false}" = "true" ]; then
   python manage.py seed_demo_listings
