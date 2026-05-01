@@ -497,21 +497,39 @@ class BaseEMSpider(scrapy.Spider):
         primary = best_sector
         secondary = second_sector if second_sector and second_best_score >= 2 else None
         best_signals = sector_signals.get(best_sector, {})
-        has_meaningful_signal = best_score >= 2
-        has_decisive_signal = confidence >= 25 and best_score - second_best_score >= 2
-        has_strong_sector_evidence = (
-            best_signals.get("company_hint_hits", 0) > 0
-            or (best_signals.get("title_positive_hits", 0) + best_signals.get("company_positive_hits", 0)) >= 2
-        )
-
-        # Keep "diger" for genuinely weak/ambiguous cases, but don't discard
-        # a strong best-sector signal just because the runner-up is close.
-        if not has_meaningful_signal:
+        
+        # More inclusive classification:
+        # - Title match alone is strong evidence
+        # - Company hints are strong indicators
+        # - 2+ description hits indicate relevant sector
+        # - Only default to "diger" if no signals at all (score = 0)
+        has_title_signal = best_signals.get("title_positive_hits", 0) > 0
+        has_company_hint = best_signals.get("company_hint_hits", 0) > 0
+        has_multiple_description_hits = best_signals.get("description_positive_hits", 0) >= 2
+        has_meaningful_signal = best_score >= 1  # More inclusive: even 1 point is meaningful
+        
+        # Only use "diger" if genuinely no signals (score=0) or extremely weak/ambiguous
+        # Don't use "diger" if we have:
+        # - Title keyword match, OR
+        # - Company hint, OR
+        # - Multiple description matches
+        if best_score == 0:
+            # No signals at all
             primary = "diger"
             secondary = None
-        elif not has_decisive_signal and not has_strong_sector_evidence:
-            primary = "diger"
-            secondary = best_sector if best_score > second_best_score else None
+        elif has_title_signal or has_company_hint or has_multiple_description_hits:
+            # Strong indicator - keep the primary sector
+            primary = best_sector
+            secondary = second_sector if second_sector and second_best_score >= 1 else None
+        elif best_score >= 3:
+            # Reasonable score - keep the primary sector
+            primary = best_sector
+            secondary = second_sector if second_sector and second_best_score >= 1 else None
+        else:
+            # Very weak signal - only use "diger" if confidence is extremely low
+            # This prevents the catch-all from capturing real EM positions
+            primary = best_sector if best_score > 0 else "diger"
+            secondary = None
 
         return {
             "primary": primary,
