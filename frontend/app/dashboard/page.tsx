@@ -147,6 +147,8 @@ export default function DashboardPage() {
   const [addAppOpen, setAddAppOpen] = useState(false)
   const [addAppSearch, setAddAppSearch] = useState('')
   const [debouncedAddAppSearch, setDebouncedAddAppSearch] = useState('')
+  const [draggedAppId, setDraggedAppId] = useState<string | null>(null)
+  const [dragOverColumn, setDragOverColumn] = useState<ApplicationStatus | null>(null)
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedAddAppSearch(addAppSearch.trim()), 300)
@@ -470,6 +472,7 @@ export default function DashboardPage() {
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               {APPLICATION_STATUSES.map((column) => {
                 const columnItems = applications.filter((item) => item.status === column.key)
+                const isDragOver = dragOverColumn === column.key
                 const borderColor =
                   column.key === 'basvurdum' ? 'border-t-blue-500' :
                   column.key === 'mulakat' ? 'border-t-yellow-500' :
@@ -480,8 +483,33 @@ export default function DashboardPage() {
                   column.key === 'mulakat' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' :
                   column.key === 'kabul' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
                   'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                
                 return (
-                  <div key={column.key} className={`rounded-xl border border-gray-200 border-t-[3px] bg-white p-3 dark:border-white/10 dark:bg-[#1a2d45] ${borderColor}`}>
+                  <div
+                    key={column.key}
+                    onDragOver={(e) => {
+                      e.preventDefault()
+                      setDragOverColumn(column.key)
+                    }}
+                    onDragLeave={() => {
+                      setDragOverColumn(null)
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault()
+                      setDragOverColumn(null)
+                      if (draggedAppId) {
+                        const draggedApp = applications.find(a => a.id === draggedAppId)
+                        if (draggedApp && draggedApp.status !== column.key) {
+                          handleUpdateApplication(draggedAppId, { status: column.key })
+                        }
+                      }
+                    }}
+                    className={`rounded-xl border border-t-[3px] p-3 transition-colors ${
+                      isDragOver
+                        ? 'border-dashed border-gray-400 bg-gray-50/50 dark:border-gray-500 dark:bg-[#1a2d45]/50'
+                        : 'border-gray-200 bg-white dark:border-white/10 dark:bg-[#1a2d45]'
+                    } ${borderColor}`}
+                  >
                     <div className="mb-3 flex items-center justify-between">
                       <p className="text-xs font-bold uppercase tracking-wider text-[#132843] dark:text-[#e7edf4]">{column.label}</p>
                       <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${badgeColor}`}>
@@ -490,10 +518,25 @@ export default function DashboardPage() {
                     </div>
                     <div className="space-y-2">
                       {columnItems.length === 0 ? (
-                        <p className="rounded-lg bg-gray-50 px-3 py-3 text-center text-[11px] text-gray-400 dark:bg-white/5 dark:text-[#e7edf4]/40">Kayıt yok</p>
+                        <p className="rounded-lg bg-gray-50 px-3 py-3 text-center text-[11px] text-gray-400 dark:bg-white/5 dark:text-[#e7edf4]/40">Sürükle bırak</p>
                       ) : (
                         columnItems.map((item) => (
-                          <div key={item.id} className="rounded-lg border border-gray-100 bg-gray-50 p-2.5 dark:border-white/8 dark:bg-white/5">
+                          <div
+                            key={item.id}
+                            draggable
+                            onDragStart={(e) => {
+                              setDraggedAppId(item.id)
+                              // Firefox needs data to be set for drag to work
+                              e.dataTransfer.setData('text/plain', item.id)
+                            }}
+                            onDragEnd={() => {
+                              setDraggedAppId(null)
+                              setDragOverColumn(null)
+                            }}
+                            className={`cursor-grab rounded-lg border border-gray-100 bg-gray-50 p-2.5 transition-opacity active:cursor-grabbing dark:border-white/8 dark:bg-white/5 ${
+                              draggedAppId === item.id ? 'opacity-50' : 'opacity-100 hover:shadow-sm'
+                            }`}
+                          >
                             <button type="button" onClick={() => router.push(`/listings/${item.listing.id}`)} className="w-full text-left">
                               <p className="line-clamp-2 text-xs font-semibold text-[#132843] dark:text-[#e7edf4]">{item.listing.title}</p>
                               <p className="mt-0.5 text-[10px] text-gray-500 dark:text-[#e7edf4]/50">{item.listing.company_name}</p>
@@ -504,7 +547,7 @@ export default function DashboardPage() {
                             <select
                               value={item.status}
                               onChange={(event) => handleUpdateApplication(item.id, { status: event.target.value as ApplicationStatus })}
-                              className="mt-2 h-7 w-full rounded-lg border border-gray-200 bg-white px-2 text-[11px] text-[#132843] outline-none dark:border-white/10 dark:bg-[#0e1e33] dark:text-[#e7edf4]"
+                              className="mt-2 h-7 w-full cursor-pointer rounded-lg border border-gray-200 bg-white px-2 text-[11px] text-[#132843] outline-none dark:border-white/10 dark:bg-[#0e1e33] dark:text-[#e7edf4]"
                             >
                               {APPLICATION_STATUSES.map((s) => (
                                 <option key={s.key} value={s.key}>{s.label}</option>
