@@ -137,9 +137,23 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
 
         # Title keywords (exclude short / common words)
         _STOP = {
-            'staj', 'stajyer', 'stajyeri', 'intern', 'internship',
-            'mühendis', 'mühendisi', 'endüstri', 'uzman', 'uzmanı',
-            've', 'ile', 'için', 'veya', 'olan', 'olarak',
+            # Generic internship labels
+            'staj', 'stajyer', 'stajyeri', 'intern', 'internship', 'trainee',
+            # Seniority / role modifiers
+            'junior', 'senior', 'lead', 'uzman', 'uzmanı', 'yetkili', 'asistan',
+            'asistanı', 'koordinatör', 'koordinatörü', 'sorumlu', 'sorumlusu',
+            # Common engineering titles that appear in almost every listing
+            'mühendis', 'mühendisi', 'mühendislik', 'endüstri', 'endüstriyel',
+            'tekniker', 'teknikeri', 'teknisyen',
+            # Program / period markers
+            'program', 'programı', 'programi', 'dönem', 'donemi', 'dönemi',
+            'yaz', 'kış', 'guz', 'bahar', 'summer', 'winter',
+            # Employment-type words
+            'yarı', 'yari', 'zamanlı', 'zamanli', 'parttime', 'fulltime',
+            'tam', 'remote', 'uzaktan', 'hibrit', 'hybrid', 'ofis',
+            # Turkish conjunctions / prepositions
+            've', 'ile', 'için', 'icin', 'veya', 'olan', 'olarak', 'gibi',
+            'kadar', 'sonra', 'önce', 'once', 'üzere',
         }
         title_words = [
             w for w in re.split(r'\s+', listing.title.lower())
