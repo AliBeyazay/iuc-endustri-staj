@@ -99,6 +99,8 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
         #   - Negatif anahtar kelime filtresi  (NegativeKeyword modeli, cache'li)
         #   - Bozuk encoding gizleme           (title/company_name '?' içerenleri dışlar)
         qs = get_public_listing_queryset()
+        if self.action == 'list':
+            qs = qs.defer('description', 'requirements')
         exclude_id = self.request.query_params.get('exclude')
         if exclude_id:
             qs = qs.exclude(id=exclude_id)
