@@ -1,10 +1,22 @@
 from .base import *
 import os
 import dj_database_url
+from django.core.exceptions import ImproperlyConfigured
 
 DEBUG = False
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+# Raise immediately if the secret key is the insecure placeholder or missing.
+_secret_key = os.environ.get('SECRET_KEY', '')
+if not _secret_key or _secret_key == 'change-me-in-production':
+    raise ImproperlyConfigured('SECRET_KEY env var must be set in production.')
+SECRET_KEY = _secret_key
+
+# Never fall back to * — an unset ALLOWED_HOSTS is a misconfigured deployment.
+ALLOWED_HOSTS = [
+    h.strip()
+    for h in os.environ.get('ALLOWED_HOSTS', '.onrender.com').split(',')
+    if h.strip()
+]
 
 # Railway provides DATABASE_URL; fall back to individual DB_* vars from base.py
 _database_url = os.environ.get('DATABASE_URL')
@@ -15,17 +27,23 @@ if _database_url:
 
 MIDDLEWARE = ['config.healthcheck.HealthcheckMiddleware', 'django.middleware.security.SecurityMiddleware', 'whitenoise.middleware.WhiteNoiseMiddleware', *[m for m in MIDDLEWARE if m not in ('config.healthcheck.HealthcheckMiddleware', 'django.middleware.security.SecurityMiddleware')]]
 
-# CORS — allow Vercel frontend
-CORS_ALLOWED_ORIGINS = os.environ.get(
-    'CORS_ALLOWED_ORIGINS',
-    'https://iuc-endustri-staj.vercel.app,http://localhost:3000',
-).split(',')
+# CORS — allow Vercel frontend.
+# Strip and drop empty strings so a trailing comma in the env var never
+# produces an empty origin that django-cors-headers rejects loudly.
+CORS_ALLOWED_ORIGINS = [
+    o.strip()
+    for o in os.environ.get(
+        'CORS_ALLOWED_ORIGINS',
+        'https://iuc-endustri-staj.vercel.app,http://localhost:3000',
+    ).split(',')
+    if o.strip()
+]
 CORS_ALLOW_CREDENTIALS = True
 
 # Security
 SECURE_PROXY_SSL_HEADER    = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST       = True
-SECURE_SSL_REDIRECT         = os.environ.get('SECURE_SSL_REDIRECT', 'False').lower() == 'true'
+SECURE_SSL_REDIRECT         = os.environ.get('SECURE_SSL_REDIRECT', 'True').lower() == 'true'
 SESSION_COOKIE_SECURE       = True
 CSRF_COOKIE_SECURE          = True
 SECURE_BROWSER_XSS_FILTER   = True

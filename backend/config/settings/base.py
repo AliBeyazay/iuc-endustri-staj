@@ -26,6 +26,7 @@ def _resolve_environment() -> str:
         return 'dev'
     return 'dev' if os.environ.get('DEBUG', 'False').lower() == 'true' else 'prod'
 
+# Dev fallback only — prod.py raises ImproperlyConfigured if this is not overridden.
 SECRET_KEY = os.environ.get('SECRET_KEY', 'change-me-in-production')
 DEBUG      = False
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost').split(',')
