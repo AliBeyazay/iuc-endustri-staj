@@ -124,6 +124,10 @@ function getOrderingValue(sortBy: SortOption) {
   }
 }
 
+// When the user has typed a text query, fetch a larger pool so client-side
+// ranking can find the most relevant items across all matches, not just 1 page.
+const SEARCH_MODE_LIMIT = 100
+
 function buildListingsApiQuery(params: {
   page: number
   query: string
@@ -133,7 +137,13 @@ function buildListingsApiQuery(params: {
   sortBy: SortOption
 }) {
   const searchParams = new URLSearchParams()
-  searchParams.set('page', String(params.page))
+  const isTextSearch = params.query.trim().length > 0
+  if (isTextSearch) {
+    searchParams.set('page', '1')
+    searchParams.set('limit', String(SEARCH_MODE_LIMIT))
+  } else {
+    searchParams.set('page', String(params.page))
+  }
   searchParams.set('ordering', getOrderingValue(params.sortBy))
 
   const queryIntent = extractSmartSearchIntent(params.query)
@@ -396,6 +406,9 @@ export default function ListingsPageClient({
     },
   )
 
+  // True when the user has typed text — we fetched a large pool and rank client-side.
+  const isTextSearch = debouncedQuery.trim().length > 0
+
   const listings = useMemo(() => {
     if (!swrData) return []
     const items = Array.isArray(swrData)
@@ -405,6 +418,14 @@ export default function ListingsPageClient({
         : []
     return rankListingsBySearch(items as Listing[], debouncedQuery)
   }, [swrData, debouncedQuery])
+
+  // In text-search mode the full ranked pool is already fetched; slice for display.
+  // In filter-only mode the backend already returned the correct page.
+  const displayedListings = useMemo(() => {
+    if (!isTextSearch) return listings
+    const start = (currentPage - 1) * ITEMS_PER_PAGE
+    return listings.slice(start, start + ITEMS_PER_PAGE)
+  }, [isTextSearch, listings, currentPage])
 
   const totalCount = useMemo(() => {
     if (!swrData) return 0
@@ -493,7 +514,10 @@ export default function ListingsPageClient({
     }).length
   }, [listings])
 
-  const totalPages = Math.max(1, Math.ceil(totalCount / ITEMS_PER_PAGE))
+  // Text-search: paginate over the ranked local pool. Filter-only: use backend total.
+  const totalPages = isTextSearch
+    ? Math.max(1, Math.ceil(listings.length / ITEMS_PER_PAGE))
+    : Math.max(1, Math.ceil(totalCount / ITEMS_PER_PAGE))
 
   const pageWindow = useMemo(() => {
     const start = Math.max(1, currentPage - 2)
@@ -503,14 +527,14 @@ export default function ListingsPageClient({
   }, [currentPage, totalPages])
 
   const visibleRange = useMemo(() => {
-    if (totalCount === 0 || listings.length === 0) {
+    if (totalCount === 0 || displayedListings.length === 0) {
       return { start: 0, end: 0 }
     }
 
     const start = (currentPage - 1) * ITEMS_PER_PAGE + 1
-    const end = start + listings.length - 1
+    const end = start + displayedListings.length - 1
     return { start, end }
-  }, [currentPage, listings.length, totalCount])
+  }, [currentPage, displayedListings.length, totalCount])
 
   useEffect(() => {
     setCurrentPage(1)
@@ -942,7 +966,7 @@ export default function ListingsPageClient({
             ) : (
               <>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  {listings.map((item) => {
+                  {displayedListings.map((item) => {
                     return (
                       <article
                         key={item.id}
