@@ -131,9 +131,18 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
 
         company = listing.company_name.strip().lower()
 
-        # Extract city from location
+        # Extract city from location — skip work-model tokens that appear before
+        # the city name (e.g. "Remote - İstanbul" → "İstanbul", not "Remote").
+        _NON_CITY = {
+            'remote', 'uzaktan', 'hibrit', 'hybrid', 'onsite',
+            'ofis', 'yerinde', 'online', 'home', 'office',
+        }
         loc = listing.location or ''
-        city = re.split(r'[,/()\-]', loc)[0].strip()
+        loc_parts = [p.strip() for p in re.split(r'[,/()\-]', loc) if p.strip()]
+        city = next(
+            (p for p in loc_parts if p.lower() not in _NON_CITY and len(p) > 2),
+            '',
+        )
 
         # Title keywords (exclude short / common words)
         _STOP = {
