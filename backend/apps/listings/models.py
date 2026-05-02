@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Avg, F
 from django.db.models.functions import Greatest
@@ -26,8 +27,14 @@ class Student(AbstractUser):
     USERNAME_FIELD = 'iuc_email'
     REQUIRED_FIELDS = ['username']
 
-    def validate_iuc_email(self):
-        return self.iuc_email.endswith('@ogr.iuc.edu.tr') or self.iuc_email.endswith('@iuc.edu.tr')
+    def clean(self):
+        super().clean()
+        if self.iuc_email and not (self.iuc_email.endswith('@ogr.iuc.edu.tr') or self.iuc_email.endswith('@iuc.edu.tr')):
+            raise ValidationError({'iuc_email': 'Sadece @ogr.iuc.edu.tr veya @iuc.edu.tr uzantılı e-posta adresleri kabul edilmektedir.'})
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     @property
     def completion_percentage(self) -> int:
