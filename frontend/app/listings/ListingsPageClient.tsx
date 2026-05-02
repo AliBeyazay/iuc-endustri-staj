@@ -393,10 +393,13 @@ export default function ListingsPageClient({
 
   const shouldUseInitialData = Boolean(initialData) && swrKey === initialSWRKey
 
-  type FacetData = { em_focus_area: Record<string, number>; source_platform: Record<string, number> }
-  const { data: facetData } = useSWR<FacetData>(
+  const { data: facetData } = useSWR(
     '/api/listings/facets',
-    listingsFetcher as (url: string) => Promise<FacetData>,
+    async (url: string) => {
+      const res = await fetch(url)
+      if (!res.ok) throw new Error()
+      return res.json() as Promise<{ em_focus_area: Record<string, number>; source_platform: Record<string, number> }>
+    },
     { revalidateOnFocus: false, dedupingInterval: 300_000 },
   )
 
