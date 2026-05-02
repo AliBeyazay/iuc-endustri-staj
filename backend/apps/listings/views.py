@@ -147,44 +147,66 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
         ][:5]
 
         # ── Scoring via annotations ──────────────────────────────
+        # Weight rationale:
+        #   company +20  — strongest signal; same employer = directly related role
+        #   sector  +8/+5 — same field is highly relevant
+        #   city    +6  — location matters to applicants
+        #   type    +4  — zorunlu vs gönüllü is a hard constraint for many students
+        #   origin  +3  — yerli/yabancı is a soft preference signal
+        #   keyword +3  — title overlap is informative but should not overpower company
+        # Max keyword contribution: 5 × 3 = 15 < company alone (20)
         score = Value(0, output_field=IntegerField())
 
-        # Same company  → +10
+        # Same company → +20
         score = score + Case(
-            When(company_name__iexact=company, then=Value(10)),
+            When(company_name__iexact=company, then=Value(20)),
             default=Value(0), output_field=IntegerField(),
         )
 
-        # Same primary em_focus_area → +5
+        # Same primary em_focus_area → +8
         score = score + Case(
-            When(em_focus_area=listing.em_focus_area, then=Value(5)),
+            When(em_focus_area=listing.em_focus_area, then=Value(8)),
             default=Value(0), output_field=IntegerField(),
         )
 
-        # Secondary focus cross-match → +3
+        # Secondary focus cross-match → +5
         if listing.secondary_em_focus_area:
             score = score + Case(
-                When(em_focus_area=listing.secondary_em_focus_area, then=Value(3)),
-                When(secondary_em_focus_area=listing.em_focus_area, then=Value(3)),
+                When(em_focus_area=listing.secondary_em_focus_area, then=Value(5)),
+                When(secondary_em_focus_area=listing.em_focus_area, then=Value(5)),
                 default=Value(0), output_field=IntegerField(),
             )
         else:
             score = score + Case(
-                When(secondary_em_focus_area=listing.em_focus_area, then=Value(3)),
+                When(secondary_em_focus_area=listing.em_focus_area, then=Value(5)),
                 default=Value(0), output_field=IntegerField(),
             )
 
-        # Same city → +4
+        # Same city → +6
         if city and len(city) > 2:
             score = score + Case(
-                When(location__icontains=city, then=Value(4)),
+                When(location__icontains=city, then=Value(6)),
                 default=Value(0), output_field=IntegerField(),
             )
 
-        # Title keyword overlap → +2 each
+        # Same internship type → +4 (skip when ambiguous)
+        if listing.internship_type and listing.internship_type != 'belirsiz':
+            score = score + Case(
+                When(internship_type=listing.internship_type, then=Value(4)),
+                default=Value(0), output_field=IntegerField(),
+            )
+
+        # Same company origin → +3 (skip when ambiguous)
+        if listing.company_origin and listing.company_origin != 'belirsiz':
+            score = score + Case(
+                When(company_origin=listing.company_origin, then=Value(3)),
+                default=Value(0), output_field=IntegerField(),
+            )
+
+        # Title keyword overlap → +3 each
         for word in title_words:
             score = score + Case(
-                When(title__icontains=word, then=Value(2)),
+                When(title__icontains=word, then=Value(3)),
                 default=Value(0), output_field=IntegerField(),
             )
 
@@ -210,6 +232,12 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
                 reasons.append('secondary_focus')
             if city and len(city) > 2 and city.lower() in obj.location.lower():
                 reasons.append('location')
+            if listing.internship_type and listing.internship_type != 'belirsiz' \
+               and obj.internship_type == listing.internship_type:
+                reasons.append('internship_type')
+            if listing.company_origin and listing.company_origin != 'belirsiz' \
+               and obj.company_origin == listing.company_origin:
+                reasons.append('company_origin')
             if any(w in obj.title.lower() for w in title_words):
                 reasons.append('title')
             item['match_reasons'] = reasons
