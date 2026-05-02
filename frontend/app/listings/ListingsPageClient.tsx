@@ -393,6 +393,25 @@ export default function ListingsPageClient({
 
   const shouldUseInitialData = Boolean(initialData) && swrKey === initialSWRKey
 
+  type FacetData = { em_focus_area: Record<string, number>; source_platform: Record<string, number> }
+  const { data: facetData } = useSWR<FacetData>(
+    '/api/listings/facets',
+    listingsFetcher as (url: string) => Promise<FacetData>,
+    { revalidateOnFocus: false, dedupingInterval: 300_000 },
+  )
+
+  const sectorCount = useCallback((sectorValue: string): number => {
+    if (!facetData?.em_focus_area) return 0
+    const key = Object.entries(FOCUS_AREA_LABELS).find(([, v]) => v === sectorValue)?.[0]
+    return key ? (facetData.em_focus_area[key] ?? 0) : 0
+  }, [facetData])
+
+  const platformCount = useCallback((platformLabel: string): number => {
+    if (!facetData?.source_platform) return 0
+    const key = Object.entries(PLATFORM_LABELS).find(([, v]) => v === platformLabel)?.[0]
+    return key ? (facetData.source_platform[key] ?? 0) : 0
+  }, [facetData])
+
   const { data: swrData, error: swrError, isLoading: loading } = useSWR<PaginatedResponse<Listing>>(
     swrKey,
     listingsFetcher,
@@ -825,6 +844,7 @@ export default function ListingsPageClient({
               <ul className="space-y-1">
                 {SIDEBAR_SECTORS.map((sector) => {
                   const isActive = selectedSectors.includes(sector.value)
+                  const count = sectorCount(sector.value)
                   return (
                     <li key={sector.value}>
                       <button
@@ -838,7 +858,12 @@ export default function ListingsPageClient({
                         )}
                       >
                         <span className="text-lg">{sector.icon}</span>
-                        {sector.label}
+                        <span className="flex-1 text-left">{sector.label}</span>
+                        {count > 0 && (
+                          <span className={classNames('text-xs tabular-nums', isActive ? 'opacity-70' : 'text-gray-400 dark:text-gray-500')}>
+                            {count}
+                          </span>
+                        )}
                       </button>
                     </li>
                   )
@@ -852,6 +877,7 @@ export default function ListingsPageClient({
               <ul className="space-y-1">
                 {platformOptions.map((platform) => {
                   const isActive = selectedPlatforms.includes(platform)
+                  const count = platformCount(platform)
                   return (
                     <li key={platform}>
                       <button
@@ -864,7 +890,12 @@ export default function ListingsPageClient({
                             : 'text-gray-600 hover:bg-gray-100 hover:text-[#132843] dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-[#e7edf4]',
                         )}
                       >
-                        {platform}
+                        <span className="flex-1 text-left">{platform}</span>
+                        {count > 0 && (
+                          <span className={classNames('text-xs tabular-nums', isActive ? 'opacity-70' : 'text-gray-400 dark:text-gray-500')}>
+                            {count}
+                          </span>
+                        )}
                       </button>
                     </li>
                   )

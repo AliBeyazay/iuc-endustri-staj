@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 from django.conf import settings
 from django.core.cache import cache
 from django.core.mail import send_mail
-from django.db.models import Case, IntegerField, Q, Value, When
+from django.db.models import Case, Count, IntegerField, Q, Value, When
 from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, permissions, status, viewsets
@@ -123,6 +123,50 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
         # ?limit is now handled by ListingPageNumberPagination (page_size_query_param).
         # No manual slice here — keeps count/next/previous correct.
         return super().filter_queryset(queryset)
+
+    @action(detail=False, methods=['get'])
+    def facets(self, request):
+        """
+        Returns active-listing counts per em_focus_area and source_platform.
+        Sector counts use the same OR logic as ListingFilter (primary OR secondary).
+        Response is cached for 5 minutes.
+        """
+        cache_key = 'listing-facets'
+        try:
+            cached = cache.get(cache_key)
+        except Exception:
+            cached = None
+
+        if cached is not None:
+            return Response(cached)
+
+        qs = get_public_listing_queryset()
+
+        # Sector facets — a listing counts for sector X when either its
+        # primary OR secondary em_focus_area equals X (mirrors the filter).
+        sector_choices = [c[0] for c in Listing._meta.get_field('em_focus_area').choices]
+        sector_facets = {
+            key: qs.filter(
+                Q(em_focus_area=key) | Q(secondary_em_focus_area=key)
+            ).count()
+            for key in sector_choices
+        }
+
+        # Platform facets — one query, grouped by source_platform.
+        platform_facets = dict(
+            qs.values('source_platform')
+            .annotate(count=Count('id'))
+            .values_list('source_platform', 'count')
+        )
+
+        data = {'em_focus_area': sector_facets, 'source_platform': platform_facets}
+
+        try:
+            cache.set(cache_key, data, timeout=LISTING_LIST_CACHE_TTL_SECONDS)
+        except Exception:
+            pass
+
+        return Response(data)
 
     @action(detail=True, methods=['get'])
     def similar(self, request, pk=None):
