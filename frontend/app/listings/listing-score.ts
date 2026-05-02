@@ -139,6 +139,12 @@ export function getListingSearchScore(
     }
   }
 
+  // Backend FTS signal: SearchRank is 0–1; scaled to ≈ a strong title+company hit (150).
+  // Rewards linguistic matches (stemming, co-occurrence) the client scorer can't see.
+  if (listing.search_rank != null && listing.search_rank > 0) {
+    score += listing.search_rank * 150
+  }
+
   return score
 }
 

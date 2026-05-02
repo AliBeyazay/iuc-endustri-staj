@@ -55,6 +55,7 @@ export interface Listing {
   homepage_featured_summary?: string | null
   created_at: string
   updated_at: string
+  search_rank?: number | null
 }
 
 export interface HomepageFeaturedListing {

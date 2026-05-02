@@ -115,6 +115,11 @@ class ListingSerializer(serializers.ModelSerializer):
 
 
 class ListingListSerializer(serializers.ModelSerializer):
+    search_rank = serializers.SerializerMethodField()
+
+    def get_search_rank(self, obj):
+        return getattr(obj, 'search_rank', None)
+
     class Meta:
         model = Listing
         fields = [
@@ -126,6 +131,7 @@ class ListingListSerializer(serializers.ModelSerializer):
             'is_active', 'is_talent_program', 'program_type', 'duration_weeks',
             'moderation_status',
             'created_at',
+            'search_rank',
         ]
 
     def to_representation(self, instance):
