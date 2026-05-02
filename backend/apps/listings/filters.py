@@ -28,9 +28,17 @@ class FuzzySearchFilter(filters.SearchFilter):
             return super().filter_queryset(request, queryset, view)
 
     def _fuzzy_filter(self, queryset, view, search_terms):
+        from django.contrib.postgres.search import SearchQuery, SearchRank
+        
         search_fields = [f.lstrip('^=@$') for f in getattr(view, 'search_fields', [])]
 
         conditions = Q()
+        full_query = ' '.join(search_terms)
+        search_query = SearchQuery(full_query)
+        
+        # Fast GIN index vector matching
+        conditions |= Q(search_vector=search_query)
+
         for term in search_terms:
             # Exact substring match across all configured search fields
             for field in search_fields:
@@ -39,6 +47,10 @@ class FuzzySearchFilter(filters.SearchFilter):
             conditions |= Q(title__trigram_word_similar=term)
             conditions |= Q(company_name__trigram_word_similar=term)
 
+        # Annotate with search_rank so the frontend/client can use it for sorting
+        queryset = queryset.annotate(
+            search_rank=SearchRank('search_vector', search_query)
+        )
         return queryset.filter(conditions).distinct()
 
 

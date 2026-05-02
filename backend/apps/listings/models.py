@@ -8,6 +8,8 @@ from django.dispatch import receiver
 import uuid
 
 from .sync import invalidate_listing_list_cache, suppress_listing_source
+from django.contrib.postgres.search import SearchVectorField
+from django.contrib.postgres.indexes import GinIndex
 
 
 LISTING_CACHE_EXEMPT_UPDATE_FIELDS = frozenset({'moderation_note', 'moderated_at', 'updated_at'})
@@ -171,6 +173,7 @@ class Listing(models.Model):
         db_index=True,
         help_text='0-100 arası kalite skoru. (Açıklama uzunluğu, deadline vb. metriklerle)'
     )
+    search_vector = SearchVectorField(null=True, blank=True)
     moderation_note = models.TextField(blank=True, default='')
     moderated_at = models.DateTimeField(null=True, blank=True)
     canonical_listing = models.ForeignKey(
@@ -198,6 +201,9 @@ class Listing(models.Model):
         ordering = ['-quality_score', '-created_at']
         verbose_name = 'İlan'
         verbose_name_plural = 'İlanlar'
+        indexes = [
+            GinIndex(fields=['search_vector']),
+        ]
 
     def calculate_quality_score(self) -> int:
         score = 0
@@ -231,6 +237,20 @@ class Listing(models.Model):
 
         self.quality_score = self.calculate_quality_score()
         super().save(*args, **kwargs)
+
+        # Update search_vector using PostgreSQL functions
+        from django.db import connection
+        if connection.vendor == 'postgresql':
+            from django.contrib.postgres.search import SearchVector
+            Listing.objects.filter(pk=self.pk).update(
+                search_vector=(
+                    SearchVector('title', weight='A') +
+                    SearchVector('company_name', weight='A') +
+                    SearchVector('location', weight='B') +
+                    SearchVector('description', weight='C') +
+                    SearchVector('requirements', weight='C')
+                )
+            )
 
     def __str__(self):
         return f'{self.title} - {self.company_name}'
