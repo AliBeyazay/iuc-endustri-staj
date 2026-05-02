@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 from django.conf import settings
 from django.core.cache import cache
+from django.db import connection
 from django.core.mail import send_mail
 from django.db.models import Case, Count, IntegerField, Q, Value, When
 from django.utils.timezone import now
@@ -179,9 +180,21 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
         return urlencode(normalized_items, doseq=True)
 
     def filter_queryset(self, queryset):
-        # ?limit is now handled by ListingPageNumberPagination (page_size_query_param).
-        # No manual slice here — keeps count/next/previous correct.
-        return super().filter_queryset(queryset)
+        qs = super().filter_queryset(queryset)
+        search_term = self.request.query_params.get('search', '').strip()
+        if search_term and connection.vendor == 'postgresql':
+            try:
+                from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
+                vector = (
+                    SearchVector('title', weight='A', config='simple') +
+                    SearchVector('company_name', weight='B', config='simple') +
+                    SearchVector('requirements', weight='C', config='simple')
+                )
+                query = SearchQuery(search_term, config='simple', search_type='websearch')
+                qs = qs.annotate(search_rank=SearchRank(vector, query)).order_by('-search_rank', '-created_at')
+            except Exception:
+                pass
+        return qs
 
     @action(detail=False, methods=['get'])
     def facets(self, request):
