@@ -22,7 +22,8 @@ from rest_framework.test import APIClient
 from apps.listings.admin import ListingAdmin
 from apps.listings.cache_keys import get_listing_list_cache_version
 from apps.listings.eligibility import classify_student_eligibility
-from apps.listings.models import Bookmark, Listing, Review, SuppressedListingSource
+from apps.listings.models import Bookmark, Listing, NegativeKeyword, Review, SuppressedListingSource
+from apps.listings.public_listings import get_public_listing_queryset
 from apps.listings.runtime import get_admin_runtime_info
 from apps.listings.sync import delete_listing_groups
 from apps.listings.views import ListingViewSet
@@ -363,6 +364,33 @@ class ListingDeletionProtectionTests(TestCase):
         self.assertEqual(response.status_code, 200)
         results = response.json()['results']
         self.assertNotIn('Deleted Via Admin Log', [item['title'] for item in results])
+
+    def test_public_listing_queryset_excludes_negative_keywords(self):
+        NegativeKeyword.objects.create(keyword='casino')
+        blocked = self.create_listing(
+            title='Casino Operations Intern',
+            source_url='https://example.com/listing/casino-ops',
+        )
+        allowed = self.create_listing(
+            title='Supply Chain Intern',
+            source_url='https://example.com/listing/supply-chain',
+        )
+
+        results = list(get_public_listing_queryset())
+
+        self.assertIn(allowed, results)
+        self.assertNotIn(blocked, results)
+
+    def test_public_listing_queryset_uses_compact_exists_sql_for_negative_keywords(self):
+        for keyword in ['casino', 'bahis', 'bet', 'poker']:
+            NegativeKeyword.objects.create(keyword=keyword)
+
+        sql = str(get_public_listing_queryset().query)
+
+        self.assertIn('EXISTS', sql)
+        self.assertIn('listings_negativekeyword', sql)
+        self.assertNotIn('title LIKE %casino%', sql)
+        self.assertNotIn('company_name LIKE %casino%', sql)
 
     def test_listing_api_ignores_legacy_duration_bucket_query_param(self):
         short_listing = self.create_listing(

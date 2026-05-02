@@ -3,8 +3,9 @@ from datetime import date
 from django.contrib.admin.models import DELETION, LogEntry
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
-from django.db.models import CharField, Q, Value
+from django.db.models import BooleanField, CharField, Q, Value
 from django.db.models.functions import Concat
+from django.db.models.expressions import RawSQL
 
 from .cache_keys import get_listing_list_cache_version
 from .models import Listing, NegativeKeyword
@@ -75,11 +76,24 @@ def get_public_listing_queryset(*, only_approved: bool = False, only_featured: b
     queryset = queryset.exclude(deadline_status='expired')
     queryset = queryset.exclude(application_deadline__lt=date.today())
 
-    negative_filters = Q()
-    for keyword in get_negative_keywords():
-        negative_filters |= Q(title__icontains=keyword) | Q(company_name__icontains=keyword)
-    if negative_filters:
-        queryset = queryset.exclude(negative_filters)
+    if get_negative_keywords():
+        listing_table = Listing._meta.db_table
+        negative_keyword_table = NegativeKeyword._meta.db_table
+        negative_keyword_exists_sql = f"""
+            EXISTS (
+                SELECT 1
+                FROM {negative_keyword_table} nk
+                WHERE LOWER({listing_table}.title) LIKE '%%' || LOWER(nk.keyword) || '%%'
+                   OR LOWER({listing_table}.company_name) LIKE '%%' || LOWER(nk.keyword) || '%%'
+            )
+        """
+        queryset = queryset.annotate(
+            has_negative_keyword=RawSQL(
+                negative_keyword_exists_sql,
+                [],
+                output_field=BooleanField(),
+            )
+        ).filter(has_negative_keyword=False)
 
     queryset = queryset.exclude(title__contains='?').exclude(company_name__contains='?')
 
