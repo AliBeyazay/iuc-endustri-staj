@@ -38,6 +38,13 @@ def healthcheck(_request):
     return JsonResponse({'status': 'ok'})
 
 
+from django_otp.admin import OTPAdminSite
+
+class EnforceOTPAdminSite(OTPAdminSite):
+    pass
+
+admin.site.__class__ = EnforceOTPAdminSite
+
 urlpatterns = [
     path('', healthcheck, name='root-healthcheck'),
     path('admin/', admin.site.urls),
