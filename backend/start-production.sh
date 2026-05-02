@@ -8,8 +8,21 @@ python manage.py ensure_admin
 python manage.py reset_password
 python manage.py verify_students
 
-# Import production listings - allow to fail without stopping server
-python manage.py import_production_listings || echo "Warning: import_production_listings failed but server will continue"
+# Bootstrap from fixture only when the DB is empty (fresh deployment).
+# Subsequent deploys skip this so Celery Beat's live writes are never overwritten.
+LISTING_COUNT=$(python -c "
+import os, django
+os.environ.setdefault('DJANGO_SETTINGS_MODULE','config.settings.prod')
+django.setup()
+from apps.listings.models import Listing
+print(Listing.objects.count())
+" 2>/dev/null || echo "0")
+if [ "$LISTING_COUNT" = "0" ]; then
+  python manage.py import_production_listings || echo "Warning: bootstrap import failed"
+  echo "DB bootstrapped from fixture"
+else
+  echo "DB has ${LISTING_COUNT} listings — skipping fixture import"
+fi
 
 if [ "${RUN_DEMO_SEED:-false}" = "true" ]; then
   python manage.py seed_demo_listings
