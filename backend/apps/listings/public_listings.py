@@ -3,15 +3,14 @@ from datetime import date
 from django.contrib.admin.models import DELETION, LogEntry
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
-from django.db.models import BooleanField, CharField, Q, Value
-from django.db.models.functions import Concat
+from django.db.models import BooleanField
 from django.db.models.expressions import RawSQL
 
 from .cache_keys import get_listing_list_cache_version
 from .models import Listing, NegativeKeyword
 
 NEGATIVE_KEYWORDS_CACHE_TTL = 300
-DELETED_LISTING_REPRS_CACHE_TTL = 300
+DELETED_LISTING_IDS_CACHE_TTL = 300
 
 
 def get_negative_keywords() -> list[str]:
@@ -34,34 +33,34 @@ def get_negative_keywords() -> list[str]:
     return keywords
 
 
-def get_deleted_listing_object_reprs() -> list[str]:
+def get_deleted_listing_ids() -> list[str]:
     cache_version = get_listing_list_cache_version()
-    cache_key = f'deleted_listing_object_reprs:v{cache_version}'
+    cache_key = f'deleted_listing_ids:v{cache_version}'
     try:
-        deleted_reprs = cache.get(cache_key)
+        deleted_ids = cache.get(cache_key)
     except Exception:
-        deleted_reprs = None
+        deleted_ids = None
 
-    if deleted_reprs is None:
+    if deleted_ids is None:
         try:
             content_type = ContentType.objects.get_for_model(Listing)
-            deleted_reprs = list(
+            deleted_ids = list(
                 LogEntry.objects.filter(
                     content_type=content_type,
                     action_flag=DELETION,
                 )
-                .values_list('object_repr', flat=True)
+                .values_list('object_id', flat=True)
                 .distinct()
             )
         except Exception:
-            deleted_reprs = []
+            deleted_ids = []
 
         try:
-            cache.set(cache_key, deleted_reprs, timeout=DELETED_LISTING_REPRS_CACHE_TTL)
+            cache.set(cache_key, deleted_ids, timeout=DELETED_LISTING_IDS_CACHE_TTL)
         except Exception:
             pass
 
-    return deleted_reprs
+    return deleted_ids
 
 
 def get_public_listing_queryset(*, only_approved: bool = False, only_featured: bool = False):
@@ -97,16 +96,9 @@ def get_public_listing_queryset(*, only_approved: bool = False, only_featured: b
 
     queryset = queryset.exclude(title__contains='?').exclude(company_name__contains='?')
 
-    deleted_object_reprs = get_deleted_listing_object_reprs()
-    if deleted_object_reprs:
-        queryset = queryset.annotate(
-            admin_object_repr=Concat(
-                'title',
-                Value(' - '),
-                'company_name',
-                output_field=CharField(),
-            )
-        ).exclude(admin_object_repr__in=deleted_object_reprs)
+    deleted_ids = get_deleted_listing_ids()
+    if deleted_ids:
+        queryset = queryset.exclude(id__in=deleted_ids)
 
     return queryset
 
