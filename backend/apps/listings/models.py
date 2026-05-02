@@ -166,6 +166,11 @@ class Listing(models.Model):
         default='approved',
         db_index=True,
     )
+    quality_score = models.SmallIntegerField(
+        default=0,
+        db_index=True,
+        help_text='0-100 arası kalite skoru. (Açıklama uzunluğu, deadline vb. metriklerle)'
+    )
     moderation_note = models.TextField(blank=True, default='')
     moderated_at = models.DateTimeField(null=True, blank=True)
     canonical_listing = models.ForeignKey(
@@ -190,9 +195,25 @@ class Listing(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ['-quality_score', '-created_at']
         verbose_name = 'İlan'
         verbose_name_plural = 'İlanlar'
+
+    def calculate_quality_score(self) -> int:
+        score = 0
+        if self.description and len(self.description) > 200:
+            score += 20
+        if self.requirements and len(self.requirements.strip()) > 0:
+            score += 20
+        if self.application_deadline:
+            score += 20
+        if self.duration_weeks:
+            score += 15
+        if self.company_logo_url:
+            score += 15
+        if self.application_url:
+            score += 10
+        return min(score, 100)
 
     def save(self, *args, **kwargs):
         # Compute deadline status if not manually set to a special state like 'upcoming'
@@ -208,6 +229,7 @@ class Listing(models.Model):
         if self.deadline_status == 'expired':
             self.is_active = False
 
+        self.quality_score = self.calculate_quality_score()
         super().save(*args, **kwargs)
 
     def __str__(self):
