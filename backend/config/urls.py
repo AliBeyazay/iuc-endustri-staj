@@ -3,6 +3,8 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.http import JsonResponse
+from django.db import connection
+from django.core.cache import cache
 from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
@@ -15,6 +17,24 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
 
 def healthcheck(_request):
+    errors = {}
+
+    try:
+        connection.ensure_connection()
+    except Exception as exc:
+        errors['db'] = str(exc)
+
+    cache_backend = settings.CACHES.get('default', {}).get('BACKEND', '')
+    if 'redis' in cache_backend.lower():
+        try:
+            cache.set('__health__', '1', timeout=10)
+            if cache.get('__health__') != '1':
+                errors['redis'] = 'read/write mismatch'
+        except Exception as exc:
+            errors['redis'] = str(exc)
+
+    if errors:
+        return JsonResponse({'status': 'error', 'errors': errors}, status=503)
     return JsonResponse({'status': 'ok'})
 
 

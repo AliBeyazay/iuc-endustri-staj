@@ -6,6 +6,6 @@ class HealthcheckMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        if request.path in {"", "/", "/health", "/health/"}:
+        if request.path in {"", "/"}:
             return HttpResponse("ok", content_type="text/plain")
         return self.get_response(request)
