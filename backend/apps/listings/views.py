@@ -57,7 +57,7 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = ListingFilter
     pagination_class = ListingPageNumberPagination
-    search_fields = ['title', 'company_name', 'description', 'location']
+    search_fields = ['title', 'company_name', 'location', 'requirements']
     ordering_fields = [
         'created_at',
         'application_deadline',
