@@ -23,9 +23,10 @@ export function getListingSearchScore(
   const description = normalizeSearchValue(listing.description ?? '')
   const companyAndTitle = `${company} ${title}`
 
-  let score = 0         // fixed signals: company/platform/sector keys + full-text
-  let tokenScore = 0    // raw-token signals, normalized before adding to score
+  let score = 0            // fixed signals: company/platform/sector keys + full-text
+  let tokenScore = 0       // title/company/platform/location — ratio-weighted
   let matchedTokenCount = 0
+  let descriptionScore = 0 // description — secondary bonus, capped, NOT ratio-weighted
 
   queryIntent.companyKeys.forEach((companyKey) => {
     const canonicalCompany = normalizeSearchValue(COMPANY_QUERY_LABELS[companyKey] ?? '')
@@ -72,17 +73,20 @@ export function getListingSearchScore(
       return
     }
     if (description.includes(token)) {
-      tokenScore += 4
-      matchedTokenCount += 1
+      // Description is a weak secondary signal: tracked separately so it
+      // cannot inflate matchedTokenCount and thereby boost the ratio.
+      descriptionScore += 2
     }
   })
 
-  // Multiply token score by match ratio (matched / total).
-  // - All tokens matched  → ratio 1.0, full token score (replaces the old flat +40 bonus)
-  // - Partial match       → proportional reduction
-  // - 1-token title match → 28 × 1.0 = 28, always beats 5-token description-only (20 × 1.0 = 20)
+  // Ratio weights title/company/platform/location matches; description is excluded
+  // so a listing cannot achieve a high ratio purely through description hits.
   const tokenCount = queryIntent.rawTokens.length
   score += tokenCount > 0 ? tokenScore * (matchedTokenCount / tokenCount) : 0
+
+  // Description bonus: capped at 8 so it always stays below a single title
+  // match (28). Even 20 tokens in description contribute at most 8 points.
+  score += Math.min(descriptionScore, 8)
 
   if (normalizedSearchText) {
     if (title.includes(normalizedSearchText)) {
