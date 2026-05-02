@@ -26,7 +26,7 @@ from rest_framework.views import APIView
 from config.throttle import SafeScopedRateThrottle
 
 from .cache_keys import get_listing_list_cache_version
-from .filters import ListingFilter
+from .filters import FuzzySearchFilter, ListingFilter
 from .models import Application, Bookmark, Listing, Review, ScraperLog, Student
 from .pagination import ListingPageNumberPagination
 from .public_listings import get_public_listing_queryset
@@ -54,7 +54,7 @@ ENCODING_QUALITY_CACHE_TTL_SECONDS = 300
 
 class ListingViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Listing.objects.filter(is_active=True)
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [DjangoFilterBackend, FuzzySearchFilter, filters.OrderingFilter]
     filterset_class = ListingFilter
     pagination_class = ListingPageNumberPagination
     search_fields = ['title', 'company_name', 'location', 'requirements']
