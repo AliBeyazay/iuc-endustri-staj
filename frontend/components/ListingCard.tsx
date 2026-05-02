@@ -8,6 +8,7 @@ import {
   PLATFORM_LABELS,
   getInitials, getAvatarColor, timeAgoTurkish, getDeadlineDisplay,
 } from '@/lib/helpers'
+import DeadlineCountdown from '@/components/DeadlineCountdown'
 
 interface Props {
   listing: Listing
@@ -129,7 +130,10 @@ export default function ListingCard({ listing, isBookmarked, onBookmark }: Props
       </div>
 
       <div className="flex items-center justify-between border-t border-[#d8ad43]/12 pt-3">
-        {deadline.label ? (
+        {listing.deadline_status === 'urgent' && listing.application_deadline ? (
+          // Live countdown for urgent (≤7 days) deadlines
+          <DeadlineCountdown deadline={listing.application_deadline} size="sm" />
+        ) : deadline.label ? (
           <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold ${deadlineClass}`}>
             <Clock size={11} />
             {deadline.label}

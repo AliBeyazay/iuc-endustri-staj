@@ -99,6 +99,18 @@ python manage.py sync_celery_beat
 
 ### Frontend
 
+> **Ön koşul — Node.js**  
+> Node.js'i **sisteme** kur; klasöre kopyalama. Önerilen yol:
+> ```bash
+> # Windows — winget (PowerShell)
+> winget install OpenJS.NodeJS.LTS
+>
+> # veya https://nodejs.org/en/download adresinden LTS installer'ı indir
+> ```
+> Kurulum sonrası `node -v` ile `v22.x` veya üzerini gördüğünü doğrula.
+> `frontend/node-v22.14.0-win-x64/` veya `*.zip` gibi klasörleri repoya **ekleme** —
+> bunlar `.gitignore`'da zaten engelleniyor.
+
 ```bash
 cd frontend
 npm install

@@ -42,3 +42,4 @@ frontend/node-v22.14.0-win-x64.zip
 # IDE
 .idea/
 .vscode/
+.vercel

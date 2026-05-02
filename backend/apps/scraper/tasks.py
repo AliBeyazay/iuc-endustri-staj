@@ -123,6 +123,22 @@ def run_single_spider(self, spider_name: str):
 
         _log_scraper(spider_name, started_at, finished_at, **stats)
         logger.info(f'SPIDER_OK [{spider_name}]: {stats}')
+
+        # ── Zero-items alert ─────────────────────────────────────────────────
+        # A spider that exits 0 but yields nothing is the classic symptom of a
+        # broken selector (e.g. LinkedIn / Youthall silently changed their DOM).
+        # Log at WARNING so Sentry / log-based alerts can fire immediately.
+        items_produced = stats.get('new_count', 0) + stats.get('updated_count', 0)
+        if items_produced == 0:
+            logger.warning(
+                'SPIDER_ZERO_ITEMS [%s]: spider finished successfully but produced '
+                '0 new or updated items — selectors may be broken. '
+                'skipped=%s errors=%s',
+                spider_name,
+                stats.get('skipped_count', 0),
+                stats.get('error_count', 0),
+            )
+
         return {'spider': spider_name, 'status': 'ok', **stats}
 
     except subprocess.TimeoutExpired:

@@ -1,7 +1,7 @@
 # ════════════════════════════════════════════════════════════════
 # backend/requirements.txt
 # ════════════════════════════════════════════════════════════════
-Django==5.0.*
+Django==5.2.*                  # LTS (EOL Apr 2028); was 5.0.* which hit EOL Apr 2025
 djangorestframework==3.15.*
 djangorestframework-simplejwt==5.3.*
 django-cors-headers==4.3.*
@@ -14,8 +14,8 @@ boto3==1.34.*
 
 # Scraping
 scrapy==2.11.*
-scrapy-playwright==0.0.34
-playwright==1.44.*
+scrapy-playwright==0.0.40      # was 0.0.34; keeps up with Playwright API changes
+playwright==1.52.*             # was 1.44.*; needed for current LinkedIn/Youthall layouts
 beautifulsoup4==4.12.*
 lxml==5.2.*
 itemadapter==0.9.*
