@@ -5,8 +5,14 @@ export DJANGO_SETTINGS_MODULE=config.settings.prod
 
 python manage.py migrate
 python manage.py ensure_admin
-python manage.py reset_password
-python manage.py verify_students
+
+# One-shot account bootstrap — set BOOTSTRAP_ACCOUNTS=true once, then unset.
+# Never leave this enabled: anyone who can trigger a deploy can reset all passwords.
+if [ "${BOOTSTRAP_ACCOUNTS:-false}" = "true" ]; then
+  python manage.py reset_password
+  python manage.py verify_students
+  echo "Bootstrap: passwords reset and students verified."
+fi
 
 # Bootstrap from fixture only when the DB is empty (fresh deployment).
 # Subsequent deploys skip this so Celery Beat's live writes are never overwritten.
