@@ -23,7 +23,8 @@ export function getListingSearchScore(
   const description = normalizeSearchValue(listing.description ?? '')
   const companyAndTitle = `${company} ${title}`
 
-  let score = 0
+  let score = 0         // fixed signals: company/platform/sector keys + full-text
+  let tokenScore = 0    // raw-token signals, normalized before adding to score
   let matchedTokenCount = 0
 
   queryIntent.companyKeys.forEach((companyKey) => {
@@ -51,34 +52,37 @@ export function getListingSearchScore(
 
   queryIntent.rawTokens.forEach((token) => {
     if (title.includes(token)) {
-      score += 28
+      tokenScore += 28
       matchedTokenCount += 1
       return
     }
     if (company.includes(token)) {
-      score += 24
+      tokenScore += 24
       matchedTokenCount += 1
       return
     }
     if (platform.includes(token) || sector.includes(token)) {
-      score += 14
+      tokenScore += 14
       matchedTokenCount += 1
       return
     }
     if (location.includes(token)) {
-      score += 10
+      tokenScore += 10
       matchedTokenCount += 1
       return
     }
     if (description.includes(token)) {
-      score += 4
+      tokenScore += 4
       matchedTokenCount += 1
     }
   })
 
-  if (queryIntent.rawTokens.length > 1 && matchedTokenCount === queryIntent.rawTokens.length) {
-    score += 40
-  }
+  // Multiply token score by match ratio (matched / total).
+  // - All tokens matched  → ratio 1.0, full token score (replaces the old flat +40 bonus)
+  // - Partial match       → proportional reduction
+  // - 1-token title match → 28 × 1.0 = 28, always beats 5-token description-only (20 × 1.0 = 20)
+  const tokenCount = queryIntent.rawTokens.length
+  score += tokenCount > 0 ? tokenScore * (matchedTokenCount / tokenCount) : 0
 
   if (normalizedSearchText) {
     if (title.includes(normalizedSearchText)) {
