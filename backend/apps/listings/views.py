@@ -6,6 +6,7 @@ import random
 import re
 import secrets
 import urllib.request
+from urllib.parse import urlencode
 from collections import Counter
 from datetime import date, timedelta
 
@@ -50,6 +51,22 @@ from .serializers import (
 LISTING_LIST_CACHE_TTL_SECONDS = 300
 HOMEPAGE_FEATURED_CACHE_TTL_SECONDS = 300
 ENCODING_QUALITY_CACHE_TTL_SECONDS = 300
+CACHEABLE_LIST_QUERY_PARAMS = frozenset({
+    'page',
+    'limit',
+    'ordering',
+    'em_focus_area',
+    'internship_type',
+    'company_origin',
+    'source_platform',
+    'is_talent_program',
+    'deadline_status',
+})
+UNCACHEABLE_LIST_QUERY_PARAMS = frozenset({
+    'search',
+    'exclude',
+    'location',
+})
 
 
 class ListingViewSet(viewsets.ReadOnlyModelViewSet):
@@ -91,20 +108,23 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
     def list(self, request, *args, **kwargs):
         try:
             cache_key = self._get_list_cache_key(request)
-            try:
-                cached_payload = cache.get(cache_key)
-            except Exception:
-                cached_payload = None
+            cached_payload = None
+            if cache_key is not None:
+                try:
+                    cached_payload = cache.get(cache_key)
+                except Exception:
+                    cached_payload = None
 
             if cached_payload is not None:
                 return Response(cached_payload)
 
             response = super().list(request, *args, **kwargs)
             if response.status_code == status.HTTP_200_OK:
-                try:
-                    cache.set(cache_key, response.data, timeout=LISTING_LIST_CACHE_TTL_SECONDS)
-                except Exception:
-                    pass
+                if cache_key is not None:
+                    try:
+                        cache.set(cache_key, response.data, timeout=LISTING_LIST_CACHE_TTL_SECONDS)
+                    except Exception:
+                        pass
                 try:
                     query = request.query_params.get('search', '').strip()
                     if query:
@@ -130,10 +150,33 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
             )
 
     def _get_list_cache_key(self, request) -> str:
-        fingerprint = request.get_full_path()
+        fingerprint = self._get_cacheable_list_fingerprint(request)
+        if fingerprint is None:
+            return None
         digest = hashlib.md5(fingerprint.encode('utf-8')).hexdigest()
         cache_version = get_listing_list_cache_version()
         return f'listing-list:v{cache_version}:{digest}'
+
+    def _get_cacheable_list_fingerprint(self, request) -> str | None:
+        query_params = request.query_params
+        param_keys = set(query_params.keys())
+
+        if param_keys & UNCACHEABLE_LIST_QUERY_PARAMS:
+            return None
+        if param_keys - CACHEABLE_LIST_QUERY_PARAMS:
+            return None
+
+        normalized_items = []
+        for key in sorted(param_keys):
+            values = [value for value in query_params.getlist(key) if value != '']
+            if not values:
+                continue
+            if key not in {'page', 'limit', 'ordering'}:
+                values = sorted(values)
+            for value in values:
+                normalized_items.append((key, value))
+
+        return urlencode(normalized_items, doseq=True)
 
     def filter_queryset(self, queryset):
         # ?limit is now handled by ListingPageNumberPagination (page_size_query_param).

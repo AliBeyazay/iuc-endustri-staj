@@ -550,6 +550,41 @@ class ListingDeletionProtectionTests(TestCase):
         self.assertNotIn('average_rating', top_rated_annotations)
 
 
+class ListingListCacheKeyTests(SimpleTestCase):
+    def setUp(self):
+        self.view = ListingViewSet()
+        self.view.action = 'list'
+
+    def test_get_list_cache_key_skips_high_cardinality_queries(self):
+        self.assertIsNone(
+            self.view._get_list_cache_key(SimpleNamespace(query_params=QueryDict('search=samsung')))
+        )
+        self.assertIsNone(
+            self.view._get_list_cache_key(SimpleNamespace(query_params=QueryDict('exclude=abc123')))
+        )
+        self.assertIsNone(
+            self.view._get_list_cache_key(SimpleNamespace(query_params=QueryDict('location=Istanbul')))
+        )
+
+    def test_get_list_cache_key_normalizes_filter_order(self):
+        first_request = SimpleNamespace(
+            query_params=QueryDict('em_focus_area=yazilim_bilisim_teknoloji&em_focus_area=diger&page=2&limit=20')
+        )
+        second_request = SimpleNamespace(
+            query_params=QueryDict('limit=20&page=2&em_focus_area=diger&em_focus_area=yazilim_bilisim_teknoloji')
+        )
+
+        self.assertEqual(
+            self.view._get_list_cache_key(first_request),
+            self.view._get_list_cache_key(second_request),
+        )
+
+    def test_get_list_cache_key_skips_unknown_params(self):
+        request = SimpleNamespace(query_params=QueryDict('foo=bar&page=1'))
+
+        self.assertIsNone(self.view._get_list_cache_key(request))
+
+
 class ListingSecondaryFocusFilterTests(TestCase):
     def setUp(self):
         cache.clear()
