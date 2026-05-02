@@ -985,17 +985,102 @@ export default function ListingsPageClient({
                 </button>
               </div>
             ) : listings.length === 0 ? (
-              <div className="rounded-xl border border-gray-200 bg-white p-10 text-center shadow-sm dark:border-white/10 dark:bg-[#1a2d45]">
+              <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm dark:border-white/10 dark:bg-[#1a2d45]">
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#d8ad43]/10">
                   <svg className="h-8 w-8 text-[#d8ad43]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                   </svg>
                 </div>
-                <p className="text-lg font-semibold text-[#132843] dark:text-[#e7edf4]">Sonuç bulunamadı</p>
-                <p className="mt-2 text-sm text-gray-500 dark:text-[#e7edf4]/50">Seçtiğin filtre kombinasyonu fazla dar olabilir.</p>
-                <button type="button" onClick={clearAllFilters} className="mt-4 rounded-lg bg-[#132843] px-4 py-2 text-sm font-medium text-white">
-                  Filtreleri temizle
-                </button>
+                <p className="text-center text-lg font-semibold text-[#132843] dark:text-[#e7edf4]">
+                  {debouncedQuery ? `"${debouncedQuery}" için sonuç bulunamadı` : 'Bu filtrelerle sonuç bulunamadı'}
+                </p>
+                <p className="mt-2 text-center text-sm text-gray-500 dark:text-[#e7edf4]/50">
+                  Arama kriterlerini genişletmek için aşağıdaki önerileri dene.
+                </p>
+
+                {(debouncedQuery || selectedSectors.length > 0 || selectedPlatforms.length > 0 || talentOnly) && (
+                  <div className="mt-6">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-[#e7edf4]/40">
+                      Aktif kriterler — kaldırmak için tıkla
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {debouncedQuery && (
+                        <button
+                          type="button"
+                          onClick={() => { setQuery(''); setDebouncedQuery('') }}
+                          className="inline-flex items-center gap-1.5 rounded-full border border-[#132843]/20 bg-[#132843]/5 px-3 py-1.5 text-xs font-medium text-[#132843] transition-colors hover:bg-[#132843]/10 dark:border-white/20 dark:bg-white/10 dark:text-[#e7edf4]"
+                        >
+                          🔍 &ldquo;{debouncedQuery}&rdquo; <span className="opacity-60">×</span>
+                        </button>
+                      )}
+                      {selectedSectors.map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => setSelectedSectors(selectedSectors.filter((x) => x !== s))}
+                          className="inline-flex items-center gap-1.5 rounded-full border border-[#132843]/20 bg-[#132843]/5 px-3 py-1.5 text-xs font-medium text-[#132843] transition-colors hover:bg-[#132843]/10 dark:border-white/20 dark:bg-white/10 dark:text-[#e7edf4]"
+                        >
+                          {s} <span className="opacity-60">×</span>
+                        </button>
+                      ))}
+                      {selectedPlatforms.map((p) => (
+                        <button
+                          key={p}
+                          type="button"
+                          onClick={() => setSelectedPlatforms(selectedPlatforms.filter((x) => x !== p))}
+                          className="inline-flex items-center gap-1.5 rounded-full border border-[#132843]/20 bg-[#132843]/5 px-3 py-1.5 text-xs font-medium text-[#132843] transition-colors hover:bg-[#132843]/10 dark:border-white/20 dark:bg-white/10 dark:text-[#e7edf4]"
+                        >
+                          {p} <span className="opacity-60">×</span>
+                        </button>
+                      ))}
+                      {talentOnly && (
+                        <button
+                          type="button"
+                          onClick={() => setTalentOnly(false)}
+                          className="inline-flex items-center gap-1.5 rounded-full border border-[#132843]/20 bg-[#132843]/5 px-3 py-1.5 text-xs font-medium text-[#132843] transition-colors hover:bg-[#132843]/10 dark:border-white/20 dark:bg-white/10 dark:text-[#e7edf4]"
+                        >
+                          Yetenek Programı <span className="opacity-60">×</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {SIDEBAR_SECTORS.filter((s) => !selectedSectors.includes(s.value)).length > 0 && (
+                  <div className="mt-6">
+                    <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-[#e7edf4]/40">
+                      Sektöre göre göz at
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {SIDEBAR_SECTORS.filter((s) => !selectedSectors.includes(s.value)).slice(0, 6).map((sector) => (
+                        <button
+                          key={sector.value}
+                          type="button"
+                          onClick={() => {
+                            setQuery('')
+                            setDebouncedQuery('')
+                            setSelectedSectors([sector.value])
+                            setSelectedPlatforms([])
+                            setTalentOnly(false)
+                          }}
+                          className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-medium text-gray-700 transition-all hover:border-[#132843] hover:bg-[#132843] hover:text-white dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/20"
+                        >
+                          {sector.icon} {sector.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="mt-6 text-center">
+                  <button
+                    type="button"
+                    onClick={clearAllFilters}
+                    className="rounded-lg bg-[#132843] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#0e1e33]"
+                  >
+                    Tüm kriterleri temizle
+                  </button>
+                </div>
               </div>
             ) : (
               <>
