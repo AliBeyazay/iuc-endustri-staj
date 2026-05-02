@@ -63,6 +63,15 @@ _csrf_default = ','.join([
 _csrf_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', _csrf_default)
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_origins.split(',') if o.strip()]
 
+# Fail fast if R2 is the configured storage backend but credentials are missing.
+if os.environ.get('CV_STORAGE_BACKEND') == 'r2':
+    _missing_r2 = [
+        k for k in ('R2_ACCOUNT_ID', 'R2_ACCESS_KEY_ID', 'R2_SECRET_ACCESS_KEY', 'R2_BUCKET_NAME', 'R2_PUBLIC_URL')
+        if not os.environ.get(k)
+    ]
+    if _missing_r2:
+        raise ImproperlyConfigured(f'R2 storage selected but missing env vars: {", ".join(_missing_r2)}')
+
 # Static files via WhiteNoise
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
