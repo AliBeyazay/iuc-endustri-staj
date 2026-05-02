@@ -8,6 +8,7 @@ from .models import (
     NegativeKeyword,
     Review,
     ScraperLog,
+    SearchLog,
     Student,
     SuppressedListingSource,
 )
@@ -157,6 +158,18 @@ class ScraperLogAdmin(admin.ModelAdmin):
 class NegativeKeywordAdmin(admin.ModelAdmin):
     list_display = ['keyword', 'created_at']
     search_fields = ['keyword']
+
+
+@admin.register(SearchLog)
+class SearchLogAdmin(admin.ModelAdmin):
+    list_display = ['query', 'result_count', 'has_results', 'created_at']
+    list_filter = ['has_results', 'created_at']
+    search_fields = ['query']
+    readonly_fields = ['query', 'result_count', 'filters_applied', 'has_results', 'created_at']
+    ordering = ['-created_at']
+
+    def has_add_permission(self, request):
+        return False
 
 
 @admin.register(SuppressedListingSource)

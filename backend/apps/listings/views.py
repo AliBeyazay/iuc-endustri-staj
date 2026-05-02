@@ -27,7 +27,7 @@ from config.throttle import SafeScopedRateThrottle
 
 from .cache_keys import get_listing_list_cache_version
 from .filters import FuzzySearchFilter, ListingFilter
-from .models import Application, Bookmark, Listing, Review, ScraperLog, Student
+from .models import Application, Bookmark, Listing, Review, ScraperLog, SearchLog, Student
 from .pagination import ListingPageNumberPagination
 from .public_listings import get_public_listing_queryset
 from .storage import upload_cv
@@ -103,6 +103,22 @@ class ListingViewSet(viewsets.ReadOnlyModelViewSet):
             if response.status_code == status.HTTP_200_OK:
                 try:
                     cache.set(cache_key, response.data, timeout=LISTING_LIST_CACHE_TTL_SECONDS)
+                except Exception:
+                    pass
+                try:
+                    query = request.query_params.get('search', '').strip()
+                    if query:
+                        count = response.data.get('count', 0) if isinstance(response.data, dict) else 0
+                        filters_applied = {
+                            k: v for k, v in request.query_params.items()
+                            if k not in ('search', 'page', 'limit', 'ordering')
+                        }
+                        SearchLog.objects.create(
+                            query=query,
+                            result_count=count,
+                            filters_applied=filters_applied,
+                            has_results=count > 0,
+                        )
                 except Exception:
                     pass
             return response

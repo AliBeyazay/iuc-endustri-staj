@@ -316,6 +316,22 @@ class NegativeKeyword(models.Model):
         return self.keyword
 
 
+class SearchLog(models.Model):
+    query = models.CharField(max_length=255)
+    result_count = models.IntegerField()
+    filters_applied = models.JSONField(default=dict)
+    has_results = models.BooleanField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Arama Logu'
+        verbose_name_plural = 'Arama Loglari'
+
+    def __str__(self):
+        return f'"{self.query}" → {self.result_count} sonuç'
+
+
 @receiver(pre_delete, sender=Listing)
 def suppress_listing_source_before_delete(sender, instance, **kwargs):
     suppress_listing_source(instance, reason='manual_delete')
